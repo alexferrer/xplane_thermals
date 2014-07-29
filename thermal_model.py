@@ -13,6 +13,7 @@ def show_thermal(model):
 	figure(1)              
 	#imshow(model, interpolation='nearest')
 	imshow(model, cmap='hot')
+	savefig('thermal_image.png')
 	show()
 
 
@@ -101,7 +102,8 @@ def make_thermal(matrix,size,x,y):
     for i in gen_points(size*size):
         x1,y1 = i[1]  #x,y coord
         n = i[0]    # cell #
-        matrix[x+x1][y+y1]= gen_simple_lift(n,size)
+        #matrix[x+x1][y+y1]= gen_simple_lift(n,size) #simple
+        matrix[x+x1][y+y1]= (gen_simple_lift(n,size) + matrix[x+x1][y+y1])/2 #average overlap
 
 from random import randrange
 def make_thermal_model(size,tcount):
@@ -111,8 +113,13 @@ def make_thermal_model(size,tcount):
     
     #populate array with tcount random thermals
     for i in range(tcount):
-        diameter = randrange(2,30) #random diameter between 2 ~ 10
-        x,y = randrange(5,size-5),randrange(5,size-5) #random center far from edge
+        diameter = randrange(5,50) #random diameter of thermal
+        rad = diameter/2
+        # each . = 11m,  between 44m ~ 550mm
+        
+        #locate thermal randomly, 
+        #todo: eventually use terrain as hint
+        x,y = randrange(rad,size-rad),randrange(rad,size-rad) #random center far from edge
         make_thermal(model,diameter,x,y)
         print x,y,diameter
         
@@ -130,7 +137,7 @@ def make_thermal_model(size,tcount):
 #x,y = 10,8
 #make_thermal(b,10,x,y)
 
-b = make_thermal_model(1000,15) #40x40 area, 3 random termals
+b = make_thermal_model(1000,95) #40x40 area, 3 random termals
 
 #--------- print the array
 

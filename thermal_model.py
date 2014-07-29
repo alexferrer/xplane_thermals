@@ -4,6 +4,17 @@
       strenght on a 2D (Lat,Lon) matrix.
 '''
 
+'''
+this block only if you have pylab
+'''
+from pylab import *
+def show_thermal(model):
+    #show the thermal as image
+	figure(1)              
+	#imshow(model, interpolation='nearest')
+	imshow(model, cmap='hot')
+	show()
+
 
 def printa(a):
     print a
@@ -100,27 +111,30 @@ def make_thermal_model(size,tcount):
     
     #populate array with tcount random thermals
     for i in range(tcount):
-        diameter = randrange(2,10) #random diameter between 2 ~ 10
+        diameter = randrange(2,30) #random diameter between 2 ~ 10
         x,y = randrange(5,size-5),randrange(5,size-5) #random center far from edge
-        make_thermal(model,10,x,y)
+        make_thermal(model,diameter,x,y)
         print x,y,diameter
-         
+        
+    #aprint(model)       #for debug only 
+    print "thermal model..."
+    show_thermal(model) # us only if pylab availabe
     return model
 
 
 # ----- begin test code --------
 
-b = new_matrix(20,20) #iniitialize matrix of 20x20
+#b = new_matrix(20,20) #iniitialize matrix of 20x20
  
 # make a 10x10 thermal centered at at 10,8
-x,y = 10,8
-make_thermal(b,10,x,y)
+#x,y = 10,8
+#make_thermal(b,10,x,y)
 
-b = make_thermal_model(40,3) #40x40 area, 3 random termals
+b = make_thermal_model(1000,15) #40x40 area, 3 random termals
 
 #--------- print the array
 
-aprint(b)
+#aprint(b)
 
 
 

@@ -1,10 +1,13 @@
 """
 Thermal simulator
 version .01
-   randomly add lift/sink/roll forces to a plane
+  randomly add lift/sink/roll forces to a plane
 """
 from XPLMDefs import *
 from EasyDref import EasyDref
+
+#thermal modeling tools
+from thermal_model import make_thermal_model
 
 from XPLMProcessing import *
 from XPLMDataAccess import *
@@ -19,6 +22,9 @@ class PythonInterface:
 		self.Name = "ThermalSim2"
 		self.Sig =  "SandyBarbour.Python.ThermalSim2"
 		self.Desc = "A plugin that simulates thermals (alpha)"
+		
+		#have thermal_model make us a random thermal_model(size,# of thermals) 
+		self.thermal_map = make_thermal_model(1000,100)
 
 
 		""" Find the data refs we want to record."""
@@ -62,39 +68,29 @@ class PythonInterface:
 	def CalcThermal(self,lat,lon,alt):
 		"""
 		Calculate the strenght of the thermal at this particular point 
-		in space
-		For now , just a simple algorithm 
-		for lat 
-		   .0          = 10
-		   .1 or .9    = 9
-		   .2 or .8    = 8 
-		   and so on
-		   .5          = 0
-		"""
-		
-		"""
-		a 3-dimensional array representing space (lat,lon,alt) 
+		in space by using the x digits of lat/lon as index on a 
+		2dimensional array representing space (lat,lon) 
 		the value representing lift/sink (+/-) 
 		b = [ [[11,12],[13,14]] , [[21,22],[23,24]] ]
 		"""
+		 
+		'''
+		 for lat/lon, 12.3456789
+		 .1     = 11,120 meters
+		 .01    =  1,120 m
+		 .001   =    120 m
+		 .0001  =     11 m
+		 .00001 =      1 m
+		 
+		 a matrix of [100,100] on a .0001 (11m resolution) represents 1.1km^2
+		 
+		'''
+		# use 2nd,3rd,4rd decimal of the lat/lon nn.x123 (blocks of 11 meters) as the key
+		# on a [1000x1000] matrix = 10km^2 that repeats every 11km as the .1 digit changes
 		
-		#for now:
-		
-		#2-dimensional array  (Grid of aprox 1km X 1km ) 
-		thermal_map = [ [ 0,0,0,0,0,0,0,0,0,0 ], \
-						[ 0,1,1,1,1,1,1,1,1,0 ], \
-						[ 0,1,3,3,3,3,3,3,1,0 ], \
-						[ 0,1,4,4,4,4,4,4,1,0 ], \
-						[ 0,1,4,8,9,9,8,4,1,0 ], \
-						[ 0,1,4,8,9,9,8,4,1,0 ], \
-						[ 0,1,4,4,4,4,4,4,1,0 ], \
-						[ 0,1,3,3,3,3,3,3,1,0 ], \
-						[ 0,1,1,1,1,1,1,1,1,0 ], \
-						[ 0,0,0,0,0,0,0,0,0,0 ], \
-                      ]  		
-		
-		# use 3rd decimal of the latitude (blocks of ~100 meters) as the key
-		thermal_value = thermal_map[int(str(lat)[6])][int(str(lon)[6])] 
+		#bug: will fail when - sign is not present in lat/lon, later change to abs(lat)
+		#     might fail when lon > 99 because of extra digit
+		thermal_value = self.thermal_map[int(str(lat)[5:8])][int(str(lon)[5:8])] 
 		return thermal_value
 
 
@@ -120,7 +116,7 @@ class PythonInterface:
 
 		self.com1.value= (120+lift_val)*1000 # set the radio to the lift value as indicator onboard
 
-		print "lift ",str(lat)[6]+str(lat)[7],str(lon)[6]+str(lon)[7], lift_val
+		print "lift > ",lat,str(lat)[5:8],"  |  ",lon,str(lon)[5:8], lift_val
         
 		# set the next callback time in +n for # of seconds and -n for # of Frames
 		return .5;

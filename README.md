@@ -15,3 +15,4 @@ This is a Python plugin, so the python interface is required. ( http://www.xplug
 As a helper, I am using Easy Dataref access class from Joan Perez i Cauhe, I am including the class on the sources
 
 
+V 0.1 it works based on a 10x10 matrix that repeats itself. it works, but is just a sucky proof of concept.

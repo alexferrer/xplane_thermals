@@ -103,7 +103,7 @@ def make_thermal(matrix,size,x,y):
         x1,y1 = i[1]  #x,y coord
         n = i[0]    # cell #
         #matrix[x+x1][y+y1]= gen_simple_lift(n,size) #simple
-        matrix[x+x1][y+y1]= (gen_simple_lift(n,size) + matrix[x+x1][y+y1])/2 #average overlap
+        matrix[x+x1][y+y1] += gen_simple_lift(n,size) 
 
 from random import randrange
 def make_thermal_model(size,tcount):

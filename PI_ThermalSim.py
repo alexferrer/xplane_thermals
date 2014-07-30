@@ -33,14 +33,15 @@ class PythonInterface:
 		self.PlaneEl = XPLMFindDataRef("sim/flightmodel/position/elevation")
 		
 		#For X-Plane 9 and below us vert speed (m/s)
-		self.lift = EasyDref('sim/flightmodel/position/local_vy', 'float')
+		#self.lift = EasyDref('sim/flightmodel/position/local_vy', 'float')
 		
 		#For X-Plane 10 only 
-		#self.lift  = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
-		#self.roll  = EasyDref('sim/flightmodel/forces/L_plug_acf', 'float') # wing roll 
+		self.lift  = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
+		self.roll  = EasyDref('sim/flightmodel/forces/L_plug_acf', 'float') # wing roll 
 		
-		# Use com1 as Thermal index indicator  
-		self.com1  = EasyDref('sim/cockpit/radios/com1_freq_hz', 'int') 
+		#although lift should be enough, some energy has to go as thrust, or the plane
+		# might float in the air without moving!
+		self.thrust  = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
 
 		"""
 		Register our callback for once a second.  Positive intervals
@@ -106,18 +107,32 @@ class PythonInterface:
 		lift_val = self.CalcThermal(lat,lon,el)	
 
     #Apply the thermal effect Xplane 9.0 vert speed in m/s 1 = 200f/m
-		self.lift.value  = lift_val/2 
-
-		# On xplane 10.30+ you can add arbitrarly forces               
+		#self.lift.value  = lift_val/2 
+        
+		# On xplane 10.30+ you can add arbitrarly forces in newtons of force
 		
-		#self.lift.value = lift_val * 2000
+		# 1kilo weights ~ 1 newton (9.8) newton               
+		# ask21 (360kg) + pilot (80) = = 440kg, 
+		# lift 440kg 1/ms = ~ 4400 newtons ?
+		l1 = self.lift.value  #old value
+		#according to Ask21 manual at 70mph sink is 1m/s
+		# multiplication factor, calculated experimentally = 500
+		lift_val = 5
+		l2 = lift_val * 500   
+		self.lift.value = l1 + l2 
+		
+		#although extra lift is what should be happening, 
+		#adding thrust works much better! -150 = 1m/s
+		tval = self.thrust.value
+		self.thrust.value = -100 * lift_val + tval
+		
 		roll_val = 0
 		#self.roll.value = roll_val
 
-		self.com1.value= (120+lift_val)*1000 # set the radio to the lift value as indicator onboard
 
-		print "lift > ",lat,str(lat)[5:8],"  |  ",lon,str(lon)[5:8], lift_val
+		#print "lift > ",lat,str(lat)[5:8],"  |  ",lon,str(lon)[5:8], lift_val
+		print "lift > ",str(lat)[5:8]," | ",str(lon)[5:8], lift_val
         
 		# set the next callback time in +n for # of seconds and -n for # of Frames
-		return .5;
+		return .01 # works on my machine..
 		

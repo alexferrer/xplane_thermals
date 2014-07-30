@@ -7,14 +7,20 @@
 '''
 this block only if you have pylab
 '''
+
+
+
 from pylab import *
 def show_thermal(model):
     #show the thermal as image
 	figure(1)              
-	#imshow(model, interpolation='nearest')
-	imshow(model, cmap='hot')
+	imshow(model, interpolation='nearest')
+	#imshow(model, cmap='hot')
 	savefig('thermal_image.png')
 	show()
+
+from random import randrange
+from math import sqrt
 
 
 def printa(a):
@@ -77,12 +83,11 @@ def gen_points(end):
 #4,16,36,64,100
 #2  4  6  8   10
 
-from math import sqrt
 def gen_simple_lift(n,size):
     ''' function to calculate a lift number for the given
         matrix cell n
     '''
-    max_lift = 9
+    max_lift = 9 
     min_lift = 0
     #reduction of lift for each layer
     spread = (max_lift-min_lift)/(size/2.0)
@@ -105,7 +110,7 @@ def make_thermal(matrix,size,x,y):
         #matrix[x+x1][y+y1]= gen_simple_lift(n,size) #simple
         matrix[x+x1][y+y1] += gen_simple_lift(n,size) 
 
-from random import randrange
+
 def make_thermal_model(size,tcount):
     ''' return an array representing an area of SxS
         populated with random thermals'''

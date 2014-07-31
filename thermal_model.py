@@ -4,7 +4,7 @@
       strenght on a 2D (Lat,Lon) matrix.
 '''
 
-'''
+
 #this block only if you have pylab
 
 from pylab import *
@@ -15,7 +15,7 @@ def show_thermal(model):
     imshow(model, cmap='hot')
     #savefig('thermal_image.png')
     show()
-'''
+
 
 from random import randrange
 import math
@@ -108,7 +108,7 @@ def make_thermal(matrix,size,x,y):
         matrix[x+x1][y+y1] += gen_simple_lift(n,size) 
 
 
-def MakeThermalModel(size,tcount,_diameter):
+def MakeRandomThermalModel(size,tcount,_diameter):
     ''' return an array representing an area of Size x Size
         populated with random thermals
         size     =  size of model (10m each cell) 
@@ -132,6 +132,24 @@ def MakeThermalModel(size,tcount,_diameter):
         make_thermal(model,diameter,x,y)
         
     #aprint(model)       #for debug only 
+    print "thermal model..."
+    show_thermal(model) # use only if pylab availabe
+    return model
+
+def MakeThermalModel(size,tcount,_diameter):
+    ''' return an array representing an area of Size x Size
+        populated with fixed thermals
+        '''
+    size = 1000
+    model = new_matrix(size,size)
+    
+    #populate array with fixed thermals
+    make_thermal(model,100,858,611) #Libmandi
+    make_thermal(model,10,980,624) #SantaMaria
+    make_thermal(model,100,858,695) #Intersection
+
+
+
     print "thermal model..."
     #show_thermal(model) # use only if pylab availabe
     return model
@@ -200,13 +218,21 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
 #make_thermal(b,10,x,y)
 
 b = MakeThermalModel(1000,20,200) #1000x1000, 10 random termals,200 avg dia
+figure(1)              
+#imshow(model, interpolation='nearest')
+imshow(b, cmap='hot')
+show()
 
+
+
+
+'''
 for i in range(10):
     c = CalcThermal(b,-12.00001 - i*.0001,-76.00001,1000,45)
 
     #print "CalcThermal= " , c
 #--------- print the array
-
+'''
 #aprint(b)
 
 

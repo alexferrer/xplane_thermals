@@ -32,10 +32,8 @@ class PythonInterface:
 		self.PlaneLat = XPLMFindDataRef("sim/flightmodel/position/latitude")
 		self.PlaneLon = XPLMFindDataRef("sim/flightmodel/position/longitude")
 		self.PlaneEl  = XPLMFindDataRef("sim/flightmodel/position/elevation")
-		self.PlaneHd  = XPLMFindDataRef("sim/flightmodel/position/psi")
-		
-		#For X-Plane 9 and below us vert speed (m/s)
-		#self.lift = EasyDref('sim/flightmodel/position/local_vy', 'float')
+		self.PlaneHd  = XPLMFindDataRef("sim/flightmodel/position/psi") #plane heading
+		self.PlaneRol = XPLMFindDataRef("sim/flightmodel/position/phi") #plane roll
 		
 		#For X-Plane 10 only 
 		self.lift  = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')

@@ -7,7 +7,8 @@ from XPLMDefs import *
 from EasyDref import EasyDref
 
 #thermal modeling tools
-from thermal_model import MakeThermalModel CalcThermal
+from thermal_model import MakeThermalModel
+from thermal_model import CalcThermal
 
 from XPLMProcessing import *
 from XPLMDataAccess import *
@@ -24,7 +25,7 @@ class PythonInterface:
 		self.Desc = "A plugin that simulates thermals (alpha)"
 		
 		#have thermal_model make us a random thermal_model(size,# of thermals) 
-		self.thermal_map = MakeThermalModel(1000,30)
+		self.thermal_map = MakeThermalModel(1000,25,200) #size,quantity,diameter
 
 
 		""" Find the data refs we want to record."""
@@ -74,10 +75,11 @@ class PythonInterface:
 		lat = XPLMGetDataf(self.PlaneLat)
 		lon = XPLMGetDataf(self.PlaneLon)
 		el = XPLMGetDataf(self.PlaneEl)
+		heading = 180  # XPLMGetDataf(self.PlaneEl)
 		
 		
 		#Get the lift value from the thermal matrix
-		lift_val, roll_value  = self.CalcThermal(self.thermal_map,lat,lon,el,heading)	
+		lift_val, roll_value  = CalcThermal(self.thermal_map,lat,lon,el,heading)	
 
         #Apply the thermal effect Xplane 9.0 vert speed in m/s 1 = 200f/m
 		#self.lift.value  = lift_val/2 

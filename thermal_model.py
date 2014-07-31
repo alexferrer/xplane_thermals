@@ -235,5 +235,15 @@ for i in range(10):
 '''
 #aprint(b)
 
+print "writing"
+import csv
+with open("thermal.csv", "wb") as f:
+    writer = csv.writer(f)
+    writer.writerows(b)
+    f.close()
+    
+print "reading"
+with open("thermal.csv", "r") as f:
+    data = list(map(int,rec) for rec in csv.reader(f, delimiter=',')) 
 
 

@@ -6,18 +6,16 @@
 
 '''
 this block only if you have pylab
-'''
-
-
 
 from pylab import *
 def show_thermal(model):
     #show the thermal as image
-	figure(1)              
-	imshow(model, interpolation='nearest')
-	#imshow(model, cmap='hot')
-	savefig('thermal_image.png')
-	show()
+    figure(1)              
+    imshow(model, interpolation='nearest')
+    #imshow(model, cmap='hot')
+    savefig('thermal_image.png')
+    show()
+'''
 
 from random import randrange
 from math import sqrt
@@ -111,7 +109,7 @@ def make_thermal(matrix,size,x,y):
         matrix[x+x1][y+y1] += gen_simple_lift(n,size) 
 
 
-def make_thermal_model(size,tcount):
+def MakeThermalModel(size,tcount):
     ''' return an array representing an area of SxS
         populated with random thermals'''
     model = new_matrix(size,size)
@@ -130,8 +128,63 @@ def make_thermal_model(size,tcount):
         
     #aprint(model)       #for debug only 
     print "thermal model..."
-    show_thermal(model) # us only if pylab availabe
+    #show_thermal(model) # us only if pylab availabe
     return model
+
+
+
+def CalcThermal(thermal_map,lat,lon,alt,heading):
+      '''
+       Calculate the strenght of the thermal at this particular point 
+       in space by using the x digits of lat/lon as index on a 
+       2dimensional array representing space (lat,lon) 
+       the value representing lift/sink (+/-) 
+       b = [ [[11,12],[13,14]] , [[21,22],[23,24]] ]
+       
+       for lat/lon, 12.3456789
+         .1     = 11,120 meters
+         .01    =  1,120 m
+         .001   =    120 m
+         .0001  =     11 m
+         .00001 =      1 m
+         
+       a matrix of [100,100] on a .0001 (11m resolution) represents 1.1km^2
+       use 2nd,3rd,4rd decimal of the lat/lon nn.x123 (blocks of 11 meters) as the key
+       on a [1000x1000] matrix = 10km^2 that repeats every 11km as the .1 digit changes
+       
+      '''  
+      
+      '''
+       calculate the roll value by :
+       lwing_pos = wingspan * sin(heading)
+       rwing_pos = wingspan * cos(heading)
+       l_lift = self.CalcThermal(lwing_pos)
+       r_lift = self.CalcThermal(rwing_pos)
+       rol_val = l_lift - rlift
+       tot_lift = l_lift + rlift 
+      '''
+
+      #bug: will fail when - sign is not present in lat/lon, later change to abs(lat)
+      #     might fail when lon > 99 because of extra digit
+
+      planeX = int(str(lat)[5:8])
+      planeY = int(str(lon)[5:8])
+         
+      lwingX = planeX+1  #need sin/cos
+      lwingY = planeY+1
+      
+      rwingX = planeX-1
+      rwingY = planeY-1
+
+      liftL  = thermal_map[ lwingX ][ lwingY ] 
+      liftR  = thermal_map[ rwingX ][ rwingY ] 
+
+      thermal_value = liftL + liftR
+      roll_value    = liftL - liftR
+      
+      print "lift > ",str(lat)[5:8]," | ",str(lon)[5:8], thermal_value, roll_value      
+      
+      return thermal_value , roll_value
 
 
 # ----- begin test code --------
@@ -142,8 +195,11 @@ def make_thermal_model(size,tcount):
 #x,y = 10,8
 #make_thermal(b,10,x,y)
 
-b = make_thermal_model(1000,95) #40x40 area, 3 random termals
+b = MakeThermalModel(1000,95) #40x40 area, 3 random termals
 
+c = CalcThermal(b,-12.00123,-76.00123,1000,180)
+
+print "CalcThermal= " , c
 #--------- print the array
 
 #aprint(b)

@@ -7,7 +7,7 @@ from XPLMDefs import *
 from EasyDref import EasyDref
 
 #thermal modeling tools
-from thermal_model import make_thermal_model
+from thermal_model import MakeThermalModel CalcThermal
 
 from XPLMProcessing import *
 from XPLMDataAccess import *
@@ -24,7 +24,7 @@ class PythonInterface:
 		self.Desc = "A plugin that simulates thermals (alpha)"
 		
 		#have thermal_model make us a random thermal_model(size,# of thermals) 
-		self.thermal_map = make_thermal_model(1000,30)
+		self.thermal_map = MakeThermalModel(1000,30)
 
 
 		""" Find the data refs we want to record."""
@@ -66,35 +66,6 @@ class PythonInterface:
 	def XPluginReceiveMessage(self, inFromWho, inMessage, inParam):
 		pass
 		
-	def CalcThermal(self,lat,lon,alt):
-		"""
-		Calculate the strenght of the thermal at this particular point 
-		in space by using the x digits of lat/lon as index on a 
-		2dimensional array representing space (lat,lon) 
-		the value representing lift/sink (+/-) 
-		b = [ [[11,12],[13,14]] , [[21,22],[23,24]] ]
-		"""
-		 
-		'''
-		 for lat/lon, 12.3456789
-		 .1     = 11,120 meters
-		 .01    =  1,120 m
-		 .001   =    120 m
-		 .0001  =     11 m
-		 .00001 =      1 m
-		 
-		 a matrix of [100,100] on a .0001 (11m resolution) represents 1.1km^2
-		 
-		'''
-		
-		# use 2nd,3rd,4rd decimal of the lat/lon nn.x123 (blocks of 11 meters) as the key
-		# on a [1000x1000] matrix = 10km^2 that repeats every 11km as the .1 digit changes
-		
-		#bug: will fail when - sign is not present in lat/lon, later change to abs(lat)
-		#     might fail when lon > 99 because of extra digit
-		thermal_value = self.thermal_map[int(str(lat)[5:8])][int(str(lon)[5:8])] 
-			
-		return thermal_value
 
 
 	def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
@@ -106,7 +77,7 @@ class PythonInterface:
 		
 		
 		#Get the lift value from the thermal matrix
-		lift_val = self.CalcThermal(lat,lon,el)	
+		lift_val, roll_value  = self.CalcThermal(self.thermal_map,lat,lon,el,heading)	
 
         #Apply the thermal effect Xplane 9.0 vert speed in m/s 1 = 200f/m
 		#self.lift.value  = lift_val/2 
@@ -126,25 +97,11 @@ class PythonInterface:
 		#although extra lift is what should be happening, 
 		#adding thrust works much better! -150 = 1m/s
 		tval = self.thrust.value
-		self.thrust.value = -100 * lift_val + tval
-		
-		'''
-		calculate the roll value by :
-		lwing_pos = wingspan * sin(heading)
-		rwing_pos = wingspan * cos(heading)
-		l_lift = self.CalcThermal(lwing_pos)
-		r_lift = self.CalcThermal(rwing_pos)
-		rol_val = l_lift - rlift
-		tot_lift = l_lift + rlift 
-		'''
+		self.thrust.value = -100 * lift_val + tval	
 
 		roll_val = 1000 * lift_val #for testing 5000
 		rval = self.roll.value + roll_val
 		self.roll.value = rval
-
-
-		#print "lift > ",lat,str(lat)[5:8],"  |  ",lon,str(lon)[5:8], lift_val
-		print "lift > ",str(lat)[5:8]," | ",str(lon)[5:8], lval, rval
         
 		# set the next callback time in +n for # of seconds and -n for # of Frames
 		return .01 # works on my machine..

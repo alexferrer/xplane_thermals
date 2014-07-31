@@ -13,13 +13,12 @@ def show_thermal(model):
     figure(1)              
     #imshow(model, interpolation='nearest')
     imshow(model, cmap='hot')
-    savefig('thermal_image.png')
+    #savefig('thermal_image.png')
     show()
 '''
 
 from random import randrange
-from math import sqrt
-
+import math
 
 def printa(a):
     print a
@@ -91,7 +90,7 @@ def gen_simple_lift(n,size):
     spread = (max_lift-min_lift)/(size/2.0)
 
     #each outward circular layer grows by (2n)^2
-    layer = int( sqrt(n)/2)
+    layer = int( math.sqrt(n)/2)
     
     #simple round decreasing lift from center out
     lift = max_lift - int(layer*spread)
@@ -126,9 +125,11 @@ def MakeThermalModel(size,tcount,_diameter):
         
         #locate thermal randomly, 
         #todo: eventually use terrain as hint
+        
+        #random model:
         x,y = randrange(rad,size-rad),randrange(rad,size-rad) #random center far from edge
+        
         make_thermal(model,diameter,x,y)
-        print x,y,diameter
         
     #aprint(model)       #for debug only 
     print "thermal model..."
@@ -156,29 +157,27 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
        use 2nd,3rd,4rd decimal of the lat/lon nn.x123 (blocks of 11 meters) as the key
        on a [1000x1000] matrix = 10km^2 that repeats every 11km as the .1 digit changes
        
-      '''  
-      
-      '''
-       calculate the roll value by :
-       lwing_pos = wingspan * sin(heading)
-       rwing_pos = wingspan * cos(heading)
-       l_lift = self.CalcThermal(lwing_pos)
-       r_lift = self.CalcThermal(rwing_pos)
-       rol_val = l_lift - rlift
-       tot_lift = l_lift + rlift 
-      '''
+      '''       
 
       #bug: will fail when - sign is not present in lat/lon, later change to abs(lat)
       #     might fail when lon > 99 because of extra digit
 
-      planeX = int(str(lat)[5:8])
-      planeY = int(str(lon)[5:8])
+      '''
+       calculate the roll value by :
+      '''
+
+      planeX   = int(str(lat)[5:8])
+      planeY   = int(str(lon)[5:8])
+      angleL   = math.radians(heading-90)
+      angleR   = math.radians(heading+90)
+
+      wingspan = 8
          
-      lwingX = planeX+1  #need sin/cos
-      lwingY = planeY+1
-      
-      rwingX = planeX-1
-      rwingY = planeY-1
+      lwingX = planeX + int(round(math.cos(angleL)*wingspan))
+      lwingY = planeY + int(round(math.sin(angleL)*wingspan))
+
+      rwingX = planeX + int(round(math.cos(angleR)*wingspan))
+      rwingY = planeY + int(round(math.sin(angleR)*wingspan))
 
       liftL  = thermal_map[ lwingX ][ lwingY ] 
       liftR  = thermal_map[ rwingX ][ rwingY ] 
@@ -187,6 +186,7 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
       roll_value    = liftL - liftR
       
       print "lift > ",str(lat)[5:8]," | ",str(lon)[5:8], thermal_value, roll_value      
+      #print "wing > ",heading,"|", lwingX,lwingY,",",rwingX,rwingY
       
       return thermal_value , roll_value
 
@@ -201,9 +201,10 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
 
 b = MakeThermalModel(1000,20,200) #1000x1000, 10 random termals,200 avg dia
 
-c = CalcThermal(b,-12.00123,-76.00123,1000,180)
+for i in range(10):
+    c = CalcThermal(b,-12.00001 - i*.0001,-76.00001,1000,45)
 
-print "CalcThermal= " , c
+    #print "CalcThermal= " , c
 #--------- print the array
 
 #aprint(b)

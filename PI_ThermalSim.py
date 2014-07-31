@@ -31,7 +31,8 @@ class PythonInterface:
 		""" Find the data refs we want to record."""
 		self.PlaneLat = XPLMFindDataRef("sim/flightmodel/position/latitude")
 		self.PlaneLon = XPLMFindDataRef("sim/flightmodel/position/longitude")
-		self.PlaneEl = XPLMFindDataRef("sim/flightmodel/position/elevation")
+		self.PlaneEl  = XPLMFindDataRef("sim/flightmodel/position/elevation")
+		self.PlaneHd  = XPLMFindDataRef("sim/flightmodel/position/psi")
 		
 		#For X-Plane 9 and below us vert speed (m/s)
 		#self.lift = EasyDref('sim/flightmodel/position/local_vy', 'float')
@@ -75,7 +76,7 @@ class PythonInterface:
 		lat = XPLMGetDataf(self.PlaneLat)
 		lon = XPLMGetDataf(self.PlaneLon)
 		el = XPLMGetDataf(self.PlaneEl)
-		heading = 180  # XPLMGetDataf(self.PlaneEl)
+		heading = XPLMGetDataf(self.PlaneHd)
 		
 		
 		#Get the lift value from the thermal matrix
@@ -101,8 +102,8 @@ class PythonInterface:
 		tval = self.thrust.value
 		self.thrust.value = -100 * lift_val + tval	
 
-		roll_val = 1000 * lift_val #for testing 5000
-		rval = self.roll.value + roll_val
+		roll = 7000 * roll_value 
+		rval = self.roll.value + roll
 		self.roll.value = rval
         
 		# set the next callback time in +n for # of seconds and -n for # of Frames

@@ -184,30 +184,46 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
 
       #bug: will fail when - sign is not present in lat/lon, later change to abs(lat)
       #     might fail when lon > 99 because of extra digit
+      # Todo: should substract initial lat/long, to center the covered area and 
+      #       solve the problems that - and 3 digit lat/longs create.
 
       '''
-       calculate the roll value by :
+       calculate the total lift and roll value :
       '''
-
+      # current plane position
       planeX   = int(str(lat)[5:8])
       planeY   = int(str(lon)[5:8])
+      # left and right wings position from current plane heading
       angleL   = math.radians(heading-90)
       angleR   = math.radians(heading+90)
 
       wingspan = 8
-         
+      
+      # left wing tip coordinates
       lwingX = planeX + int(round(math.cos(angleL)*wingspan))
       lwingY = planeY + int(round(math.sin(angleL)*wingspan))
 
+      # rigth wing tip coordinates
       rwingX = planeX + int(round(math.cos(angleR)*wingspan))
       rwingY = planeY + int(round(math.sin(angleR)*wingspan))
 
+	  # lift for each area, left tip, right tip and middle.
       liftL  = thermal_map[ lwingX ][ lwingY ] 
       liftR  = thermal_map[ rwingX ][ rwingY ] 
+      liftM  = thermal_map[ planeX ][ planeY ] 
 
-      thermal_value = liftL + liftR
-      roll_value    = liftL - liftR
+      # total lift component
+      thermal_value = liftL + liftR + liftM
       
+      # total roll component 
+      #   Todo: need to account for airplane roll angle
+      #         the more airplane is rolled, the less thermal roll effect
+      #         if the plane is flying inverted the roll effect should be reversed
+      
+      roll_factor = 1 # calc_roll_factor(current_roll ) -x for inverted
+      roll_value    = (liftL - liftR) * roll factor
+      
+      # for debug
       print "lift > ",str(lat)[5:8]," | ",str(lon)[5:8], thermal_value, roll_value      
       #print "wing > ",heading,"|", lwingX,lwingY,",",rwingX,rwingY
       

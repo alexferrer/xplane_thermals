@@ -21,10 +21,10 @@ def aprint(array):
     print "-----------------      Done    ----------------"
 
 #helper to save a thermal model as .csv file
-def SaveThermalModel(filename):
+def SaveThermalModel(model,filename):
     with open(filename, "wb") as f:
         writer = csv.writer(f)
-        writer.writerows(b)
+        writer.writerows(model)
         f.close()
 
 
@@ -135,6 +135,7 @@ def MakeRandomThermalModel(size,tcount,_diameter):
 def MakeThermalModel(size,tcount,_diameter):
     ''' return an array representing an area of Size x Size
         populated with fixed position thermals
+        note: ignore size,tcount,_diameter
     '''
     size = 1000
     model = new_matrix(size,size)
@@ -156,7 +157,7 @@ def ReadThermalModel(filename):
     
     print "reading thermal model ... "
     with open(filename, "r") as f:
-    model = list(map(int,rec) for rec in csv.reader(f, delimiter=',')) 
+        model = list(map(int,rec) for rec in csv.reader(f, delimiter=',')) 
 
     return model
 
@@ -221,7 +222,7 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
       #         if the plane is flying inverted the roll effect should be reversed
       
       roll_factor = 1 # calc_roll_factor(current_roll ) -x for inverted
-      roll_value    = (liftL - liftR) * roll factor
+      roll_value    = (liftL - liftR) * roll_factor
       
       # for debug
       print "lift > ",str(lat)[5:8]," | ",str(lon)[5:8], thermal_value, roll_value      
@@ -232,20 +233,26 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
 
 # ----- begin test code --------
 
-# make a 10x10 thermal centered at at 10,8
+print 'test: make a thermal model size (1000x1000) with 10 random termals of avg diameter 200'
+model  = MakeThermalModel(1000,20,200) 
+
+print 'test: make a random thermal model'
+random_model = MakeRandomThermalModel(1000,20,200)
+
+print 'test: make a 10x10 thermal centered at at 10,8'
 x,y = 10,8
-make_thermal(b,10,x,y)
+make_thermal(model,10,x,y)
 
-# make a thermal model size (1000x1000) with 10 random termals of avg diameter 200
-model = MakeThermalModel(1000,20,200) 
-
-# read the thermal values 
+print 'test: CalcThermal reading thermal values '
 for i in range(10):
     c = CalcThermal(model,-12.00001 - i*.0001,-76.00001,1000,45)
 print "CalcThermal= " , c
 
-# print the model
-aprint(model)
+print 'test: print the model'
+aprint(random_model)
 
-SaveThermalModel('thermal.csv')
+print 'test: save the thermal model'
+SaveThermalModel(random_model,'test_random_thermal.csv')
+
+print 'test: All tests completed !  '
 

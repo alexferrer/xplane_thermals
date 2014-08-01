@@ -2,31 +2,31 @@
 ''' Thermal generator module
       for now just generate a spiral lift pattern of decreasing
       strenght on a 2D (Lat,Lon) matrix.
+      
+      assorted helper & debug functions
 '''
-
-
-#this block only if you have pylab
-
-from pylab import *
-def show_thermal(model):
-    #show the thermal as image
-    figure(1)              
-    #imshow(model, interpolation='nearest')
-    imshow(model, cmap='hot')
-    #savefig('thermal_image.png')
-    show()
-
 
 from random import randrange
 import math
+import csv
+
 
 def printa(a):
     print a
 
+#helper to print the array to the console
 def aprint(array):
-    print " printing array "
+    print " ************ printing thermal array *********"
     map(printa,array)
-    print"-----------------"
+    print "-----------------      Done    ----------------"
+
+#helper to save a thermal model as .csv file
+def SaveThermalModel(filename):
+    with open(filename, "wb") as f:
+        writer = csv.writer(f)
+        writer.writerows(b)
+        f.close()
+
 
 
 def new_matrix(rows,cols):
@@ -54,7 +54,7 @@ def move_up(x,y):
 moves = [move_right, move_down, move_left, move_up]
 
 def gen_points(end):
-    '''' generates coordinates to form a spiral
+    '''' generator: generates coordinates to form a spiral
          of sequential numbers '''
 
     from itertools import cycle
@@ -77,8 +77,6 @@ def gen_points(end):
 
         times_to_move+=1
         
-#4,16,36,64,100
-#2  4  6  8   10
 
 def gen_simple_lift(n,size):
     ''' function to calculate a lift number for the given
@@ -92,19 +90,19 @@ def gen_simple_lift(n,size):
     #each outward circular layer grows by (2n)^2
     layer = int( math.sqrt(n)/2)
     
-    #simple round decreasing lift from center out
+    #simple round decreasing lift from the center to the outmost layer
     lift = max_lift - int(layer*spread)
     return lift
 
 def make_thermal(matrix,size,x,y):
-    '''
-     size = diameter of thermal
-     x,y  = center
+    ''' insert a thermal into the thermal matrix
+        size = diameter of thermal
+        x,y  = center
+        if a lift already exists on [x,y], add new value to it
     '''
     for i in gen_points(size*size):
-        x1,y1 = i[1]  #x,y coord
-        n = i[0]    # cell #
-        #matrix[x+x1][y+y1]= gen_simple_lift(n,size) #simple
+        x1,y1 = i[1]  # x,y coord
+        n = i[0]      # cell number
         matrix[x+x1][y+y1] += gen_simple_lift(n,size) 
 
 
@@ -132,14 +130,12 @@ def MakeRandomThermalModel(size,tcount,_diameter):
         make_thermal(model,diameter,x,y)
         
     #aprint(model)       #for debug only 
-    print "thermal model..."
-    show_thermal(model) # use only if pylab availabe
     return model
 
 def MakeThermalModel(size,tcount,_diameter):
     ''' return an array representing an area of Size x Size
-        populated with fixed thermals
-        '''
+        populated with fixed position thermals
+    '''
     size = 1000
     model = new_matrix(size,size)
     
@@ -148,12 +144,21 @@ def MakeThermalModel(size,tcount,_diameter):
     make_thermal(model,10,980,624) #SantaMaria
     make_thermal(model,100,858,695) #Intersection
 
-
-
-    print "thermal model..."
-    #show_thermal(model) # use only if pylab availabe
     return model
 
+def ReadThermalModel(filename):
+    ''' read a thermal model from an external .cvs file
+        previously populated with thermals.
+        Note: place the file on the Xplane root directory
+    '''
+    size = 1000
+    model = new_matrix(size,size)
+    
+    print "reading thermal model ... "
+    with open(filename, "r") as f:
+    model = list(map(int,rec) for rec in csv.reader(f, delimiter=',')) 
+
+    return model
 
 
 def CalcThermal(thermal_map,lat,lon,alt,heading):
@@ -211,39 +216,20 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
 
 # ----- begin test code --------
 
-#b = new_matrix(20,20) #iniitialize matrix of 20x20
- 
 # make a 10x10 thermal centered at at 10,8
-#x,y = 10,8
-#make_thermal(b,10,x,y)
+x,y = 10,8
+make_thermal(b,10,x,y)
 
-b = MakeThermalModel(1000,20,200) #1000x1000, 10 random termals,200 avg dia
-figure(1)              
-#imshow(model, interpolation='nearest')
-imshow(b, cmap='hot')
-show()
+# make a thermal model size (1000x1000) with 10 random termals of avg diameter 200
+model = MakeThermalModel(1000,20,200) 
 
-
-
-
-'''
+# read the thermal values 
 for i in range(10):
-    c = CalcThermal(b,-12.00001 - i*.0001,-76.00001,1000,45)
+    c = CalcThermal(model,-12.00001 - i*.0001,-76.00001,1000,45)
+print "CalcThermal= " , c
 
-    #print "CalcThermal= " , c
-#--------- print the array
-'''
-#aprint(b)
+# print the model
+aprint(model)
 
-print "writing"
-import csv
-with open("thermal.csv", "wb") as f:
-    writer = csv.writer(f)
-    writer.writerows(b)
-    f.close()
-    
-print "reading"
-with open("thermal.csv", "r") as f:
-    data = list(map(int,rec) for rec in csv.reader(f, delimiter=',')) 
-
+SaveThermalModel('thermal.csv')
 

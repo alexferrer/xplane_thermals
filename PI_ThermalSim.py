@@ -1,7 +1,16 @@
 """
-Thermal simulator
-version .01
-  randomly add lift/sink/roll forces to a plane
+Thermal simulator  Ver .02  
+  ** Works on Xplane 10.30 and above only **
+  This plugin generates a thermal map (A 2D matrix of 1000x1000) that
+  contains lift values foe every lat/lon spot.  
+  
+  The plugin then reads the lift value of the plane current position and applies
+  the lift & roll values. 
+  
+  This version works, but is still unrealistic 
+  
+  Author: Alex Ferrer
+  License: GPL 
 """
 from XPLMDefs import *
 from EasyDref import EasyDref
@@ -29,17 +38,17 @@ class PythonInterface:
 
 
 		""" Find the data refs we want to record."""
-		self.PlaneLat = XPLMFindDataRef("sim/flightmodel/position/latitude")
-		self.PlaneLon = XPLMFindDataRef("sim/flightmodel/position/longitude")
-		self.PlaneEl  = XPLMFindDataRef("sim/flightmodel/position/elevation")
-		self.PlaneHd  = XPLMFindDataRef("sim/flightmodel/position/psi") #plane heading
-		self.PlaneRol = XPLMFindDataRef("sim/flightmodel/position/phi") #plane roll
+		# airplane current flight info
+		self.PlaneLat  = XPLMFindDataRef("sim/flightmodel/position/latitude")
+		self.PlaneLon  = XPLMFindDataRef("sim/flightmodel/position/longitude")
+		self.PlaneElev = XPLMFindDataRef("sim/flightmodel/position/elevation")
+		self.PlaneHdg  = XPLMFindDataRef("sim/flightmodel/position/psi") #plane heading
+		self.PlaneRol  = XPLMFindDataRef("sim/flightmodel/position/phi") #plane roll
 		
-		#For X-Plane 10 only 
-		self.lift  = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
-		self.roll  = EasyDref('sim/flightmodel/forces/L_plug_acf', 'float') # wing roll 
-		
-		#although lift should be enough, some energy has to go as thrust, or the plane
+		# variables to inject energy to the plane 
+		self.lift = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
+		self.roll = EasyDref('sim/flightmodel/forces/L_plug_acf', 'float') # wing roll 	
+		# although lift should be enough, some energy has to go as thrust, or the plane
 		# might float in the air without moving!
 		self.thrust  = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
 
@@ -69,41 +78,34 @@ class PythonInterface:
 
 
 	def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
-		# The actual callback.  First we read the sim's time and the data.
+		# instantiate the actual callbacks.  
 		elapsed = XPLMGetElapsedTime()
 		lat = XPLMGetDataf(self.PlaneLat)
 		lon = XPLMGetDataf(self.PlaneLon)
-		el = XPLMGetDataf(self.PlaneEl)
-		heading = XPLMGetDataf(self.PlaneHd)
+		elevation = XPLMGetDataf(self.PlaneElev)
+		heading = XPLMGetDataf(self.PlaneHdg)
 		
 		
-		#Get the lift value from the thermal matrix
-		lift_val, roll_value  = CalcThermal(self.thermal_map,lat,lon,el,heading)	
-
-        #Apply the thermal effect Xplane 9.0 vert speed in m/s 1 = 200f/m
-		#self.lift.value  = lift_val/2 
-        
-		# On xplane 10.30+ you can add arbitrarly forces in newtons of force
+		#Get the lift value of the current position from the thermal matrix
+		lift_val, roll_value  = CalcThermal(self.thermal_map,lat,lon,elevation,heading)	
 		
 		# 1kilo weights ~ 1 newton (9.8) newton               
 		# ask21 (360kg) + pilot (80) = = 440kg, 
 		# lift 440kg 1/ms = ~ 4400 newtons ?
-		#according to Ask21 manual at 70mph sink is 1m/s
+		# according to Ask21 manual at 70mph sink is 1m/s
 		# multiplication factor, calculated experimentally = 500
 		
-		#lift_val = 0  # for testing only 
 		lval = lift_val * 500  + self.lift.value
-		self.lift.value = lval 
+		self.lift.value = lval  
 		
-		#although extra lift is what should be happening, 
-		#adding thrust works much better! -150 = 1m/s
+		# although extra lift is what should be happening...
+		# adding a bit of thrust works much better! -150 = 1m/s
 		tval = self.thrust.value
 		self.thrust.value = -100 * lift_val + tval	
 
-		roll = 7000 * roll_value 
-		rval = self.roll.value + roll
+		rval = roll_val * 6000 + self.roll.value
 		self.roll.value = rval
         
 		# set the next callback time in +n for # of seconds and -n for # of Frames
-		return .01 # works on my machine..
+		return .01 # works good on my (pretty fast) machine..
 		

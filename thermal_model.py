@@ -222,7 +222,7 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
       #         if the plane is flying inverted the roll effect should be reversed
       
       roll_factor = 1 # calc_roll_factor(current_roll ) -x for inverted
-      roll_value    = (liftL - liftR) * roll_factor
+      roll_value    = (liftR - liftL) * roll_factor
       
       # for debug
       print "lift > ",str(lat)[5:8]," | ",str(lon)[5:8], thermal_value, roll_value      

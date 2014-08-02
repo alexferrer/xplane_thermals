@@ -198,7 +198,7 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
       angleL   = math.radians(heading-90)
       angleR   = math.radians(heading+90)
 
-      wingspan = 8
+      wingspan = 7
       
       # left wing tip coordinates
       lwingX = planeX + int(round(math.cos(angleL)*wingspan))
@@ -232,7 +232,7 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
 
 
 # ----- begin test code --------
-
+'''
 print 'test: make a thermal model size (1000x1000) with 10 random termals of avg diameter 200'
 model  = MakeThermalModel(1000,20,200) 
 
@@ -255,4 +255,4 @@ print 'test: save the thermal model'
 SaveThermalModel(random_model,'test_random_thermal.csv')
 
 print 'test: All tests completed !  '
-
+'''

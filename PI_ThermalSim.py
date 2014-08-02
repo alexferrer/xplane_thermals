@@ -87,7 +87,7 @@ class PythonInterface:
 		
 		
 		#Get the lift value of the current position from the thermal matrix
-		lift_val, roll_value  = CalcThermal(self.thermal_map,lat,lon,elevation,heading)	
+		lift_val, roll_val  = CalcThermal(self.thermal_map,lat,lon,elevation,heading)	
 		
 		# 1kilo weights ~ 1 newton (9.8) newton               
 		# ask21 (360kg) + pilot (80) = = 440kg, 
@@ -95,15 +95,15 @@ class PythonInterface:
 		# according to Ask21 manual at 70mph sink is 1m/s
 		# multiplication factor, calculated experimentally = 500
 		
-		lval = lift_val * 500  + self.lift.value
+		lval = lift_val * 50  + self.lift.value  #500
 		self.lift.value = lval  
 		
 		# although extra lift is what should be happening...
 		# adding a bit of thrust works much better! -150 = 1m/s
 		tval = self.thrust.value
-		self.thrust.value = -100 * lift_val + tval	
+		self.thrust.value = -80 * lift_val + tval	#100
 
-		rval = roll_val * 6000 + self.roll.value
+		rval = roll_val * 3000 + self.roll.value #5000
 		self.roll.value = rval
         
 		# set the next callback time in +n for # of seconds and -n for # of Frames

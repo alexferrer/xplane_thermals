@@ -137,13 +137,16 @@ def MakeThermalModel(size,tcount,_diameter):
         populated with fixed position thermals
         note: ignore size,tcount,_diameter
     '''
-    size = 1000
+    size = 10000 #increased size to 70nm
     model = new_matrix(size,size)
     
     #populate array with fixed thermals
-    make_thermal(model,100,858,611) #Libmandi
-    make_thermal(model,10,980,624) #SantaMaria
-    make_thermal(model,100,858,695) #Intersection
+    make_thermal(model,100,3890,7581) #Libmandi
+    make_thermal(model,50,3994,7666) #SantaMaria
+    make_thermal(model,150,3774,7815) #Intersection san bartolo
+    make_thermal(model,300,3016,8448) #Interseccion senoritas
+    make_thermal(model,350,4647,7516) #trebol de chilca
+    make_thermal(model,500,7623,6061) #vor asia
         
     '''
     for i in range(0,999):         #for testing use fixed thermal pattern  | 1 |  3  | 0  |  0|
@@ -198,9 +201,11 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       '''
        calculate the total lift and roll value :
       '''
-      # current plane position
-      planeX   = int(str(lat)[5:8])
-      planeY   = int(str(lon)[5:8])
+      # current plane position  
+      # use 2,3,4 decimals ex: -12.34567 should return : 456
+      #     equivalent to 10 x 1120 m2 with a cell resolution of 11m2
+      planeX   = int(str(abs(lat-int(lat)))[2:6]) #test: increase area 10x by adding 1 digit [3:6]
+      planeY   = int(str(abs(lon-int(lon)))[2:6])
       # left and right wings position from current plane heading
       angleL   = math.radians(heading-90)
       angleR   = math.radians(heading+90)
@@ -230,8 +235,8 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       roll_value    = (liftR - liftL) * roll_factor
       
       # for debug
-      print "lift > ","[",planeX,",",planeY,"] @",'%.0f'%(heading), \
-            ">",'%.1f'%(roll_angle), "T **[",thermal_value, '%.1f'%roll_value ,"]**"
+      print "pos[",planeX,",",planeY,"] @",'%.0f'%(heading), \
+            ">",'%.1f'%(roll_angle), "T **[",thermal_value,"|", '%.1f'%roll_value ,"]**"
       
       return thermal_value , roll_value
 

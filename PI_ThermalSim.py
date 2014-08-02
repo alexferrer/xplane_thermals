@@ -84,10 +84,10 @@ class PythonInterface:
 		lon = XPLMGetDataf(self.PlaneLon)
 		elevation = XPLMGetDataf(self.PlaneElev)
 		heading = XPLMGetDataf(self.PlaneHdg)
-		
+		roll_angle = XPLMGetDataf(self.PlaneRol)
 		
 		#Get the lift value of the current position from the thermal matrix
-		lift_val, roll_val  = CalcThermal(self.thermal_map,lat,lon,elevation,heading)	
+		lift_val, roll_val  = CalcThermal(self.thermal_map,lat,lon,elevation,heading,roll_angle)	
 		
 		# 1kilo weights ~ 1 newton (9.8) newton               
 		# ask21 (360kg) + pilot (80) = = 440kg, 

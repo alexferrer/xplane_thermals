@@ -144,7 +144,14 @@ def MakeThermalModel(size,tcount,_diameter):
     make_thermal(model,100,858,611) #Libmandi
     make_thermal(model,10,980,624) #SantaMaria
     make_thermal(model,100,858,695) #Intersection
-
+        
+    '''
+    for i in range(0,999):         #for testing use fixed thermal pattern  | 1 |  3  | 0  |  0|
+        for n in range(0,9):
+            for p in range(0,30):     
+                model[i][n*100+p] = 1
+                model[i][n*100+31+p] = 3
+    '''            
     return model
 
 def ReadThermalModel(filename):
@@ -162,7 +169,7 @@ def ReadThermalModel(filename):
     return model
 
 
-def CalcThermal(thermal_map,lat,lon,alt,heading):
+def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       '''
        Calculate the strenght of the thermal at this particular point 
        in space by using the x digits of lat/lon as index on a 
@@ -217,16 +224,14 @@ def CalcThermal(thermal_map,lat,lon,alt,heading):
       thermal_value = liftL + liftR + liftM
       
       # total roll component 
-      #   Todo: need to account for airplane roll angle
       #         the more airplane is rolled, the less thermal roll effect
       #         if the plane is flying inverted the roll effect should be reversed
-      
-      roll_factor = 1 # calc_roll_factor(current_roll ) -x for inverted
+      roll_factor = math.cos(math.radians(roll_angle))
       roll_value    = (liftR - liftL) * roll_factor
       
       # for debug
-      print "lift > ",str(lat)[5:8]," | ",str(lon)[5:8], thermal_value, roll_value      
-      #print "wing > ",heading,"|", lwingX,lwingY,",",rwingX,rwingY
+      print "lift > ","[",planeX,",",planeY,"] @",'%.0f'%(heading), \
+            ">",'%.1f'%(roll_angle), "T **[",thermal_value, '%.1f'%roll_value ,"]**"
       
       return thermal_value , roll_value
 
@@ -252,7 +257,7 @@ print 'test: print the model'
 aprint(random_model)
 
 print 'test: save the thermal model'
-SaveThermalModel(random_model,'test_random_thermal.csv')
+SaveThermalModel(model,'test_columns_thermal.csv')
 
 print 'test: All tests completed !  '
 '''

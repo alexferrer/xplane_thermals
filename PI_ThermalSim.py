@@ -30,8 +30,8 @@ class PythonInterface:
 	def XPluginStart(self):
 		global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl
 		self.Name = "ThermalSim2"
-		self.Sig =  "SandyBarbour.Python.ThermalSim2"
-		self.Desc = "A plugin that simulates thermals (alpha)"
+		self.Sig =  "AlexFerrer.Python.ThermalSim2"
+		self.Desc = "A plugin that simulates thermals (beta)"
 		
 		#have thermal_model make us a random thermal_model(size,# of thermals) 
 		self.thermal_map = MakeThermalModel(1000,25,200) #size,quantity,diameter

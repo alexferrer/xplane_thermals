@@ -224,7 +224,7 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       rwingY = planeY + int(round(math.sin(angleR)*wingspan))
 
       #Thermal Top: reduce thermal by x% when alt > (cloudbase - 100)       
-      thermal_top = 1500  # in meters! should get this from (model[0][0] for example)
+      thermal_top = 1400  # in meters! should get this from ( model[0][0] for example)
 
       top_factor = 1
       if (thermal_top - alt) < 100:

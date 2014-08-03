@@ -146,6 +146,7 @@ def MakeThermalModel(size,tcount,_diameter):
     model = new_matrix(size,size)
     
     #Todo: read this thermals from a user .cvs file  lat,long, diameter,max lift
+    
     #populate array with fixed thermals
     #make thermal size,lat,lon .. needs max power,
     make_thermal(model,100,3890,7581) #Libmandi
@@ -158,8 +159,8 @@ def MakeThermalModel(size,tcount,_diameter):
     
     
     '''
-    for i in range(0,999):         #for testing use fixed thermal pattern  | 1 |  3  | 0  |  0|
-        for n in range(0,9):
+    for i in range(0,9999):         #for testing use fixed thermal pattern  | 1 |  3  | 0  |  0|
+        for n in range(0,90):
             for p in range(0,30):     
                 model[i][n*100+p] = 1
                 model[i][n*100+31+p] = 3

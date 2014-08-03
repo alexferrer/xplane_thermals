@@ -45,6 +45,9 @@ class PythonInterface:
 		self.PlaneHdg  = XPLMFindDataRef("sim/flightmodel/position/psi") #plane heading
 		self.PlaneRol  = XPLMFindDataRef("sim/flightmodel/position/phi") #plane roll
 		
+		self.WindSpeed = XPLMFindDataRef("sim/weather/wind_speed_kt[0]") #wind speed at surface
+		self.WindDir   = XPLMFindDataRef("sim/weather/wind_direction_degt[0]") #wind direction
+		
 		# variables to inject energy to the plane 
 		self.lift = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
 		self.roll = EasyDref('sim/flightmodel/forces/L_plug_acf', 'float') # wing roll 	
@@ -85,7 +88,9 @@ class PythonInterface:
 		elevation = XPLMGetDataf(self.PlaneElev)
 		heading = XPLMGetDataf(self.PlaneHdg)
 		roll_angle = XPLMGetDataf(self.PlaneRol)
-		
+		wind_speed = XPLMGetDataf(self.WindSpeed)
+		wind_dir = XPLMGetDataf(self.WindDir)
+		print "wind --->s/d ",wind_speed,wind_dir		
 		#Get the lift value of the current position from the thermal matrix
 		lift_val, roll_val  = CalcThermal(self.thermal_map,lat,lon,elevation,heading,roll_angle)	
 		

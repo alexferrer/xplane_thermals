@@ -140,14 +140,18 @@ def MakeThermalModel(size,tcount,_diameter):
     size = 10000 #increased size to 70nm
     model = new_matrix(size,size)
     
+    #Todo: read this thermals from a user .cvs file  lat,long, diameter,max lift
     #populate array with fixed thermals
+    #make thermal size,lat,lon .. needs max power,
     make_thermal(model,100,3890,7581) #Libmandi
     make_thermal(model,50,3994,7666) #SantaMaria
     make_thermal(model,150,3774,7815) #Intersection san bartolo
     make_thermal(model,300,3016,8448) #Interseccion senoritas
     make_thermal(model,350,4647,7516) #trebol de chilca
     make_thermal(model,500,7623,6061) #vor asia
-        
+    #ask21 turn diameter at 60mph = 133m, 80mph = 420m
+    
+    
     '''
     for i in range(0,999):         #for testing use fixed thermal pattern  | 1 |  3  | 0  |  0|
         for n in range(0,9):
@@ -193,19 +197,18 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
        
       '''       
 
-      #bug: will fail when - sign is not present in lat/lon, later change to abs(lat)
-      #     might fail when lon > 99 because of extra digit
-      # Todo: should substract initial lat/long, to center the covered area and 
-      #       solve the problems that - and 3 digit lat/longs create.
-
       '''
        calculate the total lift and roll value :
       '''
       # current plane position  
-      # use 2,3,4 decimals ex: -12.34567 should return : 456
+      # use 2,3,4 decimals ex: -12.34567 should return : 3456
       #     equivalent to 10 x 1120 m2 with a cell resolution of 11m2
       planeX   = int(str(abs(lat-int(lat)))[2:6]) #test: increase area 10x by adding 1 digit [3:6]
       planeY   = int(str(abs(lon-int(lon)))[2:6])
+
+      #Todo winddrift: multiply wind vector * altitude, add to lat,lon      
+      #planeX,planeY   +=  wind_drift(wind, alt)
+
       # left and right wings position from current plane heading
       angleL   = math.radians(heading-90)
       angleR   = math.radians(heading+90)
@@ -220,10 +223,18 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       rwingX = planeX + int(round(math.cos(angleR)*wingspan))
       rwingY = planeY + int(round(math.sin(angleR)*wingspan))
 
+      #Thermal Top: reduce thermal by x% when alt > (cloudbase - 100)       
+      thermal_top = 1500  # in meters! should get this from (model[0][0] for example)
+
+      top_factor = 1
+      if (thermal_top - alt) < 100:
+          top_factor = (thermal_top - alt)/100
+
+
 	  # lift for each area, left tip, right tip and middle.
-      liftL  = thermal_map[ lwingX ][ lwingY ] 
-      liftR  = thermal_map[ rwingX ][ rwingY ] 
-      liftM  = thermal_map[ planeX ][ planeY ] 
+      liftL  = thermal_map[ lwingX ][ lwingY ] * top_factor
+      liftR  = thermal_map[ rwingX ][ rwingY ] * top_factor
+      liftM  = thermal_map[ planeX ][ planeY ] * top_factor
 
       # total lift component
       thermal_value = liftL + liftR + liftM
@@ -236,7 +247,7 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       
       # for debug
       print "pos[",planeX,",",planeY,"] @",'%.0f'%(heading), \
-            ">",'%.1f'%(roll_angle), "T **[",thermal_value,"|", '%.1f'%roll_value ,"]**"
+            ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt
       
       return thermal_value , roll_value
 

@@ -112,6 +112,7 @@ def MakeRandomThermalModel(size,tcount,_diameter):
         size     =  size of model (10m each cell) 
         tcount   =  # of thermals
         diameter = largest thermal diameter
+        model[0][0] = thermal tops altitude
         '''
     model = new_matrix(size,size)
     
@@ -130,6 +131,10 @@ def MakeRandomThermalModel(size,tcount,_diameter):
         make_thermal(model,diameter,x,y)
         
     #aprint(model)       #for debug only 
+    
+    #insert thermal_top altitude into the model for others to use
+    model[0][0] = 1524 # 5000 feet in meters
+
     return model
 
 def MakeThermalModel(size,tcount,_diameter):
@@ -137,7 +142,7 @@ def MakeThermalModel(size,tcount,_diameter):
         populated with fixed position thermals
         note: ignore size,tcount,_diameter
     '''
-    size = 10000 #increased size to 70nm
+    size = 10000 #increased play area to 70nm
     model = new_matrix(size,size)
     
     #Todo: read this thermals from a user .cvs file  lat,long, diameter,max lift
@@ -159,6 +164,8 @@ def MakeThermalModel(size,tcount,_diameter):
                 model[i][n*100+p] = 1
                 model[i][n*100+31+p] = 3
     '''            
+    #insert thermal_top altitude into the model for others to use
+    model[0][0] = 1524 # 5000 feet in meters
     return model
 
 def ReadThermalModel(filename):
@@ -206,14 +213,21 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       planeX   = int(str(abs(lat-int(lat)))[2:6]) #test: increase area 10x by adding 1 digit [3:6]
       planeY   = int(str(abs(lon-int(lon)))[2:6])
 
-      #Todo winddrift: multiply wind vector * altitude, add to lat,lon      
-      #planeX,planeY   +=  wind_drift(wind, alt)
-
+      # winddrift: as the thermal climbs, it is pushed by the prevailing winds
+      #    to account for the drift of the thermal add (wind vector * time to reach altitude) 
+      #    to plane, 
+      wind_speed = 5  # 5 m/s = 11 mph
+      wind_dir   = math.radians(270)  # wind comming from the west
+      climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
+      drift = wind_speed * climb_time / 11 # 11 meters per matrix cell
+      planeX = planeX - int(round(math.cos(wind_dir) * drift ))
+      planeY = planeY - int(round(math.sin(wind_dir) * drift ))
+      
       # left and right wings position from current plane heading
       angleL   = math.radians(heading-90)
       angleR   = math.radians(heading+90)
 
-      wingspan = 7
+      wingspan = 2  #need to check this, 7 meters or 7 clicks of lat long? (70 meters)
       
       # left wing tip coordinates
       lwingX = planeX + int(round(math.cos(angleL)*wingspan))
@@ -223,8 +237,8 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       rwingX = planeX + int(round(math.cos(angleR)*wingspan))
       rwingY = planeY + int(round(math.sin(angleR)*wingspan))
 
-      #Thermal Top: reduce thermal by x% when alt > (cloudbase - 100)       
-      thermal_top = 1400  # in meters! should get this from ( model[0][0] for example)
+      #Thermal Top: gradually reduce thermal strength when alt is getting close to thermal tops
+      thermal_top = thermal_map[0][0]  # altitude in meters! from thermal model[0][0] 
 
       top_factor = 1
       if (thermal_top - alt) < 100:

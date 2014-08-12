@@ -261,8 +261,10 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       roll_value    = (liftR - liftL) * roll_factor
       
       # for debug
-      print "pos[",planeX,",",planeY,"] @",'%.0f'%(heading), \
-            ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt
+      #print "pos[",planeX,",",planeY,"] @",'%.0f'%(heading), \
+      #      ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt
+      
+      #todo: thermals have cycles, begin, middle , end.. and reflect in strength.. 
       
       return thermal_value , roll_value
 

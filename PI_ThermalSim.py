@@ -12,6 +12,8 @@ Thermal simulator  Ver .02
   Author: Alex Ferrer
   License: GPL 
 """
+
+
 from XPLMDefs import *
 from EasyDref import EasyDref
 
@@ -24,6 +26,7 @@ from XPLMDataAccess import *
 from XPLMUtilities import *
 
 from random import randrange
+import math
 
 #for graphics
 from XPLMDisplay import *
@@ -104,11 +107,28 @@ class PythonInterface:
         Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,alt/3.28) #Dew=E/W,Dud=Up/Down,Dns=N/S 
         location2 = [Dew,Dud,Dns, 0, 0, 0]
 
-        locations = [location1,location2] 
+        #Dew,Dud,Dns = XPLMWorldToLocal(-12.3774,-76.7815,300.01/3.28) 
+        #location3 = [Dew,Dud,Dns, 0, 0, 0]
+
+        locations = [location1,location2] #,location3] 
                 
-        for alt in range(1,20):
-            locations.append([Dew,Dud+50*alt,Dns, 0, 0, 0])
-                    
+#-----------------
+        # winddrift: cut&past from thermal_model, for testing.. 
+        #todo: refactor later..
+        wind_speed = 5  # 5 m/s = 11 mph
+        wind_dir   = math.radians(270)  # wind comming from the west
+        
+        for step in range(1,30):
+            alt = 50 * step
+            climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
+            drift = wind_speed * climb_time  
+            dY = int(round(math.cos(wind_dir) * drift )) #east/west drift 
+            dX = -int(round(math.sin(wind_dir) * drift )) #north/south drift
+            locations.append([Dew+dX,Dud+alt,Dns+dY, 0, 0, 0])
+
+    
+#-----------------
+        #print "locations "+str(len(locations))
         XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
         return 1
 

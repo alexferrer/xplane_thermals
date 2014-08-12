@@ -42,16 +42,6 @@ class PythonInterface:
         self.Name = "ThermalSim2"
         self.Sig =  "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"
-           
-        # make a random thermal_model(size,# of thermals) 
-        self.thermal_map = MakeThermalModel(1000,25,200) #size,quantity,diameter
-        self.locations = DrawThermalMap(self.thermal_map)
-
-        #for z in self.thermal_map[0][1] :   #hidden cell with center of thermals..
-        #    self.locations = self.locations + DrawThermal(z[0],z[1]) 
-        #    print "drawthermal(",z[0],z[1],")"
-
-        self.ObjectPath = "lib/dynamic/balloon.obj" 
 
         """ Data refs we want to record."""
         # airplane current flight info
@@ -70,6 +60,21 @@ class PythonInterface:
         # although lift should be enough, some energy has to go as thrust, or the plane
         # might float in the air without moving!
         self.thrust  = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
+
+           
+        # make a random thermal_model(size,# of thermals) 
+        self.thermal_map = MakeThermalModel(1000,25,200) #size,quantity,diameter
+        
+        # get wind and load it into matrix
+        wind_speed = XPLMGetDataf(self.WindSpeed)
+        wind_dir = XPLMGetDataf(self.WindDir)
+        self.thermal_map[0][2] = [wind_speed,wind_dir]  #insert wind vector into matrix 
+        
+        # build object list for drawing
+        self.locations = DrawThermalMap(self.thermal_map)
+
+        self.ObjectPath = "lib/dynamic/balloon.obj" 
+
 
         """
         Register our callback for once a second.  Positive intervals

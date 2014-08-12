@@ -31,17 +31,18 @@ def SaveThermalModel(model,filename):
         writer.writerows(model)
         f.close()
 
-
-
-def DrawThermal(lat,lon): #min_alt,max_alt
+def DrawThermal(lat,lon, windspeed,winddir): #min_alt,max_alt
     ''' make a location list of thermal images along the raising thermal, accounting
         for wind drift along the climb.
     '''
     # winddrift: cut&past from thermal_model, for testing.. 
     alt = 100 # should be the altitude of ground at this point.. 
     #max should be thermal tops
-    wind_speed = 5  # 5 m/s = 11 mph
-    wind_dir   = math.radians(270)  # wind comming from the west
+    wind_speed = windspeed   # 5 m/s = 11 mph
+    wind_dir   = math.radians(winddir)  # wind comming from the west
+    
+    print "wind",wind_speed,wind_dir
+    
     Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,alt/3.28) #Dew=E/W,Dud=Up/Down,Dns=N/S 
     locs = []  #locations 
     for step in range(1,30):
@@ -54,14 +55,16 @@ def DrawThermal(lat,lon): #min_alt,max_alt
     return locs
 
 def DrawThermalMap(thermal_map):
-    ''' make a location list for the drawing of all the thermal objects..'''
+    ''' make a location list for the drawing of all the thermal objects.
+        thermal positionns are hiden in cell [0][1] of the matrix.. for now'''
+    windvector = thermal_map[0][2]
+    windspeed = windvector[0]
+    winddir   = windvector[1]
     locations = []
     for z in thermal_map[0][1] :   #hidden cell with center of thermals..
-        locations = locations + DrawThermal(z[0],z[1]) 
+        locations = locations + DrawThermal(z[0],z[1], windspeed, winddir) 
         #print "drawthermal(",z[0],z[1],")"
     return locations
-
-
 
 
 def new_matrix(rows,cols):
@@ -333,6 +336,4 @@ SaveThermalModel(model,'test_columns_thermal.csv')
 
 print 'test: All tests completed !  '
 '''
-print 'test: save the thermal model'
-print DrawThermal(12.123,76.2356)
 

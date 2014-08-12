@@ -21,6 +21,7 @@ from EasyDref import EasyDref
 from thermal_model import MakeThermalModel
 from thermal_model import CalcThermal
 from thermal_model import DrawThermal
+from thermal_model import DrawThermalMap
 
 from XPLMProcessing import *
 from XPLMDataAccess import *
@@ -42,14 +43,14 @@ class PythonInterface:
         self.Sig =  "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"
            
-        #have thermal_model make us a random thermal_model(size,# of thermals) 
+        # make a random thermal_model(size,# of thermals) 
         self.thermal_map = MakeThermalModel(1000,25,200) #size,quantity,diameter
-        location1 = DrawThermal(-12.3994,-76.7666) 
-        location2 = DrawThermal(-12.3890,-76.7581) 
-        location3 = DrawThermal(-12.3774,-76.7815) 
-        self.locations = location1+location2+location3             
-        
-        #graphic to represent thermal marker in sky
+        self.locations = DrawThermalMap(self.thermal_map)
+
+        #for z in self.thermal_map[0][1] :   #hidden cell with center of thermals..
+        #    self.locations = self.locations + DrawThermal(z[0],z[1]) 
+        #    print "drawthermal(",z[0],z[1],")"
+
         self.ObjectPath = "lib/dynamic/balloon.obj" 
 
         """ Data refs we want to record."""
@@ -105,7 +106,7 @@ class PythonInterface:
         self.LoadObjectCB = self.LoadObject
         XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)
         
-        locations = self.locations    
+        locations = self.locations    #the locations where to draw the objects..
         XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
         return 1
 

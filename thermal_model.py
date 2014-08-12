@@ -34,6 +34,9 @@ def SaveThermalModel(model,filename):
 
 
 def DrawThermal(lat,lon): #min_alt,max_alt
+    ''' make a location list of thermal images along the raising thermal, accounting
+        for wind drift along the climb.
+    '''
     # winddrift: cut&past from thermal_model, for testing.. 
     alt = 100 # should be the altitude of ground at this point.. 
     #max should be thermal tops
@@ -50,6 +53,13 @@ def DrawThermal(lat,lon): #min_alt,max_alt
         locs.append([Dew+dX,Dud+alt,Dns+dY, 0, 0, 0])
     return locs
 
+def DrawThermalMap(thermal_map):
+    ''' make a location list for the drawing of all the thermal objects..'''
+    locations = []
+    for z in thermal_map[0][1] :   #hidden cell with center of thermals..
+        locations = locations + DrawThermal(z[0],z[1]) 
+        #print "drawthermal(",z[0],z[1],")"
+    return locations
 
 
 
@@ -189,9 +199,13 @@ def MakeThermalModel(size,tcount,_diameter):
             for p in range(0,30):     
                 model[i][n*100+p] = 1
                 model[i][n*100+31+p] = 3
-    '''            
+    '''      
+    #nasty hack.. because i am lazy..       
     #insert thermal_top altitude into the model for others to use
+    #insert the thermal centers into cell 0,1
     model[0][0] = 1524 # 5000 feet in meters
+    model[0][1]  = [[-12.3890,-76.7581],[-12.3994,-76.7666],[-12.3774,-76.7815],[-12.3016,-76.8448],[-12.4647,-76.7516],[-12.7623,-76.6061]]
+
     return model
 
 def ReadThermalModel(filename):

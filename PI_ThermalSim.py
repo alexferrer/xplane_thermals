@@ -20,6 +20,7 @@ from EasyDref import EasyDref
 #thermal modeling tools
 from thermal_model import MakeThermalModel
 from thermal_model import CalcThermal
+from thermal_model import DrawThermal
 
 from XPLMProcessing import *
 from XPLMDataAccess import *
@@ -43,6 +44,10 @@ class PythonInterface:
            
         #have thermal_model make us a random thermal_model(size,# of thermals) 
         self.thermal_map = MakeThermalModel(1000,25,200) #size,quantity,diameter
+        location1 = DrawThermal(-12.3994,-76.7666) 
+        location2 = DrawThermal(-12.3890,-76.7581) 
+        location3 = DrawThermal(-12.3774,-76.7815) 
+        self.locations = location1+location2+location3             
         
         #graphic to represent thermal marker in sky
         self.ObjectPath = "lib/dynamic/balloon.obj" 
@@ -94,35 +99,13 @@ class PythonInterface:
         
     # Functions for graphics drawing
     def LoadObject(self, fname, ref):
-        self.Object = XPLMLoadObject(fname)
-        
-    def DrawThermal(self,lat,lon): #min_alt,max_alt
-        # winddrift: cut&past from thermal_model, for testing.. 
-        alt = 100 # should be the altitude of ground at this point.. 
-        #max should be thermal tops
-        wind_speed = 5  # 5 m/s = 11 mph
-        wind_dir   = math.radians(270)  # wind comming from the west
-        Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,alt/3.28) #Dew=E/W,Dud=Up/Down,Dns=N/S 
-        locs = []  #locations 
-        for step in range(1,30):
-            alt = 50 * step
-            climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
-            drift = wind_speed * climb_time  
-            dY = int(round(math.cos(wind_dir) * drift )) #east/west drift 
-            dX = -int(round(math.sin(wind_dir) * drift )) #north/south drift
-            locs.append([Dew+dX,Dud+alt,Dns+dY, 0, 0, 0])
-        return locs
-         
+        self.Object = XPLMLoadObject(fname)        
      
     def DrawObject(self, inPhase, inIsBefore, inRefcon):
         self.LoadObjectCB = self.LoadObject
         XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)
         
-        location1 = self.DrawThermal(-12.3994,-76.7666) 
-        location2 = self.DrawThermal(-12.3890,-76.7581) 
-        location3 = self.DrawThermal(-12.3774,-76.7815) 
-        locations = location1+location2+location3             
-    
+        locations = self.locations    
         XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
         return 1
 

@@ -10,6 +10,10 @@ from random import randrange
 import math
 import csv
 
+#for graphics
+#from XPLMDisplay import *
+#from XPLMScenery import *
+from XPLMGraphics import * 
 
 def printa(a):
     print a
@@ -26,6 +30,27 @@ def SaveThermalModel(model,filename):
         writer = csv.writer(f)
         writer.writerows(model)
         f.close()
+
+
+
+def DrawThermal(lat,lon): #min_alt,max_alt
+    # winddrift: cut&past from thermal_model, for testing.. 
+    alt = 100 # should be the altitude of ground at this point.. 
+    #max should be thermal tops
+    wind_speed = 5  # 5 m/s = 11 mph
+    wind_dir   = math.radians(270)  # wind comming from the west
+    Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,alt/3.28) #Dew=E/W,Dud=Up/Down,Dns=N/S 
+    locs = []  #locations 
+    for step in range(1,30):
+        alt = 50 * step
+        climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
+        drift = wind_speed * climb_time  
+        dY = int(round(math.cos(wind_dir) * drift )) #east/west drift 
+        dX = -int(round(math.sin(wind_dir) * drift )) #north/south drift
+        locs.append([Dew+dX,Dud+alt,Dns+dY, 0, 0, 0])
+    return locs
+
+
 
 
 
@@ -294,3 +319,6 @@ SaveThermalModel(model,'test_columns_thermal.csv')
 
 print 'test: All tests completed !  '
 '''
+print 'test: save the thermal model'
+print DrawThermal(12.123,76.2356)
+

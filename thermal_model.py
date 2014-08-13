@@ -16,15 +16,6 @@ import csv
 #from XPLMScenery import *
 from XPLMGraphics import * 
 
-def printa(a):
-    print a
-
-#helper to print the array to the console
-def aprint(array):
-    print " ************ printing thermal array *********"
-    map(printa,array)
-    print "-----------------      Done    ----------------"
-
 #helper to save a thermal model as .csv file
 def SaveThermalModel(model,filename):
     with open(filename, "wb") as f:
@@ -54,10 +45,6 @@ def DrawThermalMap(thermal_map):
 
     return locations
 
-
-def new_matrix(rows,cols):
-    ''' initialize a matrix of zeros of size row x col''' 
-    return [[0 for col in range(cols)] for row in range(rows)]
 
 def left(x,y):
     return x,y+1
@@ -143,7 +130,7 @@ def MakeRandomThermalModel(size,tcount,_diameter):
         diameter = largest thermal diameter
         model[0][0] = thermal tops altitude
         '''
-    model = new_matrix(size,size)
+    model = world.thermal_map
     
     #populate array with tcount random thermals
     for i in range(tcount):
@@ -166,8 +153,7 @@ def MakeThermalModel(size,tcount,_diameter):
         populated with fixed position thermals
         note: ignore size,tcount,_diameter
     '''
-    size = 10000 #increased play area to 70nm
-    model = new_matrix(size,size)
+    model = world.thermal_map
     
     #Todo: read this thermals from a user .cvs file  lat,long, diameter,max lift
     
@@ -184,8 +170,7 @@ def ReadThermalModel(filename):
         previously populated with thermals.
         Note: place the file on the Xplane root directory
     '''
-    size = 1000
-    model = new_matrix(size,size)
+    model = world.thermal_map
     
     print "reading thermal model ... "
     with open(filename, "r") as f:

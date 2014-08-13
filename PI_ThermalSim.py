@@ -52,7 +52,7 @@ class PythonInterface:
         XPLMAppendMenuItem(self.myMenu, "Toggle thermal visibility", toggleThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Random Thermals", randomThermal, 1)
         
-        
+        self.ThermalsVisible = True
         
         
         
@@ -119,6 +119,9 @@ class PythonInterface:
         self.Object = XPLMLoadObject(fname)        
      
     def DrawObject(self, inPhase, inIsBefore, inRefcon):
+        if not self.ThermalsVisible :  # exit if visibility is off !
+            return 1
+    
         self.LoadObjectCB = self.LoadObject
         XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)  
         
@@ -172,7 +175,8 @@ class PythonInterface:
 
     def MyMenuHandlerCallback(self, inMenuRef, inItemRef):
             if (inItemRef == toggleThermal):
-                print " you pressed toggle thermal"
+                self.ThermalsVisible = not self.ThermalsVisible
+                print " you pressed toggle thermal", self.ThermalsVisible
             
             if (inItemRef == randomThermal):
                 print "you pressed random Thermal"

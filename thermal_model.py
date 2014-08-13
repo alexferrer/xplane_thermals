@@ -48,11 +48,8 @@ def DrawThermal(lat,lon): #min_alt,max_alt
     return locs
 
 def DrawThermalMap(thermal_map):
-    ''' make a location list for the drawing of all the thermal objects.
-        thermal positionns are hiden in cell [0][1] of the matrix.. for now'''
     locations = []
-
-    for lat,lon in thermal_map[0][1] :   #hidden cell with center of thermals..
+    for lat,lon,size in world.thermal_list :   
         locations = locations + DrawThermal(lat,lon) 
 
     return locations
@@ -123,12 +120,15 @@ def gen_simple_lift(n,size):
     lift = max_lift - int(layer*spread)
     return lift
 
-def make_thermal(matrix,size,x,y):
+def make_thermal(matrix,size,lat,lon):
     ''' insert a thermal into the thermal matrix
         size = diameter of thermal
         x,y  = center
         if a lift already exists on [x,y], add new value to it
     '''
+    x   = int(str(abs(lat-int(lat)))[2:6]) #test: increase area 10x by adding 1 digit [3:6]
+    y   = int(str(abs(lon-int(lon)))[2:6])
+
     for i in gen_points(size*size):
         x1,y1 = i[1]  # x,y coord
         n = i[0]      # cell number
@@ -171,19 +171,11 @@ def MakeThermalModel(size,tcount,_diameter):
     
     #Todo: read this thermals from a user .cvs file  lat,long, diameter,max lift
     
-    #populate array with fixed thermals
-    #make thermal size,lat,lon .. needs max power,
-    make_thermal(model,100,3890,7581) #Libmandi
-    make_thermal(model,50,3994,7666) #SantaMaria
-    make_thermal(model,150,3774,7815) #Intersection san bartolo
-    make_thermal(model,300,3016,8448) #Interseccion senoritas
-    make_thermal(model,350,4647,7516) #trebol de chilca
-    make_thermal(model,500,7623,6061) #vor asia
-    #ask21 turn diameter at 60mph = 133m, 80mph = 420m
+    #populate thermal map with thermals from a list on world file
+    for lat,lon,size in world.thermal_list :   
+        make_thermal(model,size,lat,lon)
 
-    #nasty hack.. because i am lazy..       
-    #insert the thermal centers into cell 0,1
-    model[0][1]  = [[-12.3890,-76.7581],[-12.3994,-76.7666],[-12.3774,-76.7815],[-12.3016,-76.8448],[-12.4647,-76.7516],[-12.7623,-76.6061]]
+    #ask21 turn diameter at 60mph = 133m, 80mph = 420m
 
     return model
 

@@ -191,20 +191,13 @@ def MakeThermalModel(size,tcount,_diameter):
     make_thermal(model,350,4647,7516) #trebol de chilca
     make_thermal(model,500,7623,6061) #vor asia
     #ask21 turn diameter at 60mph = 133m, 80mph = 420m
-    
-    
-    '''
-    for i in range(0,9999):         #for testing use fixed thermal pattern  | 1 |  3  | 0  |  0|
-        for n in range(0,90):
-            for p in range(0,30):     
-                model[i][n*100+p] = 1
-                model[i][n*100+31+p] = 3
-    '''      
+
     #nasty hack.. because i am lazy..       
     #insert thermal_top altitude into the model for others to use
-    #insert the thermal centers into cell 0,1
     model[0][0] = 1524 # 5000 feet in meters
+    #insert the thermal centers into cell 0,1
     model[0][1]  = [[-12.3890,-76.7581],[-12.3994,-76.7666],[-12.3774,-76.7815],[-12.3016,-76.8448],[-12.4647,-76.7516],[-12.7623,-76.6061]]
+    #insert wind
     model[0][2] = [0,0] # wind 0 from north
 
     return model

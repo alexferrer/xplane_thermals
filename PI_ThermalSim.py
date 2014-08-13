@@ -8,6 +8,7 @@ Thermal simulator  Ver .02
   the lift & roll values. 
   
   This version works.
+  use the menu to toggle thermal visibility on/off
   
   Author: Alex Ferrer
   License: GPL 

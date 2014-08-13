@@ -10,18 +10,26 @@ import world
 from random import randrange
 import math
 import csv
-
-#for graphics
-#from XPLMDisplay import *
-#from XPLMScenery import *
 from XPLMGraphics import * 
 
-#helper to save a thermal model as .csv file
+# helpers to save/read a thermal model as .csv file
 def SaveThermalModel(model,filename):
     with open(filename, "wb") as f:
         writer = csv.writer(f)
         writer.writerows(model)
         f.close()
+
+def ReadThermalModel(filename):
+    ''' read a thermal model from an external .cvs file
+        previously populated with thermals.
+        Note: place the file on the Xplane root directory
+    '''
+    model = world.thermal_map
+    print "reading thermal model ... "
+    with open(filename, "r") as f:
+        model = list(map(int,rec) for rec in csv.reader(f, delimiter=',')) 
+    return model
+
 
 def DrawThermal(lat,lon): #min_alt,max_alt
     ''' make a location list of thermal images along the raising thermal, accounting
@@ -45,6 +53,7 @@ def DrawThermalMap(thermal_map):
 
     return locations
 
+'''------- stuf tow populate thermals ---------------'''
 
 def left(x,y):
     return x,y+1
@@ -107,6 +116,7 @@ def gen_simple_lift(n,size):
     lift = max_lift - int(layer*spread)
     return lift
 
+
 def make_thermal(matrix,size,lat,lon):
     ''' insert a thermal into the thermal matrix
         size = diameter of thermal
@@ -122,18 +132,19 @@ def make_thermal(matrix,size,lat,lon):
         matrix[x+x1][y+y1] += gen_simple_lift(n,size) 
 
 
-def MakeRandomThermalModel(size,tcount,_diameter):
+def MakeRandomThermalModel(tcount,_diameter):
     ''' return an array representing an area of Size x Size
         populated with random thermals
-        size     =  size of model (10m each cell) 
         tcount   =  # of thermals
         diameter = largest thermal diameter
         model[0][0] = thermal tops altitude
         '''
-    model = world.thermal_map
-    
+    model = [[0 for col in range(world.map_size)] for row in range(world.map_size)] #start with a thermal map from scratch
+    size = world.map_size   
     #populate array with tcount random thermals
+    tlist = []
     for i in range(tcount):
+
         diameter = randrange(_diameter/2,_diameter) #random diameter of thermal
         rad = diameter/2
         # each . = 11m,  between 44m ~ 550mm
@@ -144,8 +155,19 @@ def MakeRandomThermalModel(size,tcount,_diameter):
         #random model:
         x,y = randrange(rad,size-rad),randrange(rad,size-rad) #random center far from edge
         
-        make_thermal(model,diameter,x,y)
- 
+        #account for lat/lon negatives
+        if world.lat_origin < 0:
+           x = -1 * x
+        if world.lon_origin < 0:
+           y = -1 * y
+           
+        lat = world.lat_origin + (x * .0001 )
+        lon = world.lon_origin + (y * .0001 )
+        make_thermal(model,diameter,lat,lon)
+        tlist.append([lat,lon,diameter])
+        
+    world.thermal_list  = tlist
+    print  "wtllist",world.thermal_list
     return model
 
 def MakeThermalModel(size,tcount,_diameter):
@@ -165,18 +187,6 @@ def MakeThermalModel(size,tcount,_diameter):
 
     return model
 
-def ReadThermalModel(filename):
-    ''' read a thermal model from an external .cvs file
-        previously populated with thermals.
-        Note: place the file on the Xplane root directory
-    '''
-    model = world.thermal_map
-    
-    print "reading thermal model ... "
-    with open(filename, "r") as f:
-        model = list(map(int,rec) for rec in csv.reader(f, delimiter=',')) 
-
-    return model
 
 
 def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):

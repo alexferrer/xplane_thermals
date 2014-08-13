@@ -34,7 +34,7 @@ lon_origin = -76.00
 '''
 wind_speed = 0  # m/s
 wind_dir = 0    # radians
-wind_changed = False # toggle on wind change
+world_update = False # toggle on wind change
 
 
 '''

@@ -20,6 +20,7 @@ from EasyDref import EasyDref
 
 #thermal modeling tools
 from thermal_model import MakeThermalModel
+from thermal_model import MakeRandomThermalModel
 from thermal_model import CalcThermal
 from thermal_model import DrawThermal
 from thermal_model import DrawThermalMap
@@ -69,7 +70,7 @@ class PythonInterface:
         
         self.WindSpeed = XPLMFindDataRef("sim/weather/wind_speed_kt[0]") #wind speed at surface
         self.WindDir   = XPLMFindDataRef("sim/weather/wind_direction_degt[0]") #wind direction
-        world.wind_changed = True
+        world.world_update = True
         
         # variables to inject energy to the plane 
         self.lift = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
@@ -80,7 +81,8 @@ class PythonInterface:
 
            
         # make a random thermal_model(size,# of thermals) 
-        self.thermal_map = MakeThermalModel(1000,25,200) #size,quantity,diameter
+        #self.thermal_map = MakeThermalModel(25,200) #quantity,diameter
+        self.thermal_map = MakeRandomThermalModel(45,200) # quantity,diameter
         # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj" 
         
@@ -125,9 +127,9 @@ class PythonInterface:
         XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)  
         
         # build object list for drawing
-        if world.wind_changed :
+        if world.world_update :
            self.locations = DrawThermalMap(self.thermal_map)   #the locations where to draw the objects..
-           world.wind_changed = False
+           world.world_update = False
            
         locations = self.locations
         XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
@@ -141,14 +143,14 @@ class PythonInterface:
         elevation = XPLMGetDataf(self.PlaneElev)
         heading = XPLMGetDataf(self.PlaneHdg)
         roll_angle = XPLMGetDataf(self.PlaneRol)
-        wind_speed = XPLMGetDataf(self.WindSpeed)*0.5144 # Knots to m/s
-        wind_dir = math.radians( XPLMGetDataf(self.WindDir) ) # Degrees to radians
+        wind_speed = round(XPLMGetDataf(self.WindSpeed)*0.5144,3)      # Knots to m/s
+        wind_dir = round(math.radians( XPLMGetDataf(self.WindDir) ),3) # Degrees to radians
 
         #keep up with wind changes
         if [wind_speed,wind_dir] <>  [world.wind_speed,world.wind_dir] :
             [world.wind_speed,world.wind_dir] = [wind_speed,wind_dir]  #insert wind vector into matrix 
-            world.wind_changed = True
-            print "a wind change has happened",wind_speed,wind_dir
+            world.world_update = True
+            print "wind change has happened",wind_speed,world.wind_speed,wind_dir,world.wind_dir
         
         #Get the lift value of the current position from the thermal matrix
         lift_val, roll_val  = CalcThermal(self.thermal_map,lat,lon,elevation,heading,roll_angle)    
@@ -179,5 +181,7 @@ class PythonInterface:
                 print " you pressed toggle thermal", world.thermals_visible
             
             if (inItemRef == randomThermal):
-                print "you pressed random Thermal"
+                self.thermal_map = MakeRandomThermalModel(45,200)
+                world.world_update = True
+                print "Update thermal map"
                 pass        

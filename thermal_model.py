@@ -31,22 +31,14 @@ def SaveThermalModel(model,filename):
         writer.writerows(model)
         f.close()
 
-def DrawThermal(lat,lon, windspeed,winddir): #min_alt,max_alt
+def DrawThermal(lat,lon, wind_speed,wind_dir,thermal_top): #min_alt,max_alt
     ''' make a location list of thermal images along the raising thermal, accounting
-        for wind drift along the climb.
+        for wind drift along the climb. end at thermal tops
     '''
-    # winddrift: cut&past from thermal_model, for testing.. 
-    alt = 100 # should be the altitude of ground at this point.. 
-    #max should be thermal tops
-    wind_speed = windspeed   # 5 m/s = 11 mph
-    wind_dir   = math.radians(winddir)  # wind comming from the west
-    
-    #print "wind",wind_speed,wind_dir
-    
-    Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,alt/3.28) #Dew=E/W,Dud=Up/Down,Dns=N/S 
+    base = 1
+    Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,0) #Dew=E/W,Dud=Up/Down,Dns=N/S 
     locs = []  #locations 
-    for step in range(1,30):
-        alt = 50 * step
+    for alt in range(base,thermal_top,100): #from 100 to thermal top by 100
         climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
         drift = wind_speed * climb_time  
         dY = int(round(math.cos(wind_dir) * drift )) #east/west drift 
@@ -57,13 +49,18 @@ def DrawThermal(lat,lon, windspeed,winddir): #min_alt,max_alt
 def DrawThermalMap(thermal_map):
     ''' make a location list for the drawing of all the thermal objects.
         thermal positionns are hiden in cell [0][1] of the matrix.. for now'''
+    thermal_top = thermal_map[0][0]
     windvector = thermal_map[0][2]
     windspeed = windvector[0]
-    winddir   = windvector[1]
+    winddir   = math.radians( windvector[1] )
     locations = []
-    for z in thermal_map[0][1] :   #hidden cell with center of thermals..
-        locations = locations + DrawThermal(z[0],z[1], windspeed, winddir) 
-        #print "drawthermal(",z[0],z[1],")"
+    #for z in thermal_map[0][1] :   #hidden cell with center of thermals..
+    #    locations = locations + DrawThermal(z[0],z[1], windspeed, winddir,thermal_top) 
+
+    for lat,lon in thermal_map[0][1] :   #hidden cell with center of thermals..
+        locations = locations + DrawThermal(lat,lon, windspeed, winddir,thermal_top) 
+
+
     return locations
 
 
@@ -260,8 +257,12 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       # winddrift: as the thermal climbs, it is pushed by the prevailing winds
       #    to account for the drift of the thermal add (wind vector * time to reach altitude) 
       #    to plane, 
-      wind_speed = 5  # 5 m/s = 11 mph
-      wind_dir   = math.radians(270)  # wind comming from the west
+      windvector = thermal_map[0][2]
+      wind_speed = windvector[0]
+      wind_dir   = math.radians( windvector[1] )
+
+      #wind_speed = 5  # 5 m/s = 11 mph
+      #wind_dir   = math.radians(270)  # wind comming from the west
       climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
       drift = wind_speed * climb_time / 11 # 11 meters per matrix cell
       planeX = planeX - int(round(math.cos(wind_dir) * drift ))

@@ -41,7 +41,7 @@ def DrawThermal(lat,lon, windspeed,winddir): #min_alt,max_alt
     wind_speed = windspeed   # 5 m/s = 11 mph
     wind_dir   = math.radians(winddir)  # wind comming from the west
     
-    print "wind",wind_speed,wind_dir
+    #print "wind",wind_speed,wind_dir
     
     Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,alt/3.28) #Dew=E/W,Dud=Up/Down,Dns=N/S 
     locs = []  #locations 
@@ -208,6 +208,7 @@ def MakeThermalModel(size,tcount,_diameter):
     #insert the thermal centers into cell 0,1
     model[0][0] = 1524 # 5000 feet in meters
     model[0][1]  = [[-12.3890,-76.7581],[-12.3994,-76.7666],[-12.3774,-76.7815],[-12.3016,-76.8448],[-12.4647,-76.7516],[-12.7623,-76.6061]]
+    model[0][2] = [0,0] # wind 0 from north
 
     return model
 

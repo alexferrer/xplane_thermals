@@ -53,6 +53,7 @@ class PythonInterface:
         
         self.WindSpeed = XPLMFindDataRef("sim/weather/wind_speed_kt[0]") #wind speed at surface
         self.WindDir   = XPLMFindDataRef("sim/weather/wind_direction_degt[0]") #wind direction
+        self.WindFlag  = True
         
         # variables to inject energy to the plane 
         self.lift = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
@@ -64,17 +65,10 @@ class PythonInterface:
            
         # make a random thermal_model(size,# of thermals) 
         self.thermal_map = MakeThermalModel(1000,25,200) #size,quantity,diameter
-        
-        # get wind and load it into matrix
-        wind_speed = XPLMGetDataf(self.WindSpeed)
-        wind_dir = XPLMGetDataf(self.WindDir)
-        self.thermal_map[0][2] = [wind_speed,wind_dir]  #insert wind vector into matrix 
-        
-        # build object list for drawing
-        self.locations = DrawThermalMap(self.thermal_map)
-
+        # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj" 
-
+        
+        self.locations = DrawThermalMap(self.thermal_map) 
 
         """
         Register our callback for once a second.  Positive intervals
@@ -109,9 +103,14 @@ class PythonInterface:
      
     def DrawObject(self, inPhase, inIsBefore, inRefcon):
         self.LoadObjectCB = self.LoadObject
-        XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)
+        XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)  
         
-        locations = self.locations    #the locations where to draw the objects..
+        # build object list for drawing
+        if self.WindFlag :
+           self.locations = DrawThermalMap(self.thermal_map)   #the locations where to draw the objects..
+           self.WindFlag = False
+           
+        locations = self.locations
         XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
         return 1
 
@@ -123,9 +122,14 @@ class PythonInterface:
         elevation = XPLMGetDataf(self.PlaneElev)
         heading = XPLMGetDataf(self.PlaneHdg)
         roll_angle = XPLMGetDataf(self.PlaneRol)
-        wind_speed = XPLMGetDataf(self.WindSpeed)
+        wind_speed = XPLMGetDataf(self.WindSpeed)*0.5144 #Knots to m/s
         wind_dir = XPLMGetDataf(self.WindDir)
-        #print "wind --->s/d ",wind_speed,wind_dir        
+
+        if [wind_speed,wind_dir] <>  self.thermal_map[0][2] :
+            self.thermal_map[0][2] = [wind_speed,wind_dir]  #insert wind vector into matrix 
+            self.WindFlag = True
+            print "a wind change has happened",wind_speed,wind_dir
+        
         #Get the lift value of the current position from the thermal matrix
         lift_val, roll_val  = CalcThermal(self.thermal_map,lat,lon,elevation,heading,roll_angle)    
         

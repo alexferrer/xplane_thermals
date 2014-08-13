@@ -6,6 +6,7 @@
       assorted helper & debug functions
 '''
 
+import world
 from random import randrange
 import math
 import csv
@@ -31,35 +32,28 @@ def SaveThermalModel(model,filename):
         writer.writerows(model)
         f.close()
 
-def DrawThermal(lat,lon, wind_speed,wind_dir,thermal_top): #min_alt,max_alt
+def DrawThermal(lat,lon): #min_alt,max_alt
     ''' make a location list of thermal images along the raising thermal, accounting
         for wind drift along the climb. end at thermal tops
     '''
     base = 1
     Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,0) #Dew=E/W,Dud=Up/Down,Dns=N/S 
     locs = []  #locations 
-    for alt in range(base,thermal_top,100): #from 100 to thermal top by 100
+    for alt in range(base,world.thermal_tops,100): #from 100 to thermal top by 100
         climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
-        drift = wind_speed * climb_time  
-        dY = int(round(math.cos(wind_dir) * drift )) #east/west drift 
-        dX = -int(round(math.sin(wind_dir) * drift )) #north/south drift
+        drift = world.wind_speed * climb_time  
+        dY = int(round(math.cos(world.wind_dir) * drift )) #east/west drift 
+        dX = -int(round(math.sin(world.wind_dir) * drift )) #north/south drift
         locs.append([Dew+dX,Dud+alt,Dns+dY, 0, 0, 0])
     return locs
 
 def DrawThermalMap(thermal_map):
     ''' make a location list for the drawing of all the thermal objects.
         thermal positionns are hiden in cell [0][1] of the matrix.. for now'''
-    thermal_top = thermal_map[0][0]
-    windvector = thermal_map[0][2]
-    windspeed = windvector[0]
-    winddir   = math.radians( windvector[1] )
     locations = []
-    #for z in thermal_map[0][1] :   #hidden cell with center of thermals..
-    #    locations = locations + DrawThermal(z[0],z[1], windspeed, winddir,thermal_top) 
 
     for lat,lon in thermal_map[0][1] :   #hidden cell with center of thermals..
-        locations = locations + DrawThermal(lat,lon, windspeed, winddir,thermal_top) 
-
+        locations = locations + DrawThermal(lat,lon) 
 
     return locations
 
@@ -164,12 +158,7 @@ def MakeRandomThermalModel(size,tcount,_diameter):
         x,y = randrange(rad,size-rad),randrange(rad,size-rad) #random center far from edge
         
         make_thermal(model,diameter,x,y)
-        
-    #aprint(model)       #for debug only 
-    
-    #insert thermal_top altitude into the model for others to use
-    model[0][0] = 1524 # 5000 feet in meters
-
+ 
     return model
 
 def MakeThermalModel(size,tcount,_diameter):
@@ -193,12 +182,8 @@ def MakeThermalModel(size,tcount,_diameter):
     #ask21 turn diameter at 60mph = 133m, 80mph = 420m
 
     #nasty hack.. because i am lazy..       
-    #insert thermal_top altitude into the model for others to use
-    model[0][0] = 1524 # 5000 feet in meters
     #insert the thermal centers into cell 0,1
     model[0][1]  = [[-12.3890,-76.7581],[-12.3994,-76.7666],[-12.3774,-76.7815],[-12.3016,-76.8448],[-12.4647,-76.7516],[-12.7623,-76.6061]]
-    #insert wind
-    model[0][2] = [0,0] # wind 0 from north
 
     return model
 
@@ -250,16 +235,11 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       # winddrift: as the thermal climbs, it is pushed by the prevailing winds
       #    to account for the drift of the thermal add (wind vector * time to reach altitude) 
       #    to plane, 
-      windvector = thermal_map[0][2]
-      wind_speed = windvector[0]
-      wind_dir   = math.radians( windvector[1] )
 
-      #wind_speed = 5  # 5 m/s = 11 mph
-      #wind_dir   = math.radians(270)  # wind comming from the west
       climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
-      drift = wind_speed * climb_time / 11 # 11 meters per matrix cell
-      planeX = planeX - int(round(math.cos(wind_dir) * drift ))
-      planeY = planeY - int(round(math.sin(wind_dir) * drift ))
+      drift = world.wind_speed * climb_time / 11 # 11 meters per matrix cell
+      planeX = planeX - int(round(math.cos(world.wind_dir) * drift ))
+      planeY = planeY - int(round(math.sin(world.wind_dir) * drift ))
       
       # left and right wings position from current plane heading
       angleL   = math.radians(heading-90)
@@ -275,13 +255,10 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       rwingX = planeX + int(round(math.cos(angleR)*wingspan))
       rwingY = planeY + int(round(math.sin(angleR)*wingspan))
 
-      #Thermal Top: gradually reduce thermal strength when alt is getting close to thermal tops
-      thermal_top = thermal_map[0][0]  # altitude in meters! from thermal model[0][0] 
-
+      #Thermal Top: gradually reduce thermal strength when alt is getting close to 10% of thermal tops
       top_factor = 1
-      if (thermal_top - alt) < 100:
-          top_factor = (thermal_top - alt)/100
-
+      if (world.thermal_tops - alt) < 100:
+          top_factor = ( world.thermal_tops - alt)/100
 
 	  # lift for each area, left tip, right tip and middle.
       liftL  = thermal_map[ lwingX ][ lwingY ] * top_factor
@@ -308,6 +285,8 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
 
 # ----- begin test code --------
 '''
+***Warning**** Tests are out of sync... 
+
 print 'test: make a thermal model size (1000x1000) with 10 random termals of avg diameter 200'
 model  = MakeThermalModel(1000,20,200) 
 

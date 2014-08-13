@@ -13,6 +13,7 @@ Thermal simulator  Ver .02
   License: GPL 
 """
 
+import world
 
 from XPLMDefs import *
 from EasyDref import EasyDref
@@ -52,9 +53,7 @@ class PythonInterface:
         XPLMAppendMenuItem(self.myMenu, "Toggle thermal visibility", toggleThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Random Thermals", randomThermal, 1)
         
-        self.ThermalsVisible = True
-        
-        
+        world.thermals_visible = True
         
         self.Name = "ThermalSim2"
         self.Sig =  "AlexFerrer.Python.ThermalSim2"
@@ -70,7 +69,7 @@ class PythonInterface:
         
         self.WindSpeed = XPLMFindDataRef("sim/weather/wind_speed_kt[0]") #wind speed at surface
         self.WindDir   = XPLMFindDataRef("sim/weather/wind_direction_degt[0]") #wind direction
-        self.WindFlag  = True
+        world.wind_changed = True
         
         # variables to inject energy to the plane 
         self.lift = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
@@ -119,16 +118,16 @@ class PythonInterface:
         self.Object = XPLMLoadObject(fname)        
      
     def DrawObject(self, inPhase, inIsBefore, inRefcon):
-        if not self.ThermalsVisible :  # exit if visibility is off !
+        if not world.thermals_visible :  # exit if visibility is off !
             return 1
     
         self.LoadObjectCB = self.LoadObject
         XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)  
         
         # build object list for drawing
-        if self.WindFlag :
+        if world.wind_changed :
            self.locations = DrawThermalMap(self.thermal_map)   #the locations where to draw the objects..
-           self.WindFlag = False
+           world.wind_changed = False
            
         locations = self.locations
         XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
@@ -142,12 +141,13 @@ class PythonInterface:
         elevation = XPLMGetDataf(self.PlaneElev)
         heading = XPLMGetDataf(self.PlaneHdg)
         roll_angle = XPLMGetDataf(self.PlaneRol)
-        wind_speed = XPLMGetDataf(self.WindSpeed)*0.5144 #Knots to m/s
-        wind_dir = XPLMGetDataf(self.WindDir)
+        wind_speed = XPLMGetDataf(self.WindSpeed)*0.5144 # Knots to m/s
+        wind_dir = math.radians( XPLMGetDataf(self.WindDir) ) # Degrees to radians
 
-        if [wind_speed,wind_dir] <>  self.thermal_map[0][2] :
-            self.thermal_map[0][2] = [wind_speed,wind_dir]  #insert wind vector into matrix 
-            self.WindFlag = True
+        #keep up with wind changes
+        if [wind_speed,wind_dir] <>  [world.wind_speed,world.wind_dir] :
+            [world.wind_speed,world.wind_dir] = [wind_speed,wind_dir]  #insert wind vector into matrix 
+            world.wind_changed = True
             print "a wind change has happened",wind_speed,wind_dir
         
         #Get the lift value of the current position from the thermal matrix
@@ -166,7 +166,7 @@ class PythonInterface:
         # adding a bit of thrust works much better! -150 = 1m/s
         tval = self.thrust.value
         self.thrust.value = -80 * lift_val + tval    #100
-
+        #apply a roll to the plane 
         rval = roll_val * 3000 + self.roll.value #5000
         self.roll.value = rval
         
@@ -175,8 +175,8 @@ class PythonInterface:
 
     def MyMenuHandlerCallback(self, inMenuRef, inItemRef):
             if (inItemRef == toggleThermal):
-                self.ThermalsVisible = not self.ThermalsVisible
-                print " you pressed toggle thermal", self.ThermalsVisible
+                world.thermals_visible = not world.thermals_visible
+                print " you pressed toggle thermal", world.thermals_visible
             
             if (inItemRef == randomThermal):
                 print "you pressed random Thermal"

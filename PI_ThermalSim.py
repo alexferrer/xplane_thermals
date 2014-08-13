@@ -35,10 +35,27 @@ from XPLMDisplay import *
 from XPLMScenery import *
 from XPLMGraphics import * 
 
+#for menus
+from XPLMMenus import *
+toggleThermal = 1
+randomThermal = 2
+
 
 class PythonInterface:
     def XPluginStart(self):
         global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl
+        
+        global myMenu
+        mySubMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "Python - Thermals 1", 0, 1)
+        self.MyMenuHandlerCB = self.MyMenuHandlerCallback
+        self.myMenu = XPLMCreateMenu(self, "Thremals1", XPLMFindPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB,   0)
+        XPLMAppendMenuItem(self.myMenu, "Toggle thermal visibility", toggleThermal, 1)
+        XPLMAppendMenuItem(self.myMenu, "Random Thermals", randomThermal, 1)
+        
+        
+        
+        
+        
         self.Name = "ThermalSim2"
         self.Sig =  "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"
@@ -152,4 +169,11 @@ class PythonInterface:
         
         # set the next callback time in +n for # of seconds and -n for # of Frames
         return .01 # works good on my (pretty fast) machine..
-        
+
+    def MyMenuHandlerCallback(self, inMenuRef, inItemRef):
+            if (inItemRef == toggleThermal):
+                print " you pressed toggle thermal"
+            
+            if (inItemRef == randomThermal):
+                print "you pressed random Thermal"
+                pass        

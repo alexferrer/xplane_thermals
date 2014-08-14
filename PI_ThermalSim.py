@@ -41,6 +41,7 @@ from XPLMGraphics import *
 from XPLMMenus import *
 toggleThermal = 1
 randomThermal = 2
+defaultThermal = 3
 
 
 class PythonInterface:
@@ -48,11 +49,13 @@ class PythonInterface:
         global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl
         
         global myMenu
-        mySubMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "Python - Thermals 1", 0, 1)
+        mySubMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "Thermal Simulator", 0, 1)
         self.MyMenuHandlerCB = self.MyMenuHandlerCallback
-        self.myMenu = XPLMCreateMenu(self, "Thremals1", XPLMFindPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB,   0)
-        XPLMAppendMenuItem(self.myMenu, "Toggle thermal visibility", toggleThermal, 1)
-        XPLMAppendMenuItem(self.myMenu, "Random Thermals", randomThermal, 1)
+        self.myMenu = XPLMCreateMenu(self, "Thermals", XPLMFindPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB,   0)
+        XPLMAppendMenuItem(self.myMenu, "Toggle Thermal visibility", toggleThermal, 1)
+        XPLMAppendMenuItem(self.myMenu, "Randomize Thermals", randomThermal, 1)
+        XPLMAppendMenuItem(self.myMenu, "Default Thermals", defaultThermal, 1)
+
         
         world.thermals_visible = True
         
@@ -81,12 +84,12 @@ class PythonInterface:
 
            
         # make a random thermal_model(size,# of thermals) 
-        #self.thermal_map = MakeThermalModel(25,200) #quantity,diameter
-        self.thermal_map = MakeRandomThermalModel(45,200) # quantity,diameter
+        world.thermal_map = MakeThermalModel(25,200) #quantity,diameter
+        #world.thermal_map = MakeRandomThermalModel(90,300) # quantity,diameter
         # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj" 
         
-        self.locations = DrawThermalMap(self.thermal_map) 
+        self.locations = DrawThermalMap() 
 
         """
         Register our callback for once a second.  Positive intervals
@@ -128,7 +131,7 @@ class PythonInterface:
         
         # build object list for drawing
         if world.world_update :
-           self.locations = DrawThermalMap(self.thermal_map)   #the locations where to draw the objects..
+           self.locations = DrawThermalMap()   #get the locations where to draw the objects..
            world.world_update = False
            
         locations = self.locations
@@ -143,17 +146,17 @@ class PythonInterface:
         elevation = XPLMGetDataf(self.PlaneElev)
         heading = XPLMGetDataf(self.PlaneHdg)
         roll_angle = XPLMGetDataf(self.PlaneRol)
-        wind_speed = round(XPLMGetDataf(self.WindSpeed)*0.5144,3)      # Knots to m/s
-        wind_dir = round(math.radians( XPLMGetDataf(self.WindDir) ),3) # Degrees to radians
+        wind_speed = round(XPLMGetDataf(self.WindSpeed)*0.5144, 2 )      # Knots to m/s
+        wind_dir = round(math.radians( XPLMGetDataf(self.WindDir) ), 4 ) # Degrees to radians
 
         #keep up with wind changes
         if [wind_speed,wind_dir] <>  [world.wind_speed,world.wind_dir] :
             [world.wind_speed,world.wind_dir] = [wind_speed,wind_dir]  #insert wind vector into matrix 
             world.world_update = True
-            print "wind change has happened",wind_speed,world.wind_speed,wind_dir,world.wind_dir
+            print "wind changed",wind_speed,world.wind_speed,wind_dir,world.wind_dir
         
-        #Get the lift value of the current position from the thermal matrix
-        lift_val, roll_val  = CalcThermal(self.thermal_map,lat,lon,elevation,heading,roll_angle)    
+        #Get the lift value of the current position from the world thermal map
+        lift_val, roll_val  = CalcThermal(lat,lon,elevation,heading,roll_angle)    
         
         # 1kilo weights ~ 1 newton (9.8) newton               
         # ask21 (360kg) + pilot (80) = = 440kg, 
@@ -178,10 +181,16 @@ class PythonInterface:
     def MyMenuHandlerCallback(self, inMenuRef, inItemRef):
             if (inItemRef == toggleThermal):
                 world.thermals_visible = not world.thermals_visible
-                print " you pressed toggle thermal", world.thermals_visible
+                print " Thermal Visibility  ", world.thermals_visible
             
             if (inItemRef == randomThermal):
-                self.thermal_map = MakeRandomThermalModel(45,200)
+                world.thermal_map = MakeRandomThermalModel(55,200)
                 world.world_update = True
-                print "Update thermal map"
+                print "randomize thermals"
+                pass        
+
+            if (inItemRef == defaultThermal):
+                world.thermal_map = MakeRandomThermalModel(55,200)
+                world.world_update = True
+                print "randomize thermals"
                 pass        

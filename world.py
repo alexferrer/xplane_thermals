@@ -58,10 +58,13 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
     350,4647,7516) #trebol de chilca
     500,7623,6061) #vor asia
 '''
+    #ask21 turn diameter at 60mph = 133m, 80mph = 420m
+
+
 
 thermal_list  = [[-12.3890,-76.7581,100],[-12.3994,-76.7666,50],[-12.3774,-76.7815,150],[-12.3016,-76.8448,300],[-12.4647,-76.7516,350],[-12.7623,-76.6061,500]]
 
-thermal_tops  = 5000 # maximum altitude for thermals (may change based on temp/time of day/ etc. 
+thermal_tops  = 1500 # maximum altitude for thermals in meters (may change based on temp/time of day/ etc. 
 #thermal_height_band # size/strength of thermal depending on altitude
 ''' need to model size/strenght of thermal against:
         time of day    : average lift depends on sun angle over the earth. 

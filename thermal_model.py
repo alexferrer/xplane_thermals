@@ -7,7 +7,7 @@
 '''
 
 import world
-from random import randrange
+from random import randrange, sample
 import math
 import csv
 from XPLMGraphics import * 
@@ -38,7 +38,7 @@ def DrawThermal(lat,lon): #min_alt,max_alt
     base = 1
     Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,0) #Dew=E/W,Dud=Up/Down,Dns=N/S 
     locs = []  #locations 
-    for alt in range(base,world.thermal_tops,100): #from 100 to thermal top by 100
+    for alt in range(base,world.thermal_tops,150): #from 100 to thermal top steps of  150
         climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
         drift = world.wind_speed * climb_time  
         dY = int(round(math.cos(world.wind_dir) * drift )) #east/west drift 
@@ -46,7 +46,7 @@ def DrawThermal(lat,lon): #min_alt,max_alt
         locs.append([Dew+dX,Dud+alt,Dns+dY, 0, 0, 0])
     return locs
 
-def DrawThermalMap(thermal_map):
+def DrawThermalMap():
     locations = []
     for lat,lon,size in world.thermal_list :   
         locations = locations + DrawThermal(lat,lon) 
@@ -123,9 +123,9 @@ def make_thermal(matrix,size,lat,lon):
         x,y  = center
         if a lift already exists on [x,y], add new value to it
     '''
-    x   = int(str(abs(lat-int(lat)))[2:6]) #test: increase area 10x by adding 1 digit [3:6]
-    y   = int(str(abs(lon-int(lon)))[2:6])
-
+    x   = int(abs(lat-int(lat))*10000) 
+    y   = int(abs(lon-int(lon))*10000)
+    print "make_thermal",lat,lon,x,y
     for i in gen_points(size*size):
         x1,y1 = i[1]  # x,y coord
         n = i[0]      # cell number
@@ -139,22 +139,30 @@ def MakeRandomThermalModel(tcount,_diameter):
         diameter = largest thermal diameter
         model[0][0] = thermal tops altitude
         '''
-    model = [[0 for col in range(world.map_size)] for row in range(world.map_size)] #start with a thermal map from scratch
-    size = world.map_size   
-    #populate array with tcount random thermals
+     #start with a thermal map from scratch
+    model = [[0 for col in range(world.map_size)] for row in range(world.map_size)] 
     tlist = []
-    for i in range(tcount):
 
+    radius = _diameter/2 
+    #get randomly distributed x,y positions
+    count = 1
+    for r in sample(xrange(1,10000), 2000):
+    
+        x = r/100
+        y = r - x*100
+    
+        x=x*100
+        y=y*100
         diameter = randrange(_diameter/2,_diameter) #random diameter of thermal
-        rad = diameter/2
-        # each . = 11m,  between 44m ~ 550mm
-        
-        #locate thermal randomly, 
-        #todo: eventually use terrain as hint
-        
-        #random model:
-        x,y = randrange(rad,size-rad),randrange(rad,size-rad) #random center far from edge
-        
+        #if number+/- radius out of bounds, skip
+        if x < radius or x > (9900 - diameter) :
+           #print x,y,"out of bound x"
+           continue
+       
+        if y < radius or y > (9900 - diameter) :
+           #print x,y,"out of bound y"
+           continue
+        #print "number",x,y
         #account for lat/lon negatives
         if world.lat_origin < 0:
            x = -1 * x
@@ -163,39 +171,39 @@ def MakeRandomThermalModel(tcount,_diameter):
            
         lat = world.lat_origin + (x * .0001 )
         lon = world.lon_origin + (y * .0001 )
+        
+        
         make_thermal(model,diameter,lat,lon)
         tlist.append([lat,lon,diameter])
-        
+        #stop if we build enough thermals
+        count +=1
+        if count > tcount:
+           break
+           
     world.thermal_list  = tlist
     print  "wtllist",world.thermal_list
     return model
 
-def MakeThermalModel(size,tcount,_diameter):
+def MakeThermalModel(tcount,_diameter):
     ''' return an array representing an area of Size x Size
         populated with fixed position thermals
         note: ignore size,tcount,_diameter
     '''
-    model = world.thermal_map
-    
-    #Todo: read this thermals from a user .cvs file  lat,long, diameter,max lift
-    
+    model = [[0 for col in range(world.map_size)] for row in range(world.map_size)] 
     #populate thermal map with thermals from a list on world file
     for lat,lon,size in world.thermal_list :   
         make_thermal(model,size,lat,lon)
-
-    #ask21 turn diameter at 60mph = 133m, 80mph = 420m
+        
 
     return model
 
 
-
-def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
+def CalcThermal(lat,lon,alt,heading,roll_angle):
       '''
        Calculate the strenght of the thermal at this particular point 
-       in space by using the x digits of lat/lon as index on a 
+       in space by using the decimal digits of lat/lon as index on a 
        2dimensional array representing space (lat,lon) 
        the value representing lift/sink (+/-) 
-       b = [ [[11,12],[13,14]] , [[21,22],[23,24]] ]
        
        for lat/lon, 12.3456789
          .1     = 11,120 meters
@@ -204,9 +212,9 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
          .0001  =     11 m
          .00001 =      1 m
          
-       a matrix of [100,100] on a .0001 (11m resolution) represents 1.1km^2
+       a matrix of [10000,10000] on a .0001 (11m resolution) represents 1.1km^2
        use 2nd,3rd,4rd decimal of the lat/lon nn.x123 (blocks of 11 meters) as the key
-       on a [1000x1000] matrix = 10km^2 that repeats every 11km as the .1 digit changes
+       on a [1000x1000] matrix = 10km^2 that repeats every 11km as the . digit changes
        
       '''       
 
@@ -216,8 +224,8 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       # current plane position  
       # use 2,3,4 decimals ex: -12.34567 should return : 3456
       #     equivalent to 10 x 1120 m2 with a cell resolution of 11m2
-      planeX   = int(str(abs(lat-int(lat)))[2:6]) #test: increase area 10x by adding 1 digit [3:6]
-      planeY   = int(str(abs(lon-int(lon)))[2:6])
+      planeX   = int(abs(lat-int(lat))*10000) #test: increase area 10x by adding 1 digit [3:6]
+      planeY   = int(abs(lon-int(lon))*10000)
 
       # winddrift: as the thermal climbs, it is pushed by the prevailing winds
       #    to account for the drift of the thermal add (wind vector * time to reach altitude) 
@@ -248,9 +256,9 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
           top_factor = ( world.thermal_tops - alt)/100
 
 	  # lift for each area, left tip, right tip and middle.
-      liftL  = thermal_map[ lwingX ][ lwingY ] * top_factor
-      liftR  = thermal_map[ rwingX ][ rwingY ] * top_factor
-      liftM  = thermal_map[ planeX ][ planeY ] * top_factor
+      liftL  = world.thermal_map[ lwingX ][ lwingY ] * top_factor
+      liftR  = world.thermal_map[ rwingX ][ rwingY ] * top_factor
+      liftM  = world.thermal_map[ planeX ][ planeY ] * top_factor
 
       # total lift component
       thermal_value = liftL + liftR + liftM
@@ -263,7 +271,7 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
       
       # for debug
       #print "pos[",planeX,",",planeY,"] @",'%.0f'%(heading), \
-      #      ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt
+      #     ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt,world.thermal_map[ planeX ][ planeY ]
       
       #todo: thermals have cycles, begin, middle , end.. and reflect in strength.. 
       
@@ -274,8 +282,8 @@ def CalcThermal(thermal_map,lat,lon,alt,heading,roll_angle):
 '''
 ***Warning**** Tests are out of sync... 
 
-print 'test: make a thermal model size (1000x1000) with 10 random termals of avg diameter 200'
-model  = MakeThermalModel(1000,20,200) 
+print 'test: make a thermal with 10 random termals of avg diameter 200'
+model  = MakeThermalModel(20,200) 
 
 print 'test: make a random thermal model'
 random_model = MakeRandomThermalModel(1000,20,200)

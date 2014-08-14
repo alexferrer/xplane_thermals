@@ -38,7 +38,7 @@ def DrawThermal(lat,lon): #min_alt,max_alt
     base = 1
     Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,0) #Dew=E/W,Dud=Up/Down,Dns=N/S 
     locs = []  #locations 
-    for alt in range(base,world.thermal_tops,150): #from 100 to thermal top steps of  150
+    for alt in range(base,world.thermal_tops,200): #from 100 to thermal top steps of  150
         climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
         drift = world.wind_speed * climb_time  
         dY = int(round(math.cos(world.wind_dir) * drift )) #east/west drift 
@@ -232,7 +232,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       #    to plane, 
 
       climb_time = alt/2.54           # assuming thermal raises at ~ 500ft/m
-      drift = world.wind_speed * climb_time / 11 # 11 meters per matrix cell
+      drift = world.wind_speed * climb_time / 11 # drift in cells at 11meters per cell.. 
       planeX = planeX - int(round(math.cos(world.wind_dir) * drift ))
       planeY = planeY - int(round(math.sin(world.wind_dir) * drift ))
       

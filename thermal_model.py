@@ -184,14 +184,14 @@ def MakeRandomThermalModel(tcount,_diameter):
     print  "wtllist",world.thermal_list
     return model
 
-def MakeThermalModel(tcount,_diameter):
+def MakeThermalModelFromList(_thermal_list):
     ''' return an array representing an area of Size x Size
         populated with fixed position thermals
         note: ignore size,tcount,_diameter
     '''
     model = [[0 for col in range(world.map_size)] for row in range(world.map_size)] 
     #populate thermal map with thermals from a list on world file
-    for lat,lon,size in world.thermal_list :   
+    for lat,lon,size in _thermal_list :   
         make_thermal(model,size,lat,lon)
         
 

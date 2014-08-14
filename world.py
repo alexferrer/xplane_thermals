@@ -64,6 +64,9 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 
 thermal_list  = [[-12.3890,-76.7581,100],[-12.3994,-76.7666,50],[-12.3774,-76.7815,150],[-12.3016,-76.8448,300],[-12.4647,-76.7516,350],[-12.7623,-76.6061,500]]
 
+default_thermal_list  = [[-12.3890,-76.7581,100],[-12.3994,-76.7666,50],[-12.3774,-76.7815,150],[-12.3016,-76.8448,300],[-12.4647,-76.7516,350],[-12.7623,-76.6061,500]]
+
+
 thermal_tops  = 1500 # maximum altitude for thermals in meters (may change based on temp/time of day/ etc. 
 #thermal_height_band # size/strength of thermal depending on altitude
 ''' need to model size/strenght of thermal against:

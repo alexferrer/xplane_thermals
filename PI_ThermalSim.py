@@ -19,7 +19,7 @@ from XPLMDefs import *
 from EasyDref import EasyDref
 
 #thermal modeling tools
-from thermal_model import MakeThermalModel
+from thermal_model import MakeThermalModelFromList
 from thermal_model import MakeRandomThermalModel
 from thermal_model import CalcThermal
 from thermal_model import DrawThermal
@@ -83,9 +83,9 @@ class PythonInterface:
         self.thrust  = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
 
            
-        # make a random thermal_model(size,# of thermals) 
-        world.thermal_map = MakeThermalModel(25,200) #quantity,diameter
-        #world.thermal_map = MakeRandomThermalModel(90,300) # quantity,diameter
+
+        #world.thermal_map = MakeThermalModelFromlist(world.default_thermal_list)
+        world.thermal_map = MakeRandomThermalModel(90,300) # quantity,diameter
         # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj" 
         
@@ -186,11 +186,12 @@ class PythonInterface:
             if (inItemRef == randomThermal):
                 world.thermal_map = MakeRandomThermalModel(55,200)
                 world.world_update = True
-                print "randomize thermals"
-                pass        
+                print "Randomizing thermals"
+                        
 
             if (inItemRef == defaultThermal):
-                world.thermal_map = MakeRandomThermalModel(55,200)
+                world.thermal_list = world.default_thermal_list
+                world.thermal_map = MakeThermalModelFromList(world.thermal_list)
                 world.world_update = True
-                print "randomize thermals"
-                pass        
+                print "Making thermals from list"
+                       

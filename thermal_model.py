@@ -10,7 +10,7 @@ import world
 from random import randrange, sample
 import math
 import csv
-#from XPLMGraphics import * 
+from XPLMGraphics import * 
 
 # helpers to save/read a thermal model as .csv file
 def SaveThermalModel(model,filename):
@@ -304,10 +304,12 @@ SaveThermalModel(model,'test_columns_thermal.csv')
 
 print 'test: All tests completed !  '
 '''
+
+'''
 print 'test: make a thermal with 10 random termals of avg diameter 200'
 model  = MakeRandomThermalModel(200,400) 
 for x in xrange(1000,1600):
   for y in xrange(1000,1110) :
       print model.get((x,y),0),
   print
-      
+'''      

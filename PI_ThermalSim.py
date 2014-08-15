@@ -85,7 +85,7 @@ class PythonInterface:
            
 
         #world.thermal_map = MakeThermalModelFromlist(world.default_thermal_list)
-        world.thermal_map = MakeRandomThermalModel(80,300) # quantity,diameter
+        world.thermal_map = MakeRandomThermalModel(50,300) # quantity,diameter
         # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj" 
         self.ObjectPath1 = "lib/ships/Frigate.obj" 

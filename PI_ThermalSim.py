@@ -85,9 +85,10 @@ class PythonInterface:
            
 
         #world.thermal_map = MakeThermalModelFromlist(world.default_thermal_list)
-        world.thermal_map = MakeRandomThermalModel(90,300) # quantity,diameter
+        world.thermal_map = MakeRandomThermalModel(80,300) # quantity,diameter
         # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj" 
+        self.ObjectPath1 = "lib/ships/Frigate.obj" 
         
         self.locations = DrawThermalMap() 
 
@@ -121,21 +122,36 @@ class PythonInterface:
     # Functions for graphics drawing
     def LoadObject(self, fname, ref):
         self.Object = XPLMLoadObject(fname)        
+
+    def LoadObject1(self, fname, ref):
+        self.Object1 = XPLMLoadObject(fname)        
      
     def DrawObject(self, inPhase, inIsBefore, inRefcon):
         if not world.thermals_visible :  # exit if visibility is off !
             return 1
     
         self.LoadObjectCB = self.LoadObject
+        self.LoadObjectCB1 = self.LoadObject1
         XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)  
+        XPLMLookupObjects(self, self.ObjectPath1, 0, 0, self.LoadObjectCB1, 0)  
         
         # build object list for drawing
         if world.world_update :
            self.locations = DrawThermalMap()   #get the locations where to draw the objects..
            world.world_update = False
+           print "number of draw objects = ", len(self.locations)
            
-        locations = self.locations
-        XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
+        #locations = self.locations
+        #-----------
+        locations1 = self.locations[:len(self.locations)/2]
+        locations2 = self.locations[len(self.locations)/2:]
+        #print "object1"
+        XPLMDrawObjects(self.Object, len(locations1), locations1, 0, 1)
+        #print "object2"
+        XPLMDrawObjects(self.Object1, len(locations2), locations2, 0, 1)
+        #print "done"
+        #----------------
+        #XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
         return 1
 
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
@@ -184,7 +200,9 @@ class PythonInterface:
                 print " Thermal Visibility  ", world.thermals_visible
             
             if (inItemRef == randomThermal):
-                world.thermal_map = MakeRandomThermalModel(55,200)
+                world.lat_origin = int(XPLMGetDataf(self.PlaneLat))
+                world.lon_origin = int(XPLMGetDataf(self.PlaneLon))
+                world.thermal_map = MakeRandomThermalModel(80,200)
                 world.world_update = True
                 print "Randomizing thermals"
                         

@@ -10,7 +10,7 @@ import world
 from random import randrange, sample
 import math
 import csv
-from XPLMGraphics import * 
+#from XPLMGraphics import * 
 
 # helpers to save/read a thermal model as .csv file
 def SaveThermalModel(model,filename):
@@ -117,7 +117,7 @@ def gen_simple_lift(n,size):
     return lift
 
 
-def make_thermal(matrix,size,lat,lon):
+def make_thermal(model,size,lat,lon):
     ''' insert a thermal into the thermal matrix
         size = diameter of thermal
         x,y  = center
@@ -129,7 +129,11 @@ def make_thermal(matrix,size,lat,lon):
     for i in gen_points(size*size):
         x1,y1 = i[1]  # x,y coord
         n = i[0]      # cell number
-        matrix[x+x1][y+y1] += gen_simple_lift(n,size) 
+        #matrix[x+x1][y+y1] += gen_simple_lift(n,size) 
+        x2 = x+x1
+        y2 = y+y1
+        value = model.get((x2,y2),0) #check if value aready exists
+        model[(x2,y2)] = gen_simple_lift(n,size) + value        
 
 
 def MakeRandomThermalModel(tcount,_diameter):
@@ -140,7 +144,7 @@ def MakeRandomThermalModel(tcount,_diameter):
         model[0][0] = thermal tops altitude
         '''
      #start with a thermal map from scratch
-    model = [[0 for col in range(world.map_size)] for row in range(world.map_size)] 
+    model = {(0,0):0}
     tlist = []
 
     radius = _diameter/2 
@@ -256,9 +260,9 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
           top_factor = ( world.thermal_tops - alt)/100
 
 	  # lift for each area, left tip, right tip and middle.
-      liftL  = world.thermal_map[ lwingX ][ lwingY ] * top_factor
-      liftR  = world.thermal_map[ rwingX ][ rwingY ] * top_factor
-      liftM  = world.thermal_map[ planeX ][ planeY ] * top_factor
+      liftL  = world.thermal_map.get((lwingX,lwingY)) * top_factor
+      liftR  = world.thermal_map.get((rwingX,rwingY)) * top_factor
+      liftM  = world.thermal_map.get((planeX,planeY)) * top_factor
 
       # total lift component
       thermal_value = liftL + liftR + liftM
@@ -282,11 +286,6 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
 '''
 ***Warning**** Tests are out of sync... 
 
-print 'test: make a thermal with 10 random termals of avg diameter 200'
-model  = MakeThermalModel(20,200) 
-
-print 'test: make a random thermal model'
-random_model = MakeRandomThermalModel(1000,20,200)
 
 print 'test: make a 10x10 thermal centered at at 10,8'
 x,y = 10,8
@@ -305,4 +304,10 @@ SaveThermalModel(model,'test_columns_thermal.csv')
 
 print 'test: All tests completed !  '
 '''
-
+print 'test: make a thermal with 10 random termals of avg diameter 200'
+model  = MakeRandomThermalModel(200,400) 
+for x in xrange(1000,1600):
+  for y in xrange(1000,1110) :
+      print model.get((x,y),0),
+  print
+      

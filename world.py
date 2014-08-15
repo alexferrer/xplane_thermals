@@ -19,7 +19,7 @@
 #the thermal matrix where the lift info will go
 map_size = 10000 #covers a full degree, about 70nm
 #initialize the map to zeros
-thermal_map = [[0 for col in range(map_size)] for row in range(map_size)]
+thermal_map = {(0,0):0}
 
 
 

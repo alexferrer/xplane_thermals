@@ -84,7 +84,10 @@ class PythonInterface:
         # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj" 
         
-        self.locations = DrawThermalMap() 
+        #initialize thermal locations 
+        lat = XPLMGetDataf(self.PlaneLat)
+        lon = XPLMGetDataf(self.PlaneLon)
+        self.locations = DrawThermalMap(lat,lon) 
 
         """
         Register our callback for once a second.  Positive intervals
@@ -126,7 +129,9 @@ class PythonInterface:
         
         # build object list for drawing
         if world.world_update :
-           self.locations = DrawThermalMap()   #get the locations where to draw the objects..
+           lat = XPLMGetDataf(self.PlaneLat)
+           lon = XPLMGetDataf(self.PlaneLon)
+           self.locations = DrawThermalMap(lat,lon)   #get the locations where to draw the objects..
            world.world_update = False
            print "number of draw objects = ", len(self.locations)
            

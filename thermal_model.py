@@ -31,8 +31,8 @@ def calcLift(p1x,p1y):
     lift = 0
     #test if we are inside any listed thermal
     for (lat1,lon1),(radius,strenght) in world.thermal_dict.items() :
-        p2x = lat1 * 111200
-        p2y = lon1 * 111200
+        p2x = lat1 * world.latlon2meter
+        p2y = lon1 * world.latlon2meter
         distance = calcDist(p1x,p1y,p2x,p2y) 
         # if our distance to center is < than radius, we are in!
         if distance < radius :
@@ -53,10 +53,16 @@ def DrawThermal(lat,lon): #min_alt,max_alt
         locs.append([Dew+dX,Dud+alt,Dns-dY, 0, 0, 0])
     return locs
 
-def DrawThermalMap():
+def DrawThermalMap(lat,lon):
     locations = []
-    for (lat,lon),(radius,strenght) in world.thermal_dict.items() :
-        locations = locations + DrawThermal(lat,lon) 
+    p1x = lat * world.latlon2meter
+    p1y = lon * world.latlon2meter
+    
+    for (thermal_lat,thermal_lon),(radius,strenght) in world.thermal_dict.items() :
+        p2x = thermal_lat * world.latlon2meter
+        p2y = thermal_lon * world.latlon2meter
+        if calcDist(p1x,p1y,p2x,p2y) < world.max_draw_distance :
+            locations = locations + DrawThermal(thermal_lat,thermal_lon) 
     return locations
 
 
@@ -71,8 +77,8 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       '''       
 
       # calculate the total lift and roll value :
-      planeX   = lat * 111200       # current plane position  
-      planeY   = lon * 111200
+      planeX   = lat * world.latlon2meter       # current plane position  
+      planeY   = lon * world.latlon2meter
 
       dX,dY = calcDrift(alt)        #total drift
       

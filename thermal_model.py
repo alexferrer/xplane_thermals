@@ -112,7 +112,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       #         the more airplane is rolled, the less thermal roll effect
       #         if the plane is flying inverted the roll effect should be reversed
       roll_factor = math.cos(math.radians(roll_angle))
-      roll_value    = (liftR - liftL) * roll_factor
+      roll_value    = -(liftR - liftL) * roll_factor
       
       # for debug
       print "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \

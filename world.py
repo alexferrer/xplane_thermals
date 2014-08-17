@@ -16,16 +16,6 @@
    *Technically, the origin can be any point in earth we want to designate
     so, whatever it is, it will get added to the x,y thermal map coordinates.
 '''
-#the thermal matrix where the lift info will go
-map_size = 10000 #covers a full degree, about 70nm
-#initialize the map to zeros
-thermal_map = [[0 for col in range(map_size)] for row in range(map_size)]
-
-
-
-#origin points for the thermal map
-lat_origin = -12.00
-lon_origin = -76.00
 
 ''' The wind vector is used to calculate the thermal drift 
     and it is considered when reading thermal strength and
@@ -66,6 +56,8 @@ thermal_list  = [[-12.3890,-76.7581,100],[-12.3994,-76.7666,50],[-12.3774,-76.78
 
 default_thermal_list  = [[-12.3890,-76.7581,100],[-12.3994,-76.7666,50],[-12.3774,-76.7815,150],[-12.3016,-76.8448,300],[-12.4647,-76.7516,350],[-12.7623,-76.6061,500]]
 
+# A dictionary of thermals  for testing
+thermal_dict = {(-12.3890,-76.7581):800,(-12.3994,-76.7666):500,(-12.3774,-76.7815):150,(-12.3016,-76.8448):300,(-12.4647,-76.7516):350,(-12.7623,-76.6061):500 }
 
 thermal_tops  = 1500 # maximum altitude for thermals in meters (may change based on temp/time of day/ etc. 
 #thermal_height_band # size/strength of thermal depending on altitude

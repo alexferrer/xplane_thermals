@@ -84,13 +84,7 @@ class PythonInterface:
 
          
         # image to mark thermals
-        self.ObjectPath = "lib/dynamic/balloon.obj" 
-        
-        #initialize thermal locations and drawing
-        lat = XPLMGetDataf(self.PlaneLat)
-        lon = XPLMGetDataf(self.PlaneLon)
-        #world.thermal_dict = MakeRandomThermalMap(lat,lon,50,90)    
-        self.locations = DrawThermalMap(lat,lon) 
+        self.ObjectPath = "lib/dynamic/balloon.obj"    
 
         """
         Register our callback for once a second.  Positive intervals

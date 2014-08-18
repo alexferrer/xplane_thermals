@@ -33,11 +33,12 @@ def calcLift(p1x,p1y):
     for (lat1,lon1),(radius,strenght) in world.thermal_dict.items() :
         p2x = lat1 * world.latlon2meter
         p2y = lon1 * world.latlon2meter
+        #print "calclift:",p1x,p1y,p2x,p2y
         distance = calcDist(p1x,p1y,p2x,p2y) 
         # if our distance to center is < than radius, we are in!
         if distance < radius :
            lift += strenght * round((radius - distance)/radius,2)
-           print "Dist ",lat1,lon1,radius, distance ,lift   
+           #print "Dist ",lat1,lon1,radius, distance ,lift   
     return lift
 
 def calcThermalBand(alt):
@@ -68,6 +69,7 @@ def DrawThermalMap(lat,lon):
     for (thermal_lat,thermal_lon),(radius,strenght) in world.thermal_dict.items() :
         p2x = thermal_lat * world.latlon2meter
         p2y = thermal_lon * world.latlon2meter
+        #print "DrawThermalmap:",p1x,p1y,p2x,p2y
         if calcDist(p1x,p1y,p2x,p2y) < world.max_draw_distance :
             locations = locations + DrawThermal(thermal_lat,thermal_lon) 
     return locations
@@ -152,7 +154,7 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count) :
           lat = _lat + (x -100) * .001   # min Thermmal separation = 1km
           lon = _lon + (y -100) * .001   # max distance =  100x100 km 
           #(lat,lon):(radius,strength)
-          print lat,lon,radius,strength
+          #print "makeRandomThermal",lat,lon,radius,strength
           tdict[(lat,lon)] = (radius,strength)
           count +=1 
           if count > _count :

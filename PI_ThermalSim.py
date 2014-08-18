@@ -86,9 +86,10 @@ class PythonInterface:
         # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj" 
         
-        #initialize thermal locations 
+        #initialize thermal locations and drawing
         lat = XPLMGetDataf(self.PlaneLat)
         lon = XPLMGetDataf(self.PlaneLon)
+        #world.thermal_dict = MakeRandomThermalMap(lat,lon,50,90)    
         self.locations = DrawThermalMap(lat,lon) 
 
         """
@@ -187,11 +188,11 @@ class PythonInterface:
                 print " Thermal Visibility  ", world.thermals_visible
             
             if (inItemRef == randomThermal):
-                print "Randomizing thermals"
+                #make random thermals around this location.
                 lat = XPLMGetDataf(self.PlaneLat)
                 lon = XPLMGetDataf(self.PlaneLon)
                                                          # lat,lon,stregth,count
-                world.thermal_dict = MakeRandomThermalMap(lat,lon,50,30)    
+                world.thermal_dict = MakeRandomThermalMap(lat,lon,50,90)    
                 world.world_update = True
                         
 

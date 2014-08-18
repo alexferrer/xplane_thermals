@@ -36,8 +36,8 @@ def calcLift(p1x,p1y):
         distance = calcDist(p1x,p1y,p2x,p2y) 
         # if our distance to center is < than radius, we are in!
         if distance < radius :
-           lift += strenght * (radius - distance)/radius
-           #print "Dist ",lat1,lon1,radius, distance    
+           lift += strenght * round((radius - distance)/radius,2)
+           print "Dist ",lat1,lon1,radius, distance ,lift   
     return lift
 
 def calcThermalBand(alt):
@@ -143,13 +143,14 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count) :
       average_radius = 250
       tdict = {}
       count = 1
-      for r in sample(xrange(1,10000), 900):
-          x = r/100      # col
-          y = r - x*100  # row
+      for r in sample(xrange(1,40000), 900):
+          x = r/200      # col
+          y = r - x*200  # row
           radius = randrange(average_radius/5,average_radius) #random diameter for the thermal
+          #randomize thermal strenght weighted towards stronger
           strength = choice((3,4,5,6,6,7,7,7,8,8,9,9,10)) * _strength * .1
-          lat = _lat + (x -50) * .001   # min Thermmal separation = 1km
-          lon = _lon + (y -50) * .001   # max distance =  100x100 km 
+          lat = _lat + (x -100) * .001   # min Thermmal separation = 1km
+          lon = _lon + (y -100) * .001   # max distance =  100x100 km 
           #(lat,lon):(radius,strength)
           print lat,lon,radius,strength
           tdict[(lat,lon)] = (radius,strength)

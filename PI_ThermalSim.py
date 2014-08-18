@@ -19,8 +19,6 @@ from XPLMDefs import *
 from EasyDref import EasyDref
 
 #thermal modeling tools
-from thermal_model import MakeThermalModelFromList
-from thermal_model import MakeRandomThermalModel
 from thermal_model import CalcThermal
 from thermal_model import DrawThermal
 from thermal_model import DrawThermalMap
@@ -82,14 +80,14 @@ class PythonInterface:
         # might float in the air without moving!
         self.thrust  = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
 
-           
-
-        #world.thermal_map = MakeThermalModelFromlist(world.default_thermal_list)
-        world.thermal_map = MakeRandomThermalModel(90,300) # quantity,diameter
+         
         # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj" 
         
-        self.locations = DrawThermalMap() 
+        #initialize thermal locations 
+        lat = XPLMGetDataf(self.PlaneLat)
+        lon = XPLMGetDataf(self.PlaneLon)
+        self.locations = DrawThermalMap(lat,lon) 
 
         """
         Register our callback for once a second.  Positive intervals
@@ -131,8 +129,11 @@ class PythonInterface:
         
         # build object list for drawing
         if world.world_update :
-           self.locations = DrawThermalMap()   #get the locations where to draw the objects..
+           lat = XPLMGetDataf(self.PlaneLat)
+           lon = XPLMGetDataf(self.PlaneLon)
+           self.locations = DrawThermalMap(lat,lon)   #get the locations where to draw the objects..
            world.world_update = False
+           print "number of draw objects = ", len(self.locations)
            
         locations = self.locations
         XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
@@ -151,7 +152,7 @@ class PythonInterface:
 
         #keep up with wind changes
         if [wind_speed,wind_dir] <>  [world.wind_speed,world.wind_dir] :
-            [world.wind_speed,world.wind_dir] = [wind_speed,wind_dir]  #insert wind vector into matrix 
+            [world.wind_speed,world.wind_dir] = [wind_speed,wind_dir]  
             world.world_update = True
             print "wind changed",wind_speed,world.wind_speed,wind_dir,world.wind_dir
         
@@ -184,14 +185,11 @@ class PythonInterface:
                 print " Thermal Visibility  ", world.thermals_visible
             
             if (inItemRef == randomThermal):
-                world.thermal_map = MakeRandomThermalModel(55,200)
                 world.world_update = True
                 print "Randomizing thermals"
                         
 
             if (inItemRef == defaultThermal):
-                world.thermal_list = world.default_thermal_list
-                world.thermal_map = MakeThermalModelFromList(world.thermal_list)
                 world.world_update = True
                 print "Making thermals from list"
                        

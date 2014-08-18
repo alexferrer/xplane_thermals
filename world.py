@@ -16,16 +16,6 @@
    *Technically, the origin can be any point in earth we want to designate
     so, whatever it is, it will get added to the x,y thermal map coordinates.
 '''
-#the thermal matrix where the lift info will go
-map_size = 10000 #covers a full degree, about 70nm
-#initialize the map to zeros
-thermal_map = [[0 for col in range(map_size)] for row in range(map_size)]
-
-
-
-#origin points for the thermal map
-lat_origin = -12.00
-lon_origin = -76.00
 
 ''' The wind vector is used to calculate the thermal drift 
     and it is considered when reading thermal strength and
@@ -35,7 +25,8 @@ lon_origin = -76.00
 wind_speed = 0  # m/s
 wind_dir = 0    # radians
 world_update = False # toggle on wind change
-
+latlon2meter = 111200  # crude conversion value for lat/lon to meters
+max_draw_distance = 18520 # maximum thermas shown, 18.52km = 10nm visibility
 
 '''
    Thermal behaviour information
@@ -58,14 +49,10 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
     350,4647,7516) #trebol de chilca
     500,7623,6061) #vor asia
 '''
-    #ask21 turn diameter at 60mph = 133m, 80mph = 420m
+# ask21 turn diameter at 60mph = 133m, 80mph = 420m
 
-
-
-thermal_list  = [[-12.3890,-76.7581,100],[-12.3994,-76.7666,50],[-12.3774,-76.7815,150],[-12.3016,-76.8448,300],[-12.4647,-76.7516,350],[-12.7623,-76.6061,500]]
-
-default_thermal_list  = [[-12.3890,-76.7581,100],[-12.3994,-76.7666,50],[-12.3774,-76.7815,150],[-12.3016,-76.8448,300],[-12.4647,-76.7516,350],[-12.7623,-76.6061,500]]
-
+# A dictionary of thermals  for testing { (lat,lon):(radius,strength) }
+thermal_dict = {(-12.3890,-76.7581):(500,30),(-12.3994,-76.7666):(400,10),(-12.3774,-76.7815):(300,20),(-12.3016,-76.8448):(200,40),(-12.4647,-76.7516):(150,50),(-12.7623,-76.6061):(900,60) }
 
 thermal_tops  = 1500 # maximum altitude for thermals in meters (may change based on temp/time of day/ etc. 
 #thermal_height_band # size/strength of thermal depending on altitude

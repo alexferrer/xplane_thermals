@@ -22,6 +22,8 @@ from EasyDref import EasyDref
 from thermal_model import CalcThermal
 from thermal_model import DrawThermal
 from thermal_model import DrawThermalMap
+from thermal_model import MakeRandomThermalMap
+
 
 from XPLMProcessing import *
 from XPLMDataAccess import *
@@ -185,11 +187,16 @@ class PythonInterface:
                 print " Thermal Visibility  ", world.thermals_visible
             
             if (inItemRef == randomThermal):
-                world.world_update = True
                 print "Randomizing thermals"
+                lat = XPLMGetDataf(self.PlaneLat)
+                lon = XPLMGetDataf(self.PlaneLon)
+                                                         # lat,lon,stregth,count
+                world.thermal_dict = MakeRandomThermalMap(lat,lon,50,30)    
+                world.world_update = True
                         
 
             if (inItemRef == defaultThermal):
+                world.thermal_dict = world.default_thermal_dict
                 world.world_update = True
                 print "Making thermals from list"
                        

@@ -7,7 +7,7 @@
 '''
 
 import world
-from random import randrange, sample
+from random import randrange, sample, choice
 import math
 import csv
 from XPLMGraphics import * 
@@ -39,6 +39,13 @@ def calcLift(p1x,p1y):
            lift += strenght * (radius - distance)/radius
            #print "Dist ",lat1,lon1,radius, distance    
     return lift
+
+def calcThermalBand(alt):
+    top_factor = 1
+    if (world.thermal_tops - alt) < 100:
+       top_factor = ( world.thermal_tops - alt)/100
+    return top_factor
+
 
 
 def DrawThermal(lat,lon): #min_alt,max_alt
@@ -74,15 +81,14 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
        and testing for thermal radius. 
        
        the value representing lift is the maxpower times a  % of distance away from center 
+       
+       Return the total lift and roll value 
       '''       
-
-      # calculate the total lift and roll value :
       planeX   = lat * world.latlon2meter       # current plane position  
       planeY   = lon * world.latlon2meter
 
-      dX,dY = calcDrift(alt)        #total drift
-      
-      planeX +=  dX
+      dX,dY = calcDrift(alt)     # total wind drift
+      planeX +=  dX              # reverse apply to plane x,y
       planeY +=  dY
       
       # left and right wings position from current plane heading
@@ -99,17 +105,12 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       rwingX = planeX + int(round(math.cos(angleR)*wingsize))
       rwingY = planeY + int(round(math.sin(angleR)*wingsize))
 
-      #Thermal Top: gradually reduce thermal strength when alt is getting close to 10% of thermal tops
-      top_factor = 1
-      if (world.thermal_tops - alt) < 100:
-          top_factor = ( world.thermal_tops - alt)/100
-
-	  # lift for each area, left tip, right tip and middle.
-      #print ">>>>>>>>>>>>>>",lwingX,lwingY,rwingX,rwingY,top_factor
+      #Thermal Band: adjust thermal strength according to altitude band
+      tband_factor = calcThermalBand(alt) 
 	  
-      liftL  =  calcLift(lwingX,lwingY) * top_factor 
-      liftR  =  calcLift(rwingX,rwingY) * top_factor
-      liftM  =  calcLift(planeX,planeY) * top_factor
+      liftL  =  calcLift(lwingX,lwingY) * tband_factor 
+      liftR  =  calcLift(rwingX,rwingY) * tband_factor
+      liftM  =  calcLift(planeX,planeY) * tband_factor
 
       # total lift component
       thermal_value = liftL + liftR + liftM
@@ -121,12 +122,42 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       roll_value    = -(liftR - liftL) * roll_factor
       
       # for debug
-      print "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
-           ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt
+      #print "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
+      #     ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt
       
       #todo: thermals have cycles, begin, middle , end.. and reflect in strength.. 
       
       return thermal_value , roll_value
+
+
+      #---------------- should move below to a different file
+def MakeRandomThermalMap(_lat,_lon,_strength,_count) :
+      ''' Create xx random thermals around the current lat/lon point 
+        us parameters average strength
+        Params: center (lat,lon) , max strength, count  
+        thermal_list =     { (lat,lon):(radius,strength) }
+        hardcoded to place thermals within a 50x50 km area
+        separated by at least 500m 
+      '''
+    
+      average_radius = 250
+      tdict = {}
+      count = 1
+      for r in sample(xrange(1,10000), 900):
+          x = r/100      # col
+          y = r - x*100  # row
+          radius = randrange(average_radius/5,average_radius) #random diameter for the thermal
+          strength = choice((3,4,5,6,6,7,7,7,8,8,9,9,10)) * _strength * .1
+          lat = _lat + (x -50) * .001   # min Thermmal separation = 1km
+          lon = _lon + (y -50) * .001   # max distance =  100x100 km 
+          #(lat,lon):(radius,strength)
+          print lat,lon,radius,strength
+          tdict[(lat,lon)] = (radius,strength)
+          count +=1 
+          if count > _count :
+             break 
+           
+      return tdict
 
 
 # ----- begin test code --------

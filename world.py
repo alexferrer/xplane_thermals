@@ -52,7 +52,11 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 # ask21 turn diameter at 60mph = 133m, 80mph = 420m
 
 # A dictionary of thermals  for testing { (lat,lon):(radius,strength) }
-thermal_dict = {(-12.3890,-76.7581):(500,30),(-12.3994,-76.7666):(400,10),(-12.3774,-76.7815):(300,20),(-12.3016,-76.8448):(200,40),(-12.4647,-76.7516):(150,50),(-12.7623,-76.6061):(900,60) }
+default_thermal_dict = {(-12.3890,-76.7581):(500,30),(-12.3994,-76.7666):(400,10),(-12.3774,-76.7815):(300,20),(-12.3016,-76.8448):(200,40),(-12.4647,-76.7516):(150,50),(-12.7623,-76.6061):(900,60) }
+
+thermal_dict = default_thermal_dict
+
+thermal_band = {1000:.8,2000:.9,3000:1,5000:1,5100:.4,5500:0}
 
 thermal_tops  = 1500 # maximum altitude for thermals in meters (may change based on temp/time of day/ etc. 
 #thermal_height_band # size/strength of thermal depending on altitude

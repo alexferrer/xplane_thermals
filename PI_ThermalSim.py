@@ -60,7 +60,6 @@ class PythonInterface:
         #init menu control params       
         self.TCMenuItem = 0
         self.AboutMenuItem = 0        
-        self.visibility = False
         
         global myMenu
         mySubMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "Thermal Simulator", 0, 1)
@@ -150,7 +149,8 @@ class PythonInterface:
            print "number of draw objects = ", len(self.locations)
            
         locations = self.locations
-        XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
+        if locations : #only print if not zero !
+            XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
         return 1
 
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
@@ -200,9 +200,11 @@ class PythonInterface:
     def MyMenuHandlerCallback(self, inMenuRef, inItemRef):
         if (inItemRef == toggleThermal):
             print " Thermal Visibility  "
+            world.thermals_visible = not world.thermals_visible
+
             
         if (inItemRef == randomThermal):
-            print "show test config box "
+            print "show thermal config box "
             if (self.TCMenuItem == 0):
                 print " create the thermal config box "
                 self.CreateTCWindow(100, 550, 550, 330)
@@ -246,11 +248,24 @@ class PythonInterface:
             # Tests the Command API, will find command
             if (inParam1 == self.TGenerate_button):
                 print "Generate" 
-                self.visibility  = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
+                lat = XPLMGetDataf(self.PlaneLat)
+                lon = XPLMGetDataf(self.PlaneLon)
+                world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
+                                                       # lat,lon,stregth,count
+                world.thermal_dict = MakeRandomThermalMap(lat,lon,world.thermal_power,world.thermal_density,world.thermal_size)    
+                world.world_update = True
                 return 1
+                
+
             if (inParam1 == self.TRandom_button):
                 print "Random" 
-                self.visibility  = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
+                #make random thermals around this location.
+                lat = XPLMGetDataf(self.PlaneLat)
+                lon = XPLMGetDataf(self.PlaneLon)
+                world.thermal_tops = 3000
+                                                       # lat,lon,stregth,count,radius
+                world.thermal_dict = MakeRandomThermalMap(lat,lon,50,90,500)    
+                world.world_update = True
                 return 1
 
         
@@ -258,18 +273,23 @@ class PythonInterface:
             #Thermal Tops
             val = XPGetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TTops_value, str(val))
+            world.thermal_tops = val
             #Thermal Density
             val = XPGetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TDensity_value, str(val))
+            world.thermal_density = val
             #Thermal Size
             val = XPGetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TSize_value, str(val))
+            world.thermal_size = val
             #Thermal Power
             val = XPGetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TPower_value, str(val))
+            world.thermal_power = val
             #Thermal Cycle
             val = XPGetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TCycle_value, str(val))
+            world.thermal_cycle = val
 
         return 0
 
@@ -357,7 +377,7 @@ class PythonInterface:
         self.enableCheck = XPCreateWidget(x+180, y-80, x+220, y-102, 1, '', 0,self.TCWidget, xpWidgetClass_Button)
         XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonType, xpRadioButton)
         XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonState, self.visibility)
+        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonState, world.cloud_streets)
         y -=75
 
         #define button 

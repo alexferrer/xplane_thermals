@@ -133,7 +133,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
 
 
       #---------------- should move below to a different file
-def MakeRandomThermalMap(_lat,_lon,_strength,_count) :
+def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
       ''' Create xx random thermals around the current lat/lon point 
         us parameters average strength
         Params: center (lat,lon) , max strength, count  
@@ -142,7 +142,7 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count) :
         separated by at least 500m 
       '''
     
-      average_radius = 250
+      average_radius = _radius
       tdict = {}
       count = 1
       for r in sample(xrange(1,40000), 900):

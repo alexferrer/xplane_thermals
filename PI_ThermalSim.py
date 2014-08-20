@@ -312,13 +312,14 @@ class PythonInterface:
         #-----------------------------
         # Thermal Tops
         self.TTops_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Thermals Tops", 0, self.TCWidget, xpWidgetClass_Caption)
-        self.TTops_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Feet", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TTops_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Meters", 0, self.TCWidget, xpWidgetClass_Caption)
         #define scrollbar
         self.TTops_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
         self.TTops_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
         XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarMin, 100);
         XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarMax, 20000);
-        XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarPageAmount,500)
+        XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarPageAmount,500)        
+        XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_tops)               
         XPSetWidgetDescriptor(self.TTops_value, str(world.thermal_tops))
         y -=32
 
@@ -331,6 +332,7 @@ class PythonInterface:
         XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarMin, 10);
         XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarMax, 100);
         XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarPageAmount,10)
+        XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_density)               
         XPSetWidgetDescriptor(self.TDensity_value, str(world.thermal_density))
         y -=32
 
@@ -341,20 +343,22 @@ class PythonInterface:
         self.TSize_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
         self.TSize_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
         XPSetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarMin, 50);
-        XPSetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarMax, 600);
-        XPSetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarPageAmount,10)
+        XPSetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarMax, 1500);
+        XPSetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarPageAmount,20)
+        XPSetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_size)
         XPSetWidgetDescriptor(self.TSize_value, str(world.thermal_size))
         y -=32
 
         # Thermal Strength
         self.TPower_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Thermal Power", 0, self.TCWidget, xpWidgetClass_Caption)
-        self.TPower_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Max fpm", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TPower_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Max m/s", 0, self.TCWidget, xpWidgetClass_Caption)
         #define scrollbar
         self.TPower_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
         self.TPower_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
         XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarMin, 50);
         XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarMax, 600);
         XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarPageAmount,10)
+        XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_power)
         XPSetWidgetDescriptor(self.TPower_value, str(world.thermal_power))
         y -=32
 
@@ -366,6 +370,7 @@ class PythonInterface:
         XPSetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarMin, 5);
         XPSetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarMax, 90);
         XPSetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarPageAmount,1)
+        XPSetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_cycle)               
         XPSetWidgetDescriptor(self.TCycle_value, str(world.thermal_cycle))
         y -=30
 

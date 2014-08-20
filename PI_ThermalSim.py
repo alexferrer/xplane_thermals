@@ -258,14 +258,7 @@ class PythonInterface:
                 
 
             if (inParam1 == self.TRandom_button):
-                print "Random" 
-                #make random thermals around this location.
-                lat = XPLMGetDataf(self.PlaneLat)
-                lon = XPLMGetDataf(self.PlaneLon)
-                world.thermal_tops = 3000
-                                                       # lat,lon,stregth,count,radius
-                world.thermal_dict = MakeRandomThermalMap(lat,lon,50,90,500)    
-                world.world_update = True
+                print "Set thermal config randomly" 
                 return 1
 
         
@@ -326,6 +319,7 @@ class PythonInterface:
         XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarMin, 100);
         XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarMax, 20000);
         XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarPageAmount,500)
+        XPSetWidgetDescriptor(self.TTops_value, str(world.thermal_tops))
         y -=32
 
         # Thermal Density
@@ -337,6 +331,7 @@ class PythonInterface:
         XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarMin, 10);
         XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarMax, 100);
         XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarPageAmount,10)
+        XPSetWidgetDescriptor(self.TDensity_value, str(world.thermal_density))
         y -=32
 
         # Thermal Size
@@ -348,6 +343,7 @@ class PythonInterface:
         XPSetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarMin, 50);
         XPSetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarMax, 600);
         XPSetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarPageAmount,10)
+        XPSetWidgetDescriptor(self.TSize_value, str(world.thermal_size))
         y -=32
 
         # Thermal Strength
@@ -359,17 +355,18 @@ class PythonInterface:
         XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarMin, 50);
         XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarMax, 600);
         XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarPageAmount,10)
+        XPSetWidgetDescriptor(self.TPower_value, str(world.thermal_power))
         y -=32
 
         # Thermal Cycle time
         self.TCycle_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Cycle Time", 0, self.TCWidget, xpWidgetClass_Caption)
         self.TCycle_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Minutes", 0, self.TCWidget, xpWidgetClass_Caption)
-        #define scrollbar
         self.TCycle_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
         self.TCycle_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
         XPSetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarMin, 5);
         XPSetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarMax, 90);
         XPSetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarPageAmount,1)
+        XPSetWidgetDescriptor(self.TCycle_value, str(world.thermal_cycle))
         y -=30
 
         #Define checkbox for cloud streets
@@ -382,7 +379,7 @@ class PythonInterface:
 
         #define button 
         self.TRandom_button = XPCreateWidget(x+60, y-60, x+200, y-82,
-                                           1, "Generate Randomly", 0,self.TCWidget,xpWidgetClass_Button)
+                                           1, "Surprise me!", 0,self.TCWidget,xpWidgetClass_Button)
         XPSetWidgetProperty(self.TRandom_button, xpProperty_ButtonType, xpPushButton)
 
         #define button 

@@ -97,7 +97,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       angleL   = math.radians(heading-90)
       angleR   = math.radians(heading+90)
 
-      wingsize = 10  #size of each wing   10m -> -----(*)----- <-10m
+      wingsize = world.wing_size  #size of each wing   10m -> -----(*)----- <-10m
       
       # left wing tip coordinates
       lwingX = planeX + int(round(math.cos(angleL)*wingsize))
@@ -115,7 +115,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       liftM  =  calcLift(planeX,planeY) * tband_factor
 
       # total lift component
-      thermal_value = liftL + liftR + liftM
+      thermal_value = ( liftL + liftR + liftM ) / 3
       
       # total roll component 
       #         the more airplane is rolled, the less thermal roll effect
@@ -124,8 +124,8 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       roll_value    = -(liftR - liftL) * roll_factor
       
       # for debug
-      #print "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
-      #     ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt
+      print "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
+           ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt
       
       #todo: thermals have cycles, begin, middle , end.. and reflect in strength.. 
       
@@ -133,16 +133,15 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
 
 
       #---------------- should move below to a different file
-def MakeRandomThermalMap(_lat,_lon,_strength,_count) :
+def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
       ''' Create xx random thermals around the current lat/lon point 
         us parameters average strength
-        Params: center (lat,lon) , max strength, count  
+        Params: center (lat,lon) , max strength, count , radius 
         thermal_list =     { (lat,lon):(radius,strength) }
-        hardcoded to place thermals within a 50x50 km area
-        separated by at least 500m 
+
       '''
     
-      average_radius = 250
+      average_radius = _radius
       tdict = {}
       count = 1
       for r in sample(xrange(1,40000), 900):

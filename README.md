@@ -4,7 +4,7 @@ Author: Alex Ferrer
 License: GPL 2014
 
 
-Xplane plugin to generate more realistic thermals 
+X-Plane plugin to generate more realistic thermals 
 
 The current Xplane (Ver 10.30+) thermal model is quite simplistic. This is an attempt to create a pluggin that simulates thermal of better realism
 

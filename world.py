@@ -82,10 +82,10 @@ thermal_tops  = 1500 # maximum altitude for thermals in meters (may change based
 thermals_visible = True
 
 #Default thermal config values
-thermal_tops    = 3000    # meters thermal top
+thermal_tops    = 2000    # meters thermal top
 thermal_density = 60      # qty of thermal generated
 thermal_size    = 500     # diameter of thermals in meters
-thermal_power   = 500     # strength of thermals in fpm lift
+thermal_power   = 1000     # strength of thermals in fpm lift
 thermal_cycle   = 30      # thermal life cycle time in minutes
 cloud_streets   = False   # not yet implemented.. 
 

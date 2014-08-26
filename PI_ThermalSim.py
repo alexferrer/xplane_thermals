@@ -1,13 +1,9 @@
 """
-Thermal simulator  Ver .02  
+Thermal simulator  Ver .03  
   ** Works on Xplane 10.30 and above only **
-  This plugin generates a thermal map (A 2D matrix of 1000x1000) that
-  contains lift values foe every lat/lon spot.  
   
   The plugin then reads the lift value of the plane current position and applies
   the lift & roll values. 
-  
-  This version works.
   
   Author: Alex Ferrer
   License: GPL 
@@ -87,7 +83,14 @@ class PythonInterface:
         
         self.WindSpeed = XPLMFindDataRef("sim/weather/wind_speed_kt[0]") #wind speed at surface
         self.WindDir   = XPLMFindDataRef("sim/weather/wind_direction_degt[0]") #wind direction
-        world.world_update = True
+
+        #sun pitch from flat in OGL coordinates degrees, for thermal strength calculation
+        # from zero to 90 at 12pm in summer near the equator .. 
+        self.SunPitch  = XPLMFindDataRef('sim/graphics/scenery/sun_pitch_degrees')
+        #temperature_sealevel_c
+        #dewpoi_sealevel_c
+
+
         
         # variables to inject energy to the plane 
         self.lift = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
@@ -95,7 +98,9 @@ class PythonInterface:
         # although lift should be enough, some energy has to go as thrust, or the plane
         # might float in the air without moving!
         self.thrust  = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
-
+        
+        #Drawing update flag
+        world.world_update = True
          
         # image to mark thermals
         self.ObjectPath = "lib/dynamic/balloon.obj"    
@@ -163,6 +168,12 @@ class PythonInterface:
         roll_angle = XPLMGetDataf(self.PlaneRol)
         wind_speed = round(XPLMGetDataf(self.WindSpeed)*0.5144, 2 )      # Knots to m/s
         wind_dir = round(math.radians( XPLMGetDataf(self.WindDir) ), 4 ) # Degrees to radians
+        
+        #sun pitch afects thermal power , noon in summer is the best..
+        sun_pitch = XPLMGetDataf(self.SunPitch) #Degrees
+        sun_factor = (sun_pitch + 10)/100
+        if sun_pitch < 0 :
+           sun_factor = 0 
 
         #keep up with wind changes
         if [wind_speed,wind_dir] <>  [world.wind_speed,world.wind_dir] :
@@ -172,12 +183,16 @@ class PythonInterface:
         
         #Get the lift value of the current position from the world thermal map
         lift_val, roll_val  = CalcThermal(lat,lon,elevation,heading,roll_angle)    
+        
+        # apply sun elevation as a % factor to thermal power 
+        lift_val = lift_val * sun_factor
+        
         '''----------------------------- for fine tuning!!! -----------------------'''
         #lift_val = 1000
         #roll_val = 0
         '''------------------------------------------------------------------------'''
-        
-        #apply the force to the lift.value 
+
+        #apply the force to the airplanes lift.value dataref
         lval = lift_val * world.lift_factor + self.lift.value  
         self.lift.value = lval  
         

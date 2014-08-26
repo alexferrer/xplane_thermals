@@ -30,8 +30,10 @@ import math
 
 #for graphics
 from XPLMDisplay import *
-from XPLMScenery import *
 from XPLMGraphics import * 
+
+#for yprobe
+from XPLMScenery import *
 
 #for menus
 from XPLMMenus import *
@@ -89,6 +91,9 @@ class PythonInterface:
         self.SunPitch  = XPLMFindDataRef('sim/graphics/scenery/sun_pitch_degrees')
         #temperature_sealevel_c
         #dewpoi_sealevel_c
+        
+        # terrain probe to test for height and water
+        world.probe = XPLMCreateProbe(xplm_ProbeY)
 
 
         
@@ -123,7 +128,8 @@ class PythonInterface:
         XPLMUnregisterFlightLoopCallback(self, self.FlightLoopCB, 0)
         XPLMUnregisterDrawCallback(self, self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
         XPLMDestroyMenu(self, self.myMenu)
-        
+        # for probe suff
+        XPLMDestroyProbe(world.probe)
 
     def XPluginEnable(self):
         return 1
@@ -185,6 +191,7 @@ class PythonInterface:
         lift_val, roll_val  = CalcThermal(lat,lon,elevation,heading,roll_angle)    
         
         # apply sun elevation as a % factor to thermal power 
+        # average lift depends on sun angle over the earth. 
         lift_val = lift_val * sun_factor
         
         '''----------------------------- for fine tuning!!! -----------------------'''
@@ -208,6 +215,13 @@ class PythonInterface:
         #apply a roll to the plane 
         rval = roll_val * world.roll_factor + self.roll.value #5000
         self.roll.value = rval
+        
+        #--------------------- for testing probes only-------
+        self.probe = XPLMCreateProbe(xplm_ProbeY)
+        self.SDK200TestsObjectProbe = XPLMCreateProbe(xplm_ProbeY) 
+        #----------------------------------------------------
+        
+        
         
         # set the next callback time in +n for # of seconds and -n for # of Frames
         return .01 # works good on my (pretty fast) machine..

@@ -48,6 +48,7 @@ toggleThermal = 1
 randomThermal = 2
 defaultThermal = 3
 aboutThermal = 4
+configGlider = 5
 
 
 class PythonInterface:
@@ -57,7 +58,9 @@ class PythonInterface:
         #----- menu stuff --------------------------
         #init menu control params       
         self.TCMenuItem = 0
-        self.AboutMenuItem = 0        
+        self.CGMenuItem = 0
+        self.AboutMenuItem = 0       
+         
         
         global myMenu
         mySubMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "Thermal Simulator", 0, 1)
@@ -66,6 +69,7 @@ class PythonInterface:
         XPLMAppendMenuItem(self.myMenu, "Thermal Visibility On/Off " , toggleThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Configure Thermals", randomThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Load Thermals", defaultThermal, 1)
+        XPLMAppendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         XPLMAppendMenuItem(self.myMenu, "About", aboutThermal, 1)
         #-------------------------------------------------
         
@@ -195,7 +199,7 @@ class PythonInterface:
         lift_val = lift_val * sun_factor
         
         '''----------------------------- for fine tuning!!! -----------------------'''
-        #lift_val = 1000
+        #lift_val = 500
         #roll_val = 0
         '''------------------------------------------------------------------------'''
 
@@ -210,21 +214,18 @@ class PythonInterface:
            lift_val = 500
 
         tval = self.thrust.value
-        self.thrust.value = world.thrust_factor * lift_val + tval    
+        self.thrust.value = (- world.thrust_factor) * lift_val + tval    
         
         #apply a roll to the plane 
-        rval = roll_val * world.roll_factor + self.roll.value #5000
+        rval = roll_val * world.roll_factor + self.roll.value 
         self.roll.value = rval
         
-        #--------------------- for testing probes only-------
+        #Terrain probe -------
         self.probe = XPLMCreateProbe(xplm_ProbeY)
-        self.SDK200TestsObjectProbe = XPLMCreateProbe(xplm_ProbeY) 
-        #----------------------------------------------------
-        
         
         
         # set the next callback time in +n for # of seconds and -n for # of Frames
-        return .01 # works good on my (pretty fast) machine..
+        return .04 # works good on my (pretty fast) machine..
 
 
     #--------------------------------------------------------------------------------------------------
@@ -246,7 +247,6 @@ class PythonInterface:
         if (inItemRef == toggleThermal):
             print " Thermal Visibility  "
             world.thermals_visible = not world.thermals_visible
-
             
         if (inItemRef == randomThermal):
             print "show thermal config box "
@@ -262,7 +262,18 @@ class PythonInterface:
         if (inItemRef == defaultThermal):
             print "Making thermals from list"
 
-
+        if (inItemRef == configGlider):
+            print "show thermal config box "
+            if (self.CGMenuItem == 0):
+                print " create the thermal config box "
+                self.CreateCGWindow(100, 550, 550, 330)
+                self.CGMenuItem = 1
+            else:
+                if(not XPIsWidgetVisible(self.CGWidget)):
+                    print "re-show test config box "
+                    XPShowWidget(self.CGWidget)
+                    
+        print "------>",inItemRef
         if (inItemRef == aboutThermal):
             print "show about box "
             if (self.AboutMenuItem == 0):
@@ -273,8 +284,6 @@ class PythonInterface:
                 if(not XPIsWidgetVisible(self.AboutWidget)):
                     print "re-show about box "
                     XPShowWidget(self.AboutWidget)
-
-
 
 
     def TCHandler(self, inMessage, inWidget,       inParam1, inParam2):
@@ -335,15 +344,6 @@ class PythonInterface:
 
         return 0
 
-    def AboutHandler(self, inMessage, inWidget,       inParam1, inParam2):
-        # When widget close cross is clicked we only hide the widget
-        if (inMessage == xpMessage_CloseButtonPushed):
-            print "about close button pushed"
-            if (self.AboutMenuItem == 1):
-                print "hide the widget"
-                XPHideWidget(self.AboutWidget)
-                return 1
-        return 0
 
         
     # Creates the widget with buttons for test and edit boxes for info
@@ -405,7 +405,7 @@ class PythonInterface:
         self.TPower_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
         self.TPower_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
         XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarMin, 250);
-        XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarMax, 2500);
+        XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarMax, 3500);
         XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarPageAmount,10)
         XPSetWidgetProperty(self.TPower_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_power)
         XPSetWidgetDescriptor(self.TPower_value, str(world.thermal_power))
@@ -446,7 +446,10 @@ class PythonInterface:
         self.TCHandlerCB = self.TCHandler
         XPAddWidgetCallback(self,self.TCWidget, self.TCHandlerCB)
 
-    # Creates the widget with buttons for test and edit boxes for info
+
+
+
+#----------------------- About Window
     def CreateAboutWindow(self, x, y, w, h):
         x2 = x + w
         y2 = y - h
@@ -468,13 +471,159 @@ class PythonInterface:
 
         text3 = " https://github.com/alexferrer/xplane_thermals/wiki"
         self.About_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1, text3, 0, self.AboutWidget, xpWidgetClass_Caption)
-        
 
-        # --------------------------
         self.AboutHandlerCB = self.AboutHandler
         XPAddWidgetCallback(self,self.AboutWidget, self.AboutHandlerCB)
+     # ----
+     
+    def AboutHandler(self, inMessage, inWidget,       inParam1, inParam2):
+        # When widget close cross is clicked we only hide the widget
+        if (inMessage == xpMessage_CloseButtonPushed):
+            print "about close button pushed"
+            if (self.AboutMenuItem == 1):
+                print "hide the widget"
+                XPHideWidget(self.AboutWidget)
+                return 1
+        return 0
+#----------------------------------------- new...
+
+    def CGHandler(self, inMessage, inWidget,       inParam1, inParam2):
+        # When widget close cross is clicked we only hide the widget
+        if (inMessage == xpMessage_CloseButtonPushed):
+            print "close button pushed"
+            if (self.CGMenuItem == 1):
+                print "hide the widget"
+                XPHideWidget(self.CGWidget)
+                return 1
+                
+        # Process when a button on the widget is pressed
+        if (inMessage == xpMsg_PushButtonPressed):
+            print "[button was pressed",inParam1,"]"
+
+            # Tests the Command API, will find command
+            if (inParam1 == self.CGGenerate_button):
+                print "Generate" 
+                return 1
+                
+
+            if (inParam1 == self.CGRandom_button):
+                print "Set thermal config randomly" 
+                return 1
+
+        
+        if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
+            #Lift Factor
+            val = XPGetWidgetProperty(self.CGLift_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CGLift_value, str(val))
+            world.lift_factor = val * .1
+            
+            #Thrust Factor
+            val = XPGetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CGThrust_value, str(val))
+            world.thrust_factor = val * .1
+            
+            #Roll factor
+            val = XPGetWidgetProperty(self.CGRoll_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CGRoll_value, str(val))
+            world.roll_factor = val *.1
+            
+            #Wing Size
+            val = XPGetWidgetProperty(self.CGWing_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CGWing_value, str(val))
+            world.wing_size = val
+
+        return 0
 
 
+        
+    # Creates the config glider widget
+    def CreateCGWindow(self, x, y, w, h):
+        x2 = x + w
+        y2 = y - h
+        Title = "Glider Energy Configuration" 
+        
+        #create the window
+        self.CGWidget = XPCreateWidget(x, y, x2, y2, 1, Title, 1,     0, xpWidgetClass_MainWindow)        
+        XPSetWidgetProperty(self.CGWidget, xpProperty_MainWindowHasCloseBoxes, 1)
+        CGWindow = XPCreateWidget(x+50, y-50, x2-50, y2+50, 1, "",     0,self.CGWidget, xpWidgetClass_SubWindow)
+        XPSetWidgetProperty(CGWindow, xpProperty_SubWindowType, xpSubWindowStyle_SubWindow)
+
+        #-----------------------------
+        # Lift Component
+        self.CGLift_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Lift Factor", 0, self.CGWidget, xpWidgetClass_Caption)
+        self.CGLift_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Units", 0, self.CGWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.CGLift_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CGWidget, xpWidgetClass_Caption)
+        self.CGLift_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CGWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CGLift_scrollbar, xpProperty_ScrollBarMin, 0);
+        XPSetWidgetProperty(self.CGLift_scrollbar, xpProperty_ScrollBarMax, 100);
+        XPSetWidgetProperty(self.CGLift_scrollbar, xpProperty_ScrollBarPageAmount,1)        
+        XPSetWidgetProperty(self.CGLift_scrollbar, xpProperty_ScrollBarSliderPosition, int(world.lift_factor*10) )               
+        XPSetWidgetDescriptor(self.CGLift_value, str( int(world.lift_factor*10) ))
+        y -=32
+
+        # Thrust Component
+        self.CGThrust_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Thrust Factor", 0, self.CGWidget, xpWidgetClass_Caption)
+        self.CGThrust_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Units", 0, self.CGWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.CGThrust_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CGWidget, xpWidgetClass_Caption)
+        self.CGThrust_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CGWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarMin, 0);
+        XPSetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarMax, 100);
+        XPSetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarPageAmount,1)
+        XPSetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarSliderPosition,world.thrust_factor*10)               
+        XPSetWidgetDescriptor(self.CGThrust_value, str(world.thrust_factor*10))
+        y -=32
+
+        # Roll Component
+        self.CGRoll_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Roll Factor", 0, self.CGWidget, xpWidgetClass_Caption)
+        self.CGRoll_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Units", 0, self.CGWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.CGRoll_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CGWidget, xpWidgetClass_Caption)
+        self.CGRoll_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CGWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CGRoll_scrollbar, xpProperty_ScrollBarMin, 0);
+        XPSetWidgetProperty(self.CGRoll_scrollbar, xpProperty_ScrollBarMax, 800);
+        XPSetWidgetProperty(self.CGRoll_scrollbar, xpProperty_ScrollBarPageAmount,10)
+        XPSetWidgetProperty(self.CGRoll_scrollbar, xpProperty_ScrollBarSliderPosition,world.roll_factor)
+        XPSetWidgetDescriptor(self.CGRoll_value, str(world.roll_factor))
+        y -=32
+
+        # Wing Size
+        self.CGWing_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Wing Size", 0, self.CGWidget, xpWidgetClass_Caption)
+        self.CGWing_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"meters", 0, self.CGWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.CGWing_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CGWidget, xpWidgetClass_Caption)
+        self.CGWing_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CGWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CGWing_scrollbar, xpProperty_ScrollBarMin, 1);
+        XPSetWidgetProperty(self.CGWing_scrollbar, xpProperty_ScrollBarMax, 30);
+        XPSetWidgetProperty(self.CGWing_scrollbar, xpProperty_ScrollBarPageAmount,1)
+        XPSetWidgetProperty(self.CGWing_scrollbar, xpProperty_ScrollBarSliderPosition,world.wing_size)
+        XPSetWidgetDescriptor(self.CGWing_value, str(world.wing_size))
+        y -=32
+
+
+        #Define checkbox for cloud streets
+        XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'xx3', 0,self.CGWidget, xpWidgetClass_Caption)
+        self.enableCheck1 = XPCreateWidget(x+180, y-80, x+220, y-102, 1, '', 0,self.CGWidget, xpWidgetClass_Button)
+        XPSetWidgetProperty(self.enableCheck1, xpProperty_ButtonType, xpRadioButton)
+        XPSetWidgetProperty(self.enableCheck1, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
+        XPSetWidgetProperty(self.enableCheck1, xpProperty_ButtonState, world.cloud_streets)
+        y -=75
+
+        #define button 
+        self.CGRandom_button = XPCreateWidget(x+60, y-60, x+200, y-82,
+                                           1, "xx2", 0,self.CGWidget,xpWidgetClass_Button)
+        XPSetWidgetProperty(self.CGRandom_button, xpProperty_ButtonType, xpPushButton)
+
+        #define button 
+        self.CGGenerate_button = XPCreateWidget(x+320, y-60, x+440, y-82,
+                                           1, "xxx1", 0,self.CGWidget,xpWidgetClass_Button)
+        XPSetWidgetProperty(self.CGGenerate_button, xpProperty_ButtonType, xpPushButton)
+        
+        
+        # --------------------------
+        self.CGHandlerCB = self.CGHandler
+        XPAddWidgetCallback(self,self.CGWidget, self.CGHandlerCB)
 
 
 

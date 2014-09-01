@@ -89,7 +89,11 @@ class PythonInterface:
         
         self.WindSpeed = XPLMFindDataRef("sim/weather/wind_speed_kt[0]") #wind speed at surface
         self.WindDir   = XPLMFindDataRef("sim/weather/wind_direction_degt[0]") #wind direction
-
+        
+        #is the sim paused?
+        self.runningTime  = XPLMFindDataRef("sim/time/total_running_time_sec")
+        self.sim_time = 0 
+        
         #sun pitch from flat in OGL coordinates degrees, for thermal strength calculation
         # from zero to 90 at 12pm in summer near the equator .. 
         self.SunPitch  = XPLMFindDataRef('sim/graphics/scenery/sun_pitch_degrees')
@@ -169,8 +173,16 @@ class PythonInterface:
         return 1
 
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
+    
+        # is the sim paused? , then skip
+        runtime = XPLMGetDataf(self.runningTime)
+        if self.sim_time == runtime :
+           print "Paused!"
+           return 1 
+        self.sim_time = runtime
+        
         # instantiate the actual callbacks.  
-        elapsed = XPLMGetElapsedTime()
+        
         lat = XPLMGetDataf(self.PlaneLat)
         lon = XPLMGetDataf(self.PlaneLon)
         elevation = XPLMGetDataf(self.PlaneElev)

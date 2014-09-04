@@ -237,7 +237,7 @@ class PythonInterface:
         
         
         # set the next callback time in +n for # of seconds and -n for # of Frames
-        return .04 # works good on my (pretty fast) machine..
+        return .01 # works good on my (pretty fast) machine..
 
 
     #--------------------------------------------------------------------------------------------------

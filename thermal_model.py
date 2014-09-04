@@ -137,7 +137,33 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       return thermal_value , roll_value
 
 
-      #---------------- should move below to a different file
+def TestTerrain(_lat,_lon):
+    ''' test the terrain,
+           if it is water, skip
+           otherwise find the highest spot in the area.
+    '''
+    max_alt = [0,0,0]
+
+    for p in range (1,100):
+       for q in range (1,100):
+           lat = _lat + p *.000001
+           lon = _lon + q *.000001
+
+           info = []       
+           x,y,z = XPLMWorldToLocal(lat,lon,0) #Dew=E/W,Dud=Up/Down,Dns=N/S 
+           if (XPLMProbeTerrainXYZ(world.probe,x,y,z,info) == xplm_ProbeHitTerrain):
+               if info[10]:  #if terrain is water, skip!
+                   #return 0,0,0
+                   print "waterxxx",
+                   continue
+                  
+               alt = info[2]
+               if alt > max_alt[2]:
+                   max_alt = [lat,lon,alt]          
+                   print "max alt" , max_alt
+    print "returm",max_alt               
+    return (max_alt[0],max_alt[1],max_alt[2])
+
 def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
       ''' Create xx random thermals around the current lat/lon point 
         us parameters average strength
@@ -156,14 +182,11 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
           strength = choice((3,4,5,6,6,7,7,7,8,8,9,9,10)) * _strength * .1
           lat = _lat + (x -100) * .001   # min Thermmal separation = 1km
           lon = _lon + (y -100) * .001   # max distance =  100x100 km 
-          
-          #No thermals start over water..
-          info = []       
-          x,y,z = XPLMWorldToLocal(lat,lon,0) #Dew=E/W,Dud=Up/Down,Dns=N/S 
-          if (XPLMProbeTerrainXYZ(world.probe,x,y,z,info) == xplm_ProbeHitTerrain):
-              if info[10]:  #if terrain is water, skip!
-                  continue
 
+          lat1,lon1,alt =  TestTerrain(lat,lon)
+          if (lat1,lon1) == (0,0):   # it was water, skip
+             continue
+             
           #(lat,lon):(radius,strength)  
           #print "makeRandomThermal",lat,lon,radius,strength
           tdict[(lat,lon)] = (radius,strength)

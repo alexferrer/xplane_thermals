@@ -332,7 +332,7 @@ class PythonInterface:
             #Thermal Tops
             val = XPGetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TTops_value, str(val))
-            world.thermal_tops = val * world.f2m
+            world.thermal_tops = int( val * world.f2m )
             
             #Thermal Density
             val = XPGetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarSliderPosition, None)

@@ -14,11 +14,19 @@ While fliying, detect collision between the aircraft and the thermals, apply the
 
 
 Advanced concepts already implemented:
-Regular Thermals (not dynamic lift) tend to have a strong core of lift followed by outward softer layers of lift. Thermals drift with the wind as they gain altitude. 
+
+Regular Thermals (not dynamic lift) tend to have a strong core of lift followed by outward softer layers of lift.
+
+Thermals drift with the wind as they gain altitude. 
+
 Thermals rise till they reach cloudbase or the top of the lift. At this point they dwindle off. 
+
 When a wing of a plane hits a thermal and the other wing does not, the plane tends to roll against the lift.
+
 When the wing of the plane is on a roll, the thermal roll factor is reduced (less arm momentum) 
+
 Thermals gain and loose strength along with the height of the sun in the sky
+
 
 A random thermal generator menu allows the user to select quantity of thermals, size and strength. The thermal placement is random, but smart enough not to set thermals above water surfaces. 
 

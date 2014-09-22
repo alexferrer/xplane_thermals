@@ -25,7 +25,7 @@ Advanced concepts already implemented:
 
 - When the wing of the plane is on a roll, the thermal roll factor is reduced (less arm momentum) 
 
-- Thermals gain and loose strength along with the height of the sun in the sky
+- Thermals gain and loose strength along with the height of the sun in the sky (accounting for seasons)
 
 
 A random thermal generator menu allows the user to select quantity of thermals, size and strength. The thermal placement is random, but smart enough not to set thermals above water surfaces. 
@@ -33,7 +33,10 @@ A random thermal generator menu allows the user to select quantity of thermals, 
 A thermal visualization aid (shows markers where the thermals are) exists with an option to turn it on/off on the plugin menu
 
 Todo:
-Thermals have cycles, begin, middle, end and they tend to keep a basic timming.
+- Thermals have cycles, begin, middle, end and they tend to keep a basic timming.
+- Thermal streets
+- Clouds at the top of the thermal (* this is a big one, but I dont know how to do it yet) 
+- Read Thremals from a user given CSV file
 
 Installation
 This is a Python plugin, so the python interface is required. ( http://www.xpluginsdk.org/python_interface.htm )

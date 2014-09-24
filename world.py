@@ -9,14 +9,6 @@
   * We store variables in their ready to use units format, (usually metric)
 '''
 
-''' Our thermal map is a mesh representing 1x1 degree, so it use only 
-    the decimal portion of the Lat/Lon coordinates.
-    To calculate the true lat/lon at any point, we add the offset below. 
-    
-   *Technically, the origin can be any point in earth we want to designate
-    so, whatever it is, it will get added to the x,y thermal map coordinates.
-'''
-
 ''' The wind vector is used to calculate the thermal drift 
     and it is considered when reading thermal strength and
     locations for thermal graphics display
@@ -41,15 +33,7 @@ http://www.southerneaglessoaring.com/Storms/liftstrenghtgraph.htm
 http://www.southerneaglessoaring.com/Storms/stormlift.htm
 http://www.xcskies.com/map # may interact with this to get baseline data? 
 '''
-# list of thermal center at ground lat/lon coordinates. [lat,lon,thermal_size]
-'''
-    100,3890,7581) #Libmandi
-     50,3994,7666) #SantaMaria
-    150,3774,7815) #Intersection san bartolo
-    300,3016,8448) #Interseccion senoritas
-    350,4647,7516) #trebol de chilca
-    500,7623,6061) #vor asia
-'''
+
 # ask21 turn diameter at 60mph = 133m, 80mph = 420m
 
 # A dictionary of thermals  for testing { (lat,lon):(radius,strength) }

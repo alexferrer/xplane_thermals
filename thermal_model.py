@@ -28,8 +28,8 @@ def calcDrift(alt):
     '''
     climb_time = alt/2.54                              # assuming a thermal raises at ~ 500ft/m
     drift = world.wind_speed * climb_time  
-    dX = int(round(math.cos(world.wind_dir) * drift )) #east/west drift 
-    dY = int(round(math.sin(world.wind_dir) * drift )) #north/south drift
+    dX = -int(round(math.sin(world.wind_dir) * drift )) #east/west drift 
+    dY = int(round(math.cos(world.wind_dir) * drift )) #north/south drift
     return dX,dY
 
 def calcLift(p1x,p1y):
@@ -63,7 +63,7 @@ def DrawThermal(lat,lon): #min_alt,max_alt
     locs = []  #locations 
     for alt in range(base,world.thermal_tops,200): #from 100 to thermal top steps of  200
         dX,dY = calcDrift(alt)
-        locs.append([Dew+dX,Dud+alt,Dns-dY, 0, 0, 0])
+        locs.append([Dew+dX,Dud+alt,Dns+dY, 0, 0, 0])
     return locs
 
 def DrawThermalMap(lat,lon):

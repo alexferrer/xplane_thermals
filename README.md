@@ -34,6 +34,19 @@ A thermal visualization aid (shows markers where the thermals are) exists with a
 
 Todo:
 - Thermals have cycles, begin, middle, end and they tend to keep a basic timming.
+
+The idea is to simulate the begin, middle and end stages of a thermal that go on cycles trough out the day. 
+Begin: after the sun heats the ground and a big parcel of humid air gets warm enough a giant "bubble" of hot air raises    into the air (Because hot air is lighter than the surrounding air) at this point the thermal is usually small in diameter and starts getting stronger. 
+
+Middle, the "bubble" of hot air, is already climbing it is wider and has the strongest lift
+
+End, once the whole bubble has reached cloudbase, the air inside and outside the bubble are equal, so it stops moving up. but still has remaining lift until it eventually dies. 
+
+The lengths of this cycles varies depending on temperature, humidity, altitude etc.. Glider pilots learn to recognize this patterns and use them to know when to leave a thermal. 
+
+
+
+
 - Thermal streets
 - Clouds at the top of the thermal (* this is a big one, but I dont know how to do it yet) 
 - Read Thremals from a user given CSV file

@@ -32,12 +32,12 @@ def calcDrift(alt):
     dY = int(round(math.cos(world.wind_dir) * drift )) #north/south drift
     return dX,dY
 
-def calcLift(p1x,p1y):
+def calcLift(p1x,p1y,lat):
     lift = 0
     #test if we are inside any listed thermal
     for (lat1,lon1),(radius,strenght) in world.thermal_dict.items() :
         p2x = lat1 * world.latlon2meter
-        p2y = lon1 * world.latlon2meter
+        p2y = lon1 * world.latlon2meter * math.cos(math.radians(lat))
         #print "calclift:",p1x,p1y,p2x,p2y
         distance = calcDist(p1x,p1y,p2x,p2y) 
         # if our distance to center is < than radius, we are in!
@@ -69,11 +69,11 @@ def DrawThermal(lat,lon): #min_alt,max_alt
 def DrawThermalMap(lat,lon):
     locations = []
     p1x = lat * world.latlon2meter
-    p1y = lon * world.latlon2meter
+    p1y = lon * world.latlon2meter * math.cos(math.radians(lat))
     
     for (thermal_lat,thermal_lon),(radius,strenght) in world.thermal_dict.items() :
         p2x = thermal_lat * world.latlon2meter
-        p2y = thermal_lon * world.latlon2meter
+        p2y = thermal_lon * world.latlon2meter * math.cos(math.radians(lat))
         #print "DrawThermalmap:",p1x,p1y,p2x,p2y
         if calcDist(p1x,p1y,p2x,p2y) < world.max_draw_distance :
             locations = locations + DrawThermal(thermal_lat,thermal_lon) 
@@ -92,7 +92,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
        Return the total lift and roll value 
       '''       
       planeX   = lat * world.latlon2meter       # current plane position  
-      planeY   = lon * world.latlon2meter
+      planeY   = lon * world.latlon2meter * math.cos(math.radians(lat))
 
       dX,dY = calcDrift(alt)     # total wind drift
       planeX +=  dX              # reverse apply to plane x,y
@@ -115,9 +115,9 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       #Thermal Band: adjust thermal strength according to altitude band
       tband_factor = calcThermalBand(alt) 
 	  
-      liftL  =  calcLift(lwingX,lwingY) * tband_factor 
-      liftR  =  calcLift(rwingX,rwingY) * tband_factor
-      liftM  =  calcLift(planeX,planeY) * tband_factor
+      liftL  =  calcLift(lwingX,lwingY,lat) * tband_factor 
+      liftR  =  calcLift(rwingX,rwingY,lat) * tband_factor
+      liftM  =  calcLift(planeX,planeY,lat) * tband_factor
 
       # total lift component
       thermal_value = ( liftL + liftR + liftM ) / 3

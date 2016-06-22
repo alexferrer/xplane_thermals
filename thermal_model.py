@@ -105,12 +105,12 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       wingsize = world.wing_size  #size of each wing   10m -> -----(*)----- <-10m
       
       # left wing tip coordinates
-      lwingX = planeX + int(round(math.cos(angleL)*wingsize))
-      lwingY = planeY + int(round(math.sin(angleL)*wingsize))
+      lwingX = planeX + math.cos(angleL)*wingsize
+      lwingY = planeY + math.sin(angleL)*wingsize
 
       # rigth wing tip coordinates
-      rwingX = planeX + int(round(math.cos(angleR)*wingsize))
-      rwingY = planeY + int(round(math.sin(angleR)*wingsize))
+      rwingX = planeX + math.cos(angleR)*wingsize
+      rwingY = planeY + math.sin(angleR)*wingsize
 
       #Thermal Band: adjust thermal strength according to altitude band
       tband_factor = calcThermalBand(alt) 

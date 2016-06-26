@@ -1,7 +1,9 @@
+#!/usr/bin/env python2
+
 #thermal model generator library.
 ''' Thermal generator module
       for now just generate a spiral lift pattern of decreasing
-      strenght on a 2D (Lat,Lon) matrix.
+      strength on a 2D (Lat,Lon) matrix.
       
       assorted helper & debug functions
 '''
@@ -35,14 +37,14 @@ def calcDrift(alt):
 def calcLift(p1x,p1y,lat):
     lift = 0
     #test if we are inside any listed thermal
-    for (lat1,lon1),(radius,strenght) in world.thermal_dict.items() :
+    for (lat1,lon1),(radius,strength) in world.thermal_dict.items() :
         p2x = lat1 * world.latlon2meter
         p2y = lon1 * world.latlon2meter * math.cos(math.radians(lat))
         #print "calclift:",p1x,p1y,p2x,p2y
         distance = calcDist(p1x,p1y,p2x,p2y) 
         # if our distance to center is < than radius, we are in!
         if distance < radius :
-           lift += strenght * round((radius - distance)/radius,2)
+           lift += strength * round((radius - distance)/radius,2)
            #print "Dist ",lat1,lon1,radius, distance ,lift   
     return lift
 
@@ -71,7 +73,7 @@ def DrawThermalMap(lat,lon):
     p1x = lat * world.latlon2meter
     p1y = lon * world.latlon2meter * math.cos(math.radians(lat))
     
-    for (thermal_lat,thermal_lon),(radius,strenght) in world.thermal_dict.items() :
+    for (thermal_lat,thermal_lon),(radius,strength) in world.thermal_dict.items() :
         p2x = thermal_lat * world.latlon2meter
         p2y = thermal_lon * world.latlon2meter * math.cos(math.radians(lat))
         #print "DrawThermalmap:",p1x,p1y,p2x,p2y
@@ -83,7 +85,7 @@ def DrawThermalMap(lat,lon):
 
 def CalcThermal(lat,lon,alt,heading,roll_angle):
       '''
-       Calculate the strenght of the thermal at this particular point 
+       Calculate the strength of the thermal at this particular point 
        in space by computing the distance from center of all thermals
        and testing for thermal radius. 
        
@@ -108,7 +110,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       lwingX = planeX + math.cos(angleL)*wingsize
       lwingY = planeY + math.sin(angleL)*wingsize
 
-      # rigth wing tip coordinates
+      # right wing tip coordinates
       rwingX = planeX + math.cos(angleR)*wingsize
       rwingY = planeY + math.sin(angleR)*wingsize
 
@@ -134,7 +136,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       
       #todo: thermals have cycles, begin, middle , end.. and reflect in strength.. 
       
-      return thermal_value , roll_value
+      return thermal_value, roll_value
 
 
       #---------------- should move below to a different file
@@ -152,9 +154,9 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
           x = r/200      # col
           y = r - x*200  # row
           radius = randrange(average_radius/5,average_radius) #random diameter for the thermal
-          #randomize thermal strenght weighted towards stronger
+          #randomize thermal strength weighted towards stronger
           strength = choice((3,4,5,6,6,7,7,7,8,8,9,9,10)) * _strength * .1
-          lat = _lat + (x -100) * .001   # min Thermmal separation = 1km
+          lat = _lat + (x -100) * .001   # min thermal separation = 1km
           lon = _lon + (y -100) * .001   # max distance =  100x100 km 
           
           #No thermals start over water..
@@ -177,4 +179,3 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
 # ----- begin test code --------
 
 #print CalcThermal(-12.389,-76.7582,1000,0,45)
-

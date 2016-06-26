@@ -101,4 +101,18 @@ thrust_factor = 5.0  #ask21  1.1
 
 # wing span in meters for lift differential calculation
 # size of each wing   10m -> -----(*)----- <-10m
-wing_size     = 10     #10 
+wing_size     = 10     #10
+
+
+# Function that converts a geo location lat/lon/alt to coordinates x/y/z; returns tuple(x,y,z)
+def dummy_world_to_local(lat, lon, alt):
+    return (lat, lon, alt)
+
+world_to_local = dummy_world_to_local
+
+
+# Function that gets a value indicating whether the terrain at the geo location is water
+def dummy_terrain_is_water(lat, lon):
+    return False
+
+terrain_is_water = dummy_terrain_is_water

@@ -51,6 +51,20 @@ aboutThermal = 4
 configGlider = 5
 
 
+def xplane_world_to_local(lat, lon, alt):
+    x,y,z = XPLMWorldToLocal(lat,lon,alt)
+    return (x,y,z)
+
+
+def xplane_terrain_is_water(lat, lon):
+    info = []       
+    x,y,z = XPLMWorldToLocal(lat,lon,0)
+    if XPLMProbeTerrainXYZ(world.probe,x,y,z,info) == xplm_ProbeHitTerrain:
+        if info[10]:
+            return True
+    return False
+
+
 class PythonInterface:
     def XPluginStart(self):
         global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl
@@ -102,9 +116,9 @@ class PythonInterface:
         
         # terrain probe to test for height and water
         world.probe = XPLMCreateProbe(xplm_ProbeY)
-
-
-        
+        world.world_to_local = xplane_world_to_local
+        world.terrain_is_water = xplane_terrain_is_water
+ 
         # variables to inject energy to the plane 
         self.lift = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
         self.roll = EasyDref('sim/flightmodel/forces/L_plug_acf', 'float') # wing roll     
@@ -636,7 +650,3 @@ class PythonInterface:
         # --------------------------
         self.CGHandlerCB = self.CGHandler
         XPAddWidgetCallback(self,self.CGWidget, self.CGHandlerCB)
-
-
-
-

@@ -13,12 +13,6 @@ from random import randrange, sample, choice
 import math
 import csv
 
-# for lat2xyz
-from XPLMGraphics import * 
-
-#for terrain probe
-from XPLMScenery import *
-
 def calcDist(p1x,p1y,p2x,p2y):
     return math.sqrt( (p2x-p1x)**2 + (p2y-p1y)**2 )  # in meters
 
@@ -65,7 +59,7 @@ def DrawThermal(lat,lon): #min_alt,max_alt
         for wind drift along the climb. end at thermal tops
     '''
     base = 1
-    Dew,Dud,Dns = XPLMWorldToLocal(lat,lon,0) #Dew=E/W,Dud=Up/Down,Dns=N/S 
+    Dew,Dud,Dns = world.world_to_local(lat,lon,0) #Dew=E/W,Dud=Up/Down,Dns=N/S 
     locs = []  #locations 
     for alt in range(base,world.thermal_tops,200): #from 100 to thermal top steps of  200
         dX,dY = calcDrift(alt)
@@ -162,11 +156,8 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
           lon = _lon + (y -100) * .001   # max distance =  100x100 km 
           
           #No thermals start over water..
-          info = []       
-          x,y,z = XPLMWorldToLocal(lat,lon,0) #Dew=E/W,Dud=Up/Down,Dns=N/S 
-          if (XPLMProbeTerrainXYZ(world.probe,x,y,z,info) == xplm_ProbeHitTerrain):
-              if info[10]:  #if terrain is water, skip!
-                  continue
+          if world.terrain_is_water(lat, lon):
+              continue
 
           #(lat,lon):(radius,strength)  
           #print "makeRandomThermal",lat,lon,radius,strength

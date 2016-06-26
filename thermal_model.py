@@ -22,6 +22,11 @@ from XPLMScenery import *
 def calcDist(p1x,p1y,p2x,p2y):
     return math.sqrt( (p2x-p1x)**2 + (p2y-p1y)**2 )  # in meters
 
+# Converts lat/lon to meters (approximation); returns (px,py)
+def convertLatLon2Meters(lat, lon):
+    px = lat * world.latlon2meter
+    py = lon * world.latlon2meter * math.cos(math.radians(lat))
+    return (px, py)
 
 def calcDrift(alt):
     '''winddrift: as the thermal climbs, it is pushed by the prevailing winds.
@@ -37,9 +42,8 @@ def calcDrift(alt):
 def calcLift(p1x,p1y,lat):
     lift = 0
     #test if we are inside any listed thermal
-    for (lat1,lon1),(radius,strength) in world.thermal_dict.items() :
-        p2x = lat1 * world.latlon2meter
-        p2y = lon1 * world.latlon2meter * math.cos(math.radians(lat))
+    for (lat1,lon1),(radius,strength) in world.thermal_dict.items():
+        p2x, p2y = convertLatLon2Meters(lat1, lon1)
         #print "calclift:",p1x,p1y,p2x,p2y
         distance = calcDist(p1x,p1y,p2x,p2y) 
         # if our distance to center is < than radius, we are in!
@@ -70,12 +74,10 @@ def DrawThermal(lat,lon): #min_alt,max_alt
 
 def DrawThermalMap(lat,lon):
     locations = []
-    p1x = lat * world.latlon2meter
-    p1y = lon * world.latlon2meter * math.cos(math.radians(lat))
+    p1x, p1y = convertLatLon2Meters(lat, lon)
     
     for (thermal_lat,thermal_lon),(radius,strength) in world.thermal_dict.items() :
-        p2x = thermal_lat * world.latlon2meter
-        p2y = thermal_lon * world.latlon2meter * math.cos(math.radians(lat))
+        p2x, p2y = convertLatLon2Meters(thermal_lat, thermal_lon)
         #print "DrawThermalmap:",p1x,p1y,p2x,p2y
         if calcDist(p1x,p1y,p2x,p2y) < world.max_draw_distance :
             locations = locations + DrawThermal(thermal_lat,thermal_lon) 
@@ -93,8 +95,8 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
        
        Return the total lift and roll value 
       '''       
-      planeX   = lat * world.latlon2meter       # current plane position  
-      planeY   = lon * world.latlon2meter * math.cos(math.radians(lat))
+      # current plane position
+      planeX, planeY = convertLatLon2Meters(lat, lon)
 
       dX,dY = calcDrift(alt)     # total wind drift
       planeX +=  dX              # reverse apply to plane x,y

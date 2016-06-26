@@ -95,8 +95,8 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       planeY   = lon * world.latlon2meter * math.cos(math.radians(lat))
 
       dX,dY = calcDrift(alt)     # total wind drift
-      planeX +=  dX              # reverse apply to plane x,y
-      planeY +=  dY
+      planeX +=  dY              # instead off aplying it to the thermal list, reverse apply to the current plane position
+      planeY +=  dX
       
       # left and right wings position from current plane heading
       angleL   = math.radians(heading-90)

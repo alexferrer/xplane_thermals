@@ -28,8 +28,8 @@ def calcDrift(alt):
     '''
     climb_time = alt/2.54                              # assuming a thermal raises at ~ 500ft/m
     drift = world.wind_speed * climb_time  
-    dX = -int(round(math.sin(world.wind_dir) * drift )) #east/west drift 
-    dY = int(round(math.cos(world.wind_dir) * drift )) #north/south drift
+    dX = -(math.sin(world.wind_dir) * drift ) #east/west drift 
+    dY = (math.cos(world.wind_dir) * drift ) #north/south drift
     return dX,dY
 
 def calcLift(p1x,p1y,lat):

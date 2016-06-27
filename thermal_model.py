@@ -142,7 +142,7 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
         Params: center (lat,lon) , max strength, count , radius 
         thermal_list =     { (lat,lon):(radius,strength) }
       '''
-    
+
       average_radius = _radius
       tdict = {}
       count = 1

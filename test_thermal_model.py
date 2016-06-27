@@ -4,6 +4,7 @@ from world import *
 from thermal_model import *
 
 import unittest
+import timeit
 
 
 class ThermalModelTest(unittest.TestCase):
@@ -55,7 +56,7 @@ class ThermalModelTest(unittest.TestCase):
         lat = 52.52
         lon = 13.37
         strength = 1
-        count = 10
+        count = 500
         radius = 10
 
         thermals = MakeRandomThermalMap(lat,lon,strength,count,radius)
@@ -87,5 +88,26 @@ class ThermalModelTest(unittest.TestCase):
         self._testCalcLift((52.5, 13.37), 0)
 
 
+def testPerformance():
+    lat = 52.52
+    lon = 13.37
+    strength = 100
+    count = 9999
+    radius = 500
+
+    tstart = timeit.default_timer()
+    world.thermal_dict = MakeRandomThermalMap(lat,lon,strength,count,radius)
+    tend = timeit.default_timer()
+    print "MakeRandomThermalMap took %f s" % (tend - tstart)
+
+    tstart = timeit.default_timer()
+    for i in xrange(1000):
+        calcLift(lat, lon)
+    tend = timeit.default_timer()
+    print "calcLift took %f s" % (tend - tstart)
+
+
 if __name__ == "__main__":
+    testPerformance()
+
     unittest.main()

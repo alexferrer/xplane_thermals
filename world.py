@@ -11,6 +11,13 @@
   * We store variables in their ready to use units format, (usually metric)
 '''
 
+# Conversion constants
+nm2meter = 1852 # nautical miles to meters
+latlon2meter = 111200  # crude conversion value for lat/lon to meters
+f2m = 0.3048        # feet to meter conversion value
+m2f = 3.280         # meter to feet
+max_draw_distance = 18520 # furthest thermals shown, 18.52km = 10nm visibility
+
 ''' The wind vector is used to calculate the thermal drift 
     and it is considered when reading thermal strength and
     locations for thermal graphics display
@@ -19,10 +26,6 @@
 wind_speed = 0  # m/s
 wind_dir   = 0    # radians
 world_update = False # toggle on wind change
-latlon2meter = 111200  # crude conversion value for lat/lon to meters
-max_draw_distance = 18520 # furthest thermals shown, 18.52km = 10nm visibility
-f2m = 0.3048        # feet to meter conversion value
-m2f = 3.280         # meter to feet
 '''
    Thermal behaviour information
    There are many factors that affect thermal size and strength as they move

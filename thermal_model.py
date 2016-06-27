@@ -33,7 +33,7 @@ def calcDrift(alt):
     dY = (math.cos(world.wind_dir) * drift ) #north/south drift
     return dX,dY
 
-def calcLift(p1x,p1y,lat):
+def calcLift(p1x,p1y):
     lift = 0
     #test if we are inside any listed thermal
     for (lat1,lon1),(radius,strength) in world.thermal_dict.items():
@@ -113,9 +113,9 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
       #Thermal Band: adjust thermal strength according to altitude band
       tband_factor = calcThermalBand(alt) 
 	  
-      liftL  =  calcLift(lwingX,lwingY,lat) * tband_factor 
-      liftR  =  calcLift(rwingX,rwingY,lat) * tband_factor
-      liftM  =  calcLift(planeX,planeY,lat) * tband_factor
+      liftL  =  calcLift(lwingX,lwingY) * tband_factor 
+      liftR  =  calcLift(rwingX,rwingY) * tband_factor
+      liftM  =  calcLift(planeX,planeY) * tband_factor
 
       # total lift component
       thermal_value = ( liftL + liftR + liftM ) / 3

@@ -53,7 +53,8 @@ configGlider = 5
 
 class PythonInterface:
     def XPluginStart(self):
-        global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl
+        global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl, stepcounter,lift_val, roll_val
+        stepcounter=0
         
         #----- menu stuff --------------------------
         #init menu control params       
@@ -182,33 +183,34 @@ class PythonInterface:
         self.sim_time = runtime
         
         # instantiate the actual callbacks.  
-        
-        lat = XPLMGetDataf(self.PlaneLat)
-        lon = XPLMGetDataf(self.PlaneLon)
-        elevation = XPLMGetDataf(self.PlaneElev)
-        heading = XPLMGetDataf(self.PlaneHdg)
-        roll_angle = XPLMGetDataf(self.PlaneRol)
-        wind_speed = round(XPLMGetDataf(self.WindSpeed)*0.5144, 2 )      # Knots to m/s
-        wind_dir = round(math.radians( XPLMGetDataf(self.WindDir) ), 4 ) # Degrees to radians
-        
-        #sun pitch afects thermal power , noon in summer is the best..
-        sun_pitch = XPLMGetDataf(self.SunPitch) #Degrees
-        sun_factor = (sun_pitch + 10)/100
-        if sun_pitch < 0 :
-           sun_factor = 0 
-
-        #keep up with wind changes
-        if [wind_speed,wind_dir] <>  [world.wind_speed,world.wind_dir] :
-            [world.wind_speed,world.wind_dir] = [wind_speed,wind_dir]  
-            world.world_update = True
-            #print "wind changed",wind_speed,world.wind_speed,wind_dir,world.wind_dir
-        
-        #Get the lift value of the current position from the world thermal map
-        lift_val, roll_val  = CalcThermal(lat,lon,elevation,heading,roll_angle)    
-        
-        # apply sun elevation as a % factor to thermal power 
-        # average lift depends on sun angle over the earth. 
-        lift_val = lift_val * sun_factor
+        performance_divider = 5;  
+        if(stepcounter % performance_divider == 0):
+          lat = XPLMGetDataf(self.PlaneLat)
+          lon = XPLMGetDataf(self.PlaneLon)
+          elevation = XPLMGetDataf(self.PlaneElev)
+          heading = XPLMGetDataf(self.PlaneHdg)
+          roll_angle = XPLMGetDataf(self.PlaneRol)
+          wind_speed = round(XPLMGetDataf(self.WindSpeed)*0.5144, 2 )      # Knots to m/s
+          wind_dir = round(math.radians( XPLMGetDataf(self.WindDir) ), 4 ) # Degrees to radians
+          
+          #sun pitch afects thermal power , noon in summer is the best..
+          sun_pitch = XPLMGetDataf(self.SunPitch) #Degrees
+          sun_factor = (sun_pitch + 10)/100
+          if sun_pitch < 0 :
+             sun_factor = 0 
+  
+          #keep up with wind changes
+          if [wind_speed,wind_dir] <>  [world.wind_speed,world.wind_dir] :
+              [world.wind_speed,world.wind_dir] = [wind_speed,wind_dir]  
+              world.world_update = True
+              #print "wind changed",wind_speed,world.wind_speed,wind_dir,world.wind_dir
+          
+          #Get the lift value of the current position from the world thermal map
+          lift_val, roll_val  = CalcThermal(lat,lon,elevation,heading,roll_angle)    
+          
+          # apply sun elevation as a % factor to thermal power 
+          # average lift depends on sun angle over the earth. 
+          lift_val = lift_val * sun_factor
         
         '''----------------------------- for fine tuning!!! -----------------------'''
         #lift_val = 500
@@ -235,9 +237,10 @@ class PythonInterface:
         #Terrain probe -------
         self.probe = XPLMCreateProbe(xplm_ProbeY)
         
+        stepcounter = stepcounter + 1
         
         # set the next callback time in +n for # of seconds and -n for # of Frames
-        return .04 # works good on my (pretty fast) machine..
+        return -1 # works good on my (pretty fast) machine..
 
 
     #--------------------------------------------------------------------------------------------------

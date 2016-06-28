@@ -56,7 +56,7 @@ class ThermalModelTest(unittest.TestCase):
         lat = 52.52
         lon = 13.37
         strength = 1
-        count = 500
+        count = 1000
         radius = 10
 
         thermals = MakeRandomThermalMap(lat,lon,strength,count,radius)
@@ -92,7 +92,7 @@ def testPerformance():
     lat = 52.52
     lon = 13.37
     strength = 100
-    count = 9999
+    count = 1000
     radius = 500
 
     tstart = timeit.default_timer()
@@ -101,7 +101,7 @@ def testPerformance():
     print "MakeRandomThermalMap took %f s" % (tend - tstart)
 
     tstart = timeit.default_timer()
-    for i in xrange(1000):
+    for i in xrange(count):
         calcLift(lat, lon)
     tend = timeit.default_timer()
     print "calcLift took %f s" % (tend - tstart)

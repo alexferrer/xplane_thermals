@@ -145,8 +145,7 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
 
       average_radius = _radius
       tdict = {}
-      count = 1
-      for r in sample(xrange(1,40000), 900):
+      for r in sample(xrange(1,40000), _count):
           x = r/200      # col
           y = r - x*200  # row
           radius = randrange(average_radius/5,average_radius) #random diameter for the thermal
@@ -162,10 +161,7 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
           #(lat,lon):(radius,strength)  
           #print "makeRandomThermal",lat,lon,radius,strength
           tdict[(lat,lon)] = (radius,strength)
-          count +=1 
-          if count > _count :
-             break 
-           
+
       return tdict
 
 

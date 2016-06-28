@@ -13,8 +13,13 @@ from random import randrange, sample, choice
 import math
 import csv
 
+# Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2
+def calcDistSquare(p1x,p1y,p2x,p2y):
+    return (p2x-p1x)**2 + (p2y-p1y)**2
+
+# Calculates distance between (p1x,p1y) and (p2x,p2y) in meters
 def calcDist(p1x,p1y,p2x,p2y):
-    return math.sqrt( (p2x-p1x)**2 + (p2y-p1y)**2 )  # in meters
+    return math.sqrt( calcDistSquare(p1x,p1y, p2x,p2y) )
 
 # Converts lat/lon to meters (approximation); returns (px,py)
 def convertLatLon2Meters(lat, lon):
@@ -22,6 +27,7 @@ def convertLatLon2Meters(lat, lon):
     py = lon * world.latlon2meter * math.cos(math.radians(lat))
     return (px, py)
 
+# Calculates drift (based on wind direction and speed) in meters for the given altitude; returns (dx,dy)
 def calcDrift(alt):
     '''winddrift: as the thermal climbs, it is pushed by the prevailing winds.
        To account for the drift of the thermal use :
@@ -39,11 +45,12 @@ def calcLift(p1x,p1y):
     for (lat1,lon1),(radius,strength) in world.thermal_dict.items():
         p2x, p2y = convertLatLon2Meters(lat1, lon1)
         #print "calclift:",p1x,p1y,p2x,p2y
-        distance = calcDist(p1x,p1y,p2x,p2y) 
-        # if our distance to center is < than radius, we are in!
-        if distance < radius :
-           lift += strength * round((radius - distance)/radius,2)
-           #print "Dist ",lat1,lon1,radius, distance ,lift   
+
+        distance_square = calcDistSquare(p1x,p1y, p2x,p2y)
+        if distance_square < (radius*radius):
+            distance = math.sqrt(distance_square)
+            lift += strength * round((radius - distance)/radius,2)
+            #print "Dist ",lat1,lon1,radius, distance ,lift
     return lift
 
 def calcThermalBand(alt):
@@ -158,7 +165,7 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
           if world.terrain_is_water(lat, lon):
               continue
 
-          #(lat,lon):(radius,strength)  
+          #(lat,lon):(radius,strength)
           #print "makeRandomThermal",lat,lon,radius,strength
           tdict[(lat,lon)] = (radius,strength)
 

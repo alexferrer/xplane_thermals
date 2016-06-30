@@ -11,6 +11,8 @@
   * We store variables in their ready to use units format, (usually metric)
 '''
 
+from thermal import Thermal
+
 # Conversion constants
 nm2meter = 1852 # nautical miles to meters
 latlon2meter = 111200  # crude conversion value for lat/lon to meters
@@ -41,8 +43,14 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 
 # ask21 turn diameter at 60mph = 133m, 80mph = 420m
 
-# A dictionary of thermals for testing { (lat,lon):(radius,strength) }
-default_thermal_dict = {(-12.3890,-76.7581):(500,30),(-12.3994,-76.7666):(400,10),(-12.3774,-76.7815):(300,20),(-12.3016,-76.8448):(200,40),(-12.4647,-76.7516):(150,50),(-12.7623,-76.6061):(900,60) }
+# A list of thermals for testing { (lat,lon):(radius,strength) }
+default_thermal_dict = [
+        Thermal(-12.3890,-76.7581, 500,30),
+        Thermal(-12.3994,-76.7666, 400,10),
+        Thermal(-12.3774,-76.7815, 300,20),
+        Thermal(-12.3016,-76.8448, 200,40),
+        Thermal(-12.4647,-76.7516, 150,50),
+        Thermal(-12.7623,-76.6061, 900,60) ]
 
 thermal_dict = default_thermal_dict
 

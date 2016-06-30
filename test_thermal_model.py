@@ -81,7 +81,7 @@ class ThermalModelTest(unittest.TestCase):
         self.assertEqualEpsilon(lift, expected_lift)
 
     def testCalcLift(self):
-        world.thermal_dict = {(52.52,13.37):(2000,30) }
+        world.thermal_dict = [ Thermal(52.52,13.37,2000,30) ]
         self._testCalcLift((52.52, 13.37), 30)
         self._testCalcLift((52.515, 13.37), 21.6)
         self._testCalcLift((52.51, 13.37), 12.9)

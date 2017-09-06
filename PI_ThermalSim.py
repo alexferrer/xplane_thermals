@@ -25,7 +25,8 @@ from XPLMProcessing import *
 from XPLMDataAccess import *
 from XPLMUtilities import *
 
-from random import randrange
+import random
+from random import randrange, seed
 import math
 
 #for graphics
@@ -49,6 +50,9 @@ randomThermal = 2
 defaultThermal = 3
 aboutThermal = 4
 configGlider = 5
+
+#add random seed for multiplayer session - just press "reset seed" and then "generate thermals"
+random.seed(1234)
 
 
 def xplane_world_to_local(lat, lon, alt):
@@ -337,8 +341,9 @@ class PythonInterface:
                 return 1
                 
 
-            if (inParam1 == self.TRandom_button):
-                print "Set thermal config randomly" 
+            if (inParam1 == self.TSeed_button):
+                print "seed was reset" 
+                random.seed(1234)
                 return 1
 
         
@@ -458,9 +463,9 @@ class PythonInterface:
         y -=75
 
         #define button 
-        self.TRandom_button = XPCreateWidget(x+60, y-60, x+200, y-82,
-                                           1, "Surprise me!", 0,self.TCWidget,xpWidgetClass_Button)
-        XPSetWidgetProperty(self.TRandom_button, xpProperty_ButtonType, xpPushButton)
+        self.TSeed_button = XPCreateWidget(x+60, y-60, x+200, y-82,
+                                           1, "Reset Seed", 0,self.TCWidget,xpWidgetClass_Button)
+        XPSetWidgetProperty(self.TSeed_button, xpProperty_ButtonType, xpPushButton)
 
         #define button 
         self.TGenerate_button = XPCreateWidget(x+320, y-60, x+440, y-82,

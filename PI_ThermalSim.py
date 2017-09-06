@@ -25,6 +25,7 @@ from XPLMProcessing import *
 from XPLMDataAccess import *
 from XPLMUtilities import *
 
+import random
 from random import randrange, seed
 import math
 
@@ -50,7 +51,7 @@ defaultThermal = 3
 aboutThermal = 4
 configGlider = 5
 
-#seed generation for multiplayer 
+#add random seed number for multiplayer 
 random.seed(1234)
 
 

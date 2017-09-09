@@ -51,6 +51,8 @@ defaultThermal = 3
 aboutThermal = 4
 configGlider = 5
 
+
+
 #add random seed for multiplayer session - just press "reset seed" and then "generate thermals"
 random.seed(1234)
 
@@ -342,7 +344,7 @@ class PythonInterface:
                 
 
             if (inParam1 == self.TSeed_button):
-                print "seed was reset" 
+                print "seed was reset"
                 random.seed(1234)
                 return 1
 

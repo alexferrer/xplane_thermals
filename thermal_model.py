@@ -9,9 +9,10 @@
 '''
 
 import world
+import thermal
 from random import randrange, sample, choice
 import math
-import csv
+#import csv
 
 # Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2
 def calcDistSquare(p1x,p1y,p2x,p2y):
@@ -42,14 +43,14 @@ def calcDrift(alt):
 def calcLift(p1x,p1y):
     lift = 0
     #test if we are inside any listed thermal
-    for (lat1,lon1),(radius,strength) in world.thermal_dict.items():
-        p2x, p2y = convertLatLon2Meters(lat1, lon1)
+    for thermal in world.thermal_dict:
+        p2x, p2y = thermal.px, thermal.py
         #print "calclift:",p1x,p1y,p2x,p2y
 
         distance_square = calcDistSquare(p1x,p1y, p2x,p2y)
-        if distance_square < (radius*radius):
+        if distance_square < thermal.radius_square:
             distance = math.sqrt(distance_square)
-            lift += strength * round((radius - distance)/radius,2)
+            lift += thermal.strength * round((thermal.radius - distance) / thermal.radius,2)
             #print "Dist ",lat1,lon1,radius, distance ,lift
     return lift
 
@@ -77,11 +78,11 @@ def DrawThermalMap(lat,lon):
     locations = []
     p1x, p1y = convertLatLon2Meters(lat, lon)
     
-    for (thermal_lat,thermal_lon),(radius,strength) in world.thermal_dict.items() :
-        p2x, p2y = convertLatLon2Meters(thermal_lat, thermal_lon)
+    for thermal in world.thermal_dict:
+        p2x, p2y = thermal.px, thermal.py
         #print "DrawThermalmap:",p1x,p1y,p2x,p2y
-        if calcDist(p1x,p1y,p2x,p2y) < world.max_draw_distance :
-            locations = locations + DrawThermal(thermal_lat,thermal_lon) 
+        if calcDist(p1x,p1y, p2x,p2y) < world.max_draw_distance :
+            locations = locations + DrawThermal(thermal.lat, thermal.lon)
     return locations
 
 
@@ -151,7 +152,7 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
       '''
 
       average_radius = _radius
-      tdict = {}
+      thermals = []
       for r in sample(xrange(1,40000), _count):
           x = r/200      # col
           y = r - x*200  # row
@@ -167,9 +168,10 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
 
           #(lat,lon):(radius,strength)
           #print "makeRandomThermal",lat,lon,radius,strength
-          tdict[(lat,lon)] = (radius,strength)
+          #thermals[(lat,lon)] = (radius,strength)
+          thermals.append(thermal.Thermal(lat, lon, radius, strength))
 
-      return tdict
+      return thermals
 
 
 # ----- begin test code --------

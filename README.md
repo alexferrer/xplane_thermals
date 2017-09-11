@@ -54,7 +54,6 @@ The lengths of this cycles varies depending on temperature, humidity, altitude e
 
 - Thermal streets
 - Clouds at the top of the thermal (* this is a big one, but I don't know how to do it yet) 
-- Read thermals from a user given CSV file
 
 
 Installation

@@ -12,7 +12,9 @@ import world
 import thermal
 from random import randrange, sample, choice
 import math
-#import csv
+import csv
+
+
 
 # Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2
 def calcDistSquare(p1x,p1y,p2x,p2y):
@@ -144,6 +146,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
 
 
       #---------------- should move below to a different file
+
 def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
       ''' Create xx random thermals around the current lat/lon point 
         us parameters average strength
@@ -170,6 +173,52 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
           #print "makeRandomThermal",lat,lon,radius,strength
           #thermals[(lat,lon)] = (radius,strength)
           thermals.append(thermal.Thermal(lat, lon, radius, strength))
+
+      return thermals
+
+def MakeCSVThermalMap(_lat,_lon,_strength,_count,_radius) :
+      ''' Create xx random thermals around the hotspot lat/lon point 
+        us parameters average strength
+        Params: center (lat,lon) , max strength, count , radius 
+        thermal_list =     { (lat,lon):(radius,strength) }
+      '''
+      #csv_list = world.hotspots
+      hotspots = world.hotspots
+      #print csv_list
+      #hotspots = [(36.7913278, -119.3000250,255,70),(36.7845528, -119.3029139,275, 20),(36.7974417, -119.2900083,435, 100)]
+      #print hotspots
+      average_radius = _radius
+      thermals = []
+      if _count < len(hotspots):
+        count = _count 
+        print count
+      else:
+        count =len(hotspots)
+        print count
+
+      for select_spot in sample(xrange(0,len(hotspots)),count):
+
+          r =  randrange(1,40000)
+          hotspot_prob = hotspots[select_spot][3]
+          if hotspot_prob > randrange(0,50)**2/50:
+            hotspot_lat = hotspots[select_spot][0]
+            hotspot_lon = hotspots[select_spot][1]
+            x = r/200      # col
+            y = r - x*200  # row
+            radius = randrange(average_radius/5,average_radius) #random diameter for the thermal
+            #randomize thermal strength weighted towards stronger
+            strength = choice((4,5,5,6,6,7,7,7,8,8,9,9,10)) * _strength * .1 * hotspot_prob**1/4/20
+            lat = hotspot_lat + (x -100) * .00001   # min thermal separation = 100m
+            lon = hotspot_lon + (y -100) * .00001   # max distance =  100x100 100m
+                      
+            #No thermals start over water..
+            if world.terrain_is_water(lat, lon):
+              continue
+
+            #(lat,lon):(radius,strength)
+            #print "makeRandomThermal",lat,lon,radius,strength
+            #thermals[(lat,lon)] = (radius,strength)
+            thermals.append(thermal.Thermal(lat, lon, radius, strength))
 
       return thermals
 

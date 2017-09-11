@@ -44,7 +44,7 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 
 # A list of thermals for testing { (lat,lon):(radius,strength) }
 default_thermal_dict = [
-        Thermal(-12.3890,-76.7581, 500,30),
+        Thermal(33.0678333,-96.0653333, 500,30),
         Thermal(-12.3994,-76.7666, 400,10),
         Thermal(-12.3774,-76.7815, 300,20),
         Thermal(-12.3016,-76.8448, 200,40),

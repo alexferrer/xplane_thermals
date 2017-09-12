@@ -94,6 +94,7 @@ thermal_size    = 500     # diameter of thermals in meters
 thermal_power   = 1000     # strength of thermals in fpm lift
 thermal_cycle   = 30      # thermal life cycle time in minutes
 cloud_streets   = False   # not yet implemented.. 
+seed_number = 1234
 
 ''' 
 Control factors

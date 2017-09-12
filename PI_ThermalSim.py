@@ -52,7 +52,8 @@ aboutThermal = 4
 configGlider = 5
 
 #add random seed for multiplayer session - just press "reset seed" and then "generate thermals"
-random.seed(1234)
+seed_number = world.seed_number
+
 
 
 def xplane_world_to_local(lat, lon, alt):
@@ -256,7 +257,7 @@ class PythonInterface:
         
         
         # set the next callback time in +n for # of seconds and -n for # of Frames
-        return .04 # works good on my (pretty fast) machine..
+        return .01 # works good on my (pretty fast) machine..
 
 
     #--------------------------------------------------------------------------------------------------
@@ -341,19 +342,16 @@ class PythonInterface:
             # Tests the Command API, will find command
             if (inParam1 == self.TGenerate_button):
                 print "Generate" 
+                print world.seed_number
+                random.seed(world.seed_number)
                 lat = XPLMGetDataf(self.PlaneLat)
                 lon = XPLMGetDataf(self.PlaneLon)
-                world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
+                #world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
                                                        # lat,lon,stregth,count
                 world.thermal_dict = MakeRandomThermalMap(lat,lon,world.thermal_power,world.thermal_density,world.thermal_size)    
                 world.world_update = True
                 return 1
                 
-
-            if (inParam1 == self.TSeed_button):
-                print "seed was reset" 
-                random.seed(1234)
-                return 1
 
         
         if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
@@ -381,6 +379,11 @@ class PythonInterface:
             val = XPGetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TCycle_value, str(val))
             world.thermal_cycle = val
+
+            #Seed
+            val = XPGetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.TSeed_value, str(val))
+            world.seed_number = val
 
         return 0
 
@@ -463,18 +466,24 @@ class PythonInterface:
         XPSetWidgetDescriptor(self.TCycle_value, str(world.thermal_cycle))
         y -=30
 
-        #Define checkbox for cloud streets
-        XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'Align on cloud streets', 0,self.TCWidget, xpWidgetClass_Caption)
-        self.enableCheck = XPCreateWidget(x+180, y-80, x+220, y-102, 1, '', 0,self.TCWidget, xpWidgetClass_Button)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonType, xpRadioButton)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonState, world.cloud_streets)
+        # Seed
+        self.TSeed_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Seed Number", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TSeed_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TSeed_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarMin, 1234);
+        XPSetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarMax, 1334);
+        XPSetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarPageAmount,1)
+        XPSetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarSliderPosition,world.seed_number)               
+        XPSetWidgetDescriptor(self.TSeed_value, str(world.seed_number))
         y -=75
 
-        #define button 
-        self.TSeed_button = XPCreateWidget(x+60, y-60, x+200, y-82,
-                                           1, "Reset Seed", 0,self.TCWidget,xpWidgetClass_Button)
-        XPSetWidgetProperty(self.TSeed_button, xpProperty_ButtonType, xpPushButton)
+        #Define checkbox for cloud streets
+        #XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'Align on cloud streets', 0,self.TCWidget, xpWidgetClass_Caption)
+        #self.enableCheck = XPCreateWidget(x+180, y-80, x+220, y-102, 1, '', 0,self.TCWidget, xpWidgetClass_Button)
+        #XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonType, xpRadioButton)
+        #XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
+        #XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonState, world.cloud_streets)
+        #y -=75
 
         #define button 
         self.TGenerate_button = XPCreateWidget(x+320, y-60, x+440, y-82,
@@ -667,7 +676,7 @@ class PythonInterface:
 
         # CSV MENU
 
-    def CSVHandler(self, inMessage, inWidget,       inParam1, inParam2):
+    def CSVHandler(self, inMessage, inWidget, inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
         if (inMessage == xpMessage_CloseButtonPushed):
             print "close button pushed"
@@ -683,19 +692,14 @@ class PythonInterface:
             # Tests the Command API, will find command
             if (inParam1 == self.CSVTGenerate_button):
                 print "Generate" 
+                print world.seed_number
+                random.seed(world.seed_number)
                 lat = XPLMGetDataf(self.PlaneLat)
                 lon = XPLMGetDataf(self.PlaneLon)
-                world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
-                                                       # lat,lon,stregth,count
                 world.thermal_dict = MakeCSVThermalMap(lat,lon,world.thermal_power,world.thermal_density,world.thermal_size)    
                 world.world_update = True
                 return 1
                 
-
-            if (inParam1 == self.CSVTSeed_button):
-                print "seed was reset" 
-                random.seed(1234)
-                return 1
 
         
         if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
@@ -723,6 +727,11 @@ class PythonInterface:
             val = XPGetWidgetProperty(self.CSVTCycle_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.CSVTCycle_value, str(val))
             world.thermal_cycle = val
+
+            #Seed
+            val = XPGetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CSVSeed_value, str(val))
+            world.seed_number = val
 
         return 0
 
@@ -805,18 +814,16 @@ class PythonInterface:
         XPSetWidgetDescriptor(self.CSVTCycle_value, str(world.thermal_cycle))
         y -=30
 
-        #Define checkbox for cloud streets
-        XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'Align on cloud streets', 0,self.CSVWidget, xpWidgetClass_Caption)
-        self.enableCheck = XPCreateWidget(x+180, y-80, x+220, y-102, 1, '', 0,self.CSVWidget, xpWidgetClass_Button)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonType, xpRadioButton)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonState, world.cloud_streets)
+        # Seed
+        self.CSVSeed_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Seed Number", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVSeed_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVSeed_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CSVWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarMin, 1234);
+        XPSetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarMax, 1334);
+        XPSetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarPageAmount,1)
+        XPSetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarSliderPosition,world.seed_number)               
+        XPSetWidgetDescriptor(self.CSVSeed_value, str(world.seed_number))
         y -=75
-
-        #define button 
-        self.CSVTSeed_button = XPCreateWidget(x+60, y-60, x+200, y-82,
-                                           1, "Reset Seed", 0,self.CSVWidget,xpWidgetClass_Button)
-        XPSetWidgetProperty(self.CSVTSeed_button, xpProperty_ButtonType, xpPushButton)
 
         #define button 
         self.CSVTGenerate_button = XPCreateWidget(x+320, y-60, x+440, y-82,

@@ -13,14 +13,19 @@
 # import CSV from https://thermal.kk7.ch/ ,  clean the header and save the converted csv 
 from thermal import Thermal
 import csv
-with open("hotspots.csv",'r') as f:
-    with open("converted_hotspots.csv",'w') as f1:
-        f.next() # skip header line
-        for line in f:
-            f1.write(line)
-with open('converted_hotspots.csv', 'rU') as f:
-    reader = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
-    hotspots = map(tuple, reader)
+import os
+if os.path.exists('filename.csv') == True:
+  with open("hotspots.csv",'r') as f:
+      with open("converted_hotspots.csv",'w') as f1:
+          f.next() # skip header line
+          for line in f:
+              f1.write(line)
+  with open('converted_hotspots.csv', 'rU') as f:
+      reader = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
+      hotspots = map(tuple, reader)
+else:
+  hotspots = []
+  print "Can't find hotspots.csv in X-Plane root directory"
 
 # Conversion constants
 nm2meter = 1852 # nautical miles to meters

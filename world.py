@@ -14,7 +14,7 @@
 from thermal import Thermal
 import csv
 import os
-if os.path.exists('filename.csv') == True:
+if os.path.exists('hotspots.csv') == True:
   with open("hotspots.csv",'r') as f:
       with open("converted_hotspots.csv",'w') as f1:
           f.next() # skip header line

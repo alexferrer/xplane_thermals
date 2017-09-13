@@ -10,6 +10,7 @@
 
 import world
 import thermal
+import random
 from random import randrange, sample, choice
 import math
 import csv
@@ -189,25 +190,26 @@ def MakeCSVThermalMap(_lat,_lon,_strength,_count,_radius) :
       #print hotspots
       average_radius = _radius
       thermals = []
+      print  _strength
       if _count < len(hotspots):
         count = _count 
-        print count
       else:
         count =len(hotspots)
-        print count
 
       for select_spot in sample(xrange(0,len(hotspots)),count):
 
           r =  randrange(1,40000)
+          prob_test = random.random()*100/2
+          # probabilty test has to be random.random()*100 , but we need would need more thermal hotspots then
           hotspot_prob = hotspots[select_spot][3]
-          if hotspot_prob > randrange(0,50)**2/50:
+          if hotspot_prob > prob_test:
             hotspot_lat = hotspots[select_spot][0]
             hotspot_lon = hotspots[select_spot][1]
             x = r/200      # col
             y = r - x*200  # row
             radius = randrange(average_radius/5,average_radius) #random diameter for the thermal
             #randomize thermal strength weighted towards stronger
-            strength = choice((4,5,5,6,6,7,7,7,8,8,9,9,10)) * _strength * .1 * hotspot_prob**1/4/20
+            strength = choice((4,5,5,6,6,7,7,7,8,8,9,9,10)) * _strength * .1
             lat = hotspot_lat + (x -100) * .00001   # min thermal separation = 100m
             lon = hotspot_lon + (y -100) * .00001   # max distance =  100x100 100m
                       

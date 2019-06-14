@@ -9,12 +9,21 @@
 '''
 
 import world
+import thermal
+import random
 from random import randrange, sample, choice
 import math
 import csv
 
+
+
+# Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2
+def calcDistSquare(p1x,p1y,p2x,p2y):
+    return (p2x-p1x)**2 + (p2y-p1y)**2
+
+# Calculates distance between (p1x,p1y) and (p2x,p2y) in meters
 def calcDist(p1x,p1y,p2x,p2y):
-    return math.sqrt( (p2x-p1x)**2 + (p2y-p1y)**2 )  # in meters
+    return math.sqrt( calcDistSquare(p1x,p1y, p2x,p2y) )
 
 # Converts lat/lon to meters (approximation); returns (px,py)
 def convertLatLon2Meters(lat, lon):
@@ -22,6 +31,7 @@ def convertLatLon2Meters(lat, lon):
     py = lon * world.latlon2meter * math.cos(math.radians(lat))
     return (px, py)
 
+# Calculates drift (based on wind direction and speed) in meters for the given altitude; returns (dx,dy)
 def calcDrift(alt):
     '''winddrift: as the thermal climbs, it is pushed by the prevailing winds.
        To account for the drift of the thermal use :
@@ -36,14 +46,15 @@ def calcDrift(alt):
 def calcLift(p1x,p1y):
     lift = 0
     #test if we are inside any listed thermal
-    for (lat1,lon1),(radius,strength) in world.thermal_dict.items():
-        p2x, p2y = convertLatLon2Meters(lat1, lon1)
+    for thermal in world.thermal_dict:
+        p2x, p2y = thermal.px, thermal.py
         #print "calclift:",p1x,p1y,p2x,p2y
-        distance = calcDist(p1x,p1y,p2x,p2y) 
-        # if our distance to center is < than radius, we are in!
-        if distance < radius :
-           lift += strength * round((radius - distance)/radius,2)
-           #print "Dist ",lat1,lon1,radius, distance ,lift   
+
+        distance_square = calcDistSquare(p1x,p1y, p2x,p2y)
+        if distance_square < thermal.radius_square:
+            distance = math.sqrt(distance_square)
+            lift += thermal.strength * round((thermal.radius - distance) / thermal.radius,2)
+            #print "Dist ",lat1,lon1,radius, distance ,lift
     return lift
 
 def calcThermalBand(alt):
@@ -70,11 +81,11 @@ def DrawThermalMap(lat,lon):
     locations = []
     p1x, p1y = convertLatLon2Meters(lat, lon)
     
-    for (thermal_lat,thermal_lon),(radius,strength) in world.thermal_dict.items() :
-        p2x, p2y = convertLatLon2Meters(thermal_lat, thermal_lon)
+    for thermal in world.thermal_dict:
+        p2x, p2y = thermal.px, thermal.py
         #print "DrawThermalmap:",p1x,p1y,p2x,p2y
-        if calcDist(p1x,p1y,p2x,p2y) < world.max_draw_distance :
-            locations = locations + DrawThermal(thermal_lat,thermal_lon) 
+        if calcDist(p1x,p1y, p2x,p2y) < world.max_draw_distance :
+            locations = locations + DrawThermal(thermal.lat, thermal.lon)
     return locations
 
 
@@ -112,7 +123,7 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
 
       #Thermal Band: adjust thermal strength according to altitude band
       tband_factor = calcThermalBand(alt) 
-	  
+    
       liftL  =  calcLift(lwingX,lwingY) * tband_factor 
       liftR  =  calcLift(rwingX,rwingY) * tband_factor
       liftM  =  calcLift(planeX,planeY) * tband_factor
@@ -136,17 +147,17 @@ def CalcThermal(lat,lon,alt,heading,roll_angle):
 
 
       #---------------- should move below to a different file
+
 def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
       ''' Create xx random thermals around the current lat/lon point 
         us parameters average strength
         Params: center (lat,lon) , max strength, count , radius 
         thermal_list =     { (lat,lon):(radius,strength) }
       '''
-    
+
       average_radius = _radius
-      tdict = {}
-      count = 1
-      for r in sample(xrange(1,40000), 900):
+      thermals = []
+      for r in sample(xrange(1,40000), _count):
           x = r/200      # col
           y = r - x*200  # row
           radius = randrange(average_radius/5,average_radius) #random diameter for the thermal
@@ -159,14 +170,59 @@ def MakeRandomThermalMap(_lat,_lon,_strength,_count,_radius) :
           if world.terrain_is_water(lat, lon):
               continue
 
-          #(lat,lon):(radius,strength)  
+          #(lat,lon):(radius,strength)
           #print "makeRandomThermal",lat,lon,radius,strength
-          tdict[(lat,lon)] = (radius,strength)
-          count +=1 
-          if count > _count :
-             break 
-           
-      return tdict
+          #thermals[(lat,lon)] = (radius,strength)
+          thermals.append(thermal.Thermal(lat, lon, radius, strength))
+
+      return thermals
+
+def MakeCSVThermalMap(_lat,_lon,_strength,_count,_radius) :
+      ''' Create xx random thermals around the hotspot lat/lon point 
+        us parameters average strength
+        Params: center (lat,lon) , max strength, count , radius 
+        thermal_list =     { (lat,lon):(radius,strength) }
+      '''
+      #csv_list = world.hotspots
+      hotspots = world.hotspots
+      #print csv_list
+      #hotspots = [(36.7913278, -119.3000250,255,70),(36.7845528, -119.3029139,275, 20),(36.7974417, -119.2900083,435, 100)]
+      #print hotspots
+      average_radius = _radius
+      thermals = []
+      print  _strength
+      if _count < len(hotspots):
+        count = _count 
+      else:
+        count =len(hotspots)
+
+      for select_spot in sample(xrange(0,len(hotspots)),count):
+
+          r =  randrange(1,40000)
+          prob_test = random.random()*100/2
+          # probabilty test has to be random.random()*100 , but we need would need more thermal hotspots then
+          hotspot_prob = hotspots[select_spot][3]
+          if hotspot_prob > prob_test:
+            hotspot_lat = hotspots[select_spot][0]
+            hotspot_lon = hotspots[select_spot][1]
+            x = r/200      # col
+            y = r - x*200  # row
+            radius = randrange(average_radius/5,average_radius) #random diameter for the thermal
+            #randomize thermal strength weighted towards stronger
+            strength = choice((4,5,5,6,6,7,7,7,8,8,9,9,10)) * _strength * .1
+            lat = hotspot_lat + (x -100) * .00001   # min thermal separation = 100m
+            lon = hotspot_lon + (y -100) * .00001   # max distance =  100x100 100m
+                      
+            #No thermals start over water..
+            if world.terrain_is_water(lat, lon):
+              continue
+
+            #(lat,lon):(radius,strength)
+            #print "makeRandomThermal",lat,lon,radius,strength
+            #thermals[(lat,lon)] = (radius,strength)
+            thermals.append(thermal.Thermal(lat, lon, radius, strength))
+
+      return thermals
 
 
 # ----- begin test code --------

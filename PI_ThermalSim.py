@@ -19,13 +19,14 @@ from thermal_model import CalcThermal
 from thermal_model import DrawThermal
 from thermal_model import DrawThermalMap
 from thermal_model import MakeRandomThermalMap
-
+from thermal_model import MakeCSVThermalMap
 
 from XPLMProcessing import *
 from XPLMDataAccess import *
 from XPLMUtilities import *
 
-from random import randrange
+import random
+from random import randrange, seed
 import math
 
 #for graphics
@@ -46,9 +47,13 @@ from XPLMPlugin import *
 
 toggleThermal = 1
 randomThermal = 2
-defaultThermal = 3
+csvThermal = 3
 aboutThermal = 4
 configGlider = 5
+
+#add random seed for multiplayer session - just press "reset seed" and then "generate thermals"
+seed_number = world.seed_number
+
 
 
 def xplane_world_to_local(lat, lon, alt):
@@ -72,6 +77,7 @@ class PythonInterface:
         #----- menu stuff --------------------------
         #init menu control params       
         self.TCMenuItem = 0
+        self.CSVMenuItem = 0
         self.CGMenuItem = 0
         self.AboutMenuItem = 0       
          
@@ -81,13 +87,13 @@ class PythonInterface:
         self.MyMenuHandlerCB = self.MyMenuHandlerCallback
         self.myMenu = XPLMCreateMenu(self, "Thermals", XPLMFindPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         XPLMAppendMenuItem(self.myMenu, "Thermal Visibility On/Off " , toggleThermal, 1)
-        XPLMAppendMenuItem(self.myMenu, "Configure Thermals", randomThermal, 1)
-        XPLMAppendMenuItem(self.myMenu, "Load Thermals", defaultThermal, 1)
+        XPLMAppendMenuItem(self.myMenu, "Generate Random Thermals", randomThermal, 1)
+        XPLMAppendMenuItem(self.myMenu, "Generate CSV Thermals", csvThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         XPLMAppendMenuItem(self.myMenu, "About", aboutThermal, 1)
         #-------------------------------------------------
         
-        world.thermals_visible = True
+        world.thermals_visible = False
         
         self.Name = "ThermalSim2"
         self.Sig =  "AlexFerrer.Python.ThermalSim2"
@@ -251,7 +257,7 @@ class PythonInterface:
         
         
         # set the next callback time in +n for # of seconds and -n for # of Frames
-        return .04 # works good on my (pretty fast) machine..
+        return .01 # works good on my (pretty fast) machine..
 
 
     #--------------------------------------------------------------------------------------------------
@@ -285,8 +291,16 @@ class PythonInterface:
                     print "re-show test config box "
                     XPShowWidget(self.TCWidget)
 
-        if (inItemRef == defaultThermal):
+        if (inItemRef == csvThermal):
             print "Making thermals from list"
+            if (self.CSVMenuItem == 0):
+                print " create the thermal config box "
+                self.CreateCSVWindow(100, 550, 550, 330)
+                self.CSVMenuItem = 1
+            else:
+                if(not XPIsWidgetVisible(self.CSVWidget)):
+                    print "re-show test config box "
+                    XPShowWidget(self.CSVWidget)
 
         if (inItemRef == configGlider):
             print "show thermal config box "
@@ -328,18 +342,16 @@ class PythonInterface:
             # Tests the Command API, will find command
             if (inParam1 == self.TGenerate_button):
                 print "Generate" 
+                print world.seed_number
+                random.seed(world.seed_number)
                 lat = XPLMGetDataf(self.PlaneLat)
                 lon = XPLMGetDataf(self.PlaneLon)
-                world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
+                #world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
                                                        # lat,lon,stregth,count
                 world.thermal_dict = MakeRandomThermalMap(lat,lon,world.thermal_power,world.thermal_density,world.thermal_size)    
                 world.world_update = True
                 return 1
                 
-
-            if (inParam1 == self.TRandom_button):
-                print "Set thermal config randomly" 
-                return 1
 
         
         if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
@@ -367,6 +379,11 @@ class PythonInterface:
             val = XPGetWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TCycle_value, str(val))
             world.thermal_cycle = val
+
+            #Seed
+            val = XPGetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.TSeed_value, str(val))
+            world.seed_number = val
 
         return 0
 
@@ -405,7 +422,7 @@ class PythonInterface:
         self.TDensity_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
         self.TDensity_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
         XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarMin, 10);
-        XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarMax, 100);
+        XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarMax, 500);
         XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarPageAmount,10)
         XPSetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_density)               
         XPSetWidgetDescriptor(self.TDensity_value, str(world.thermal_density))
@@ -449,18 +466,24 @@ class PythonInterface:
         XPSetWidgetDescriptor(self.TCycle_value, str(world.thermal_cycle))
         y -=30
 
-        #Define checkbox for cloud streets
-        XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'Align on cloud streets', 0,self.TCWidget, xpWidgetClass_Caption)
-        self.enableCheck = XPCreateWidget(x+180, y-80, x+220, y-102, 1, '', 0,self.TCWidget, xpWidgetClass_Button)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonType, xpRadioButton)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
-        XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonState, world.cloud_streets)
+        # Seed
+        self.TSeed_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Seed Number", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TSeed_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TSeed_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarMin, 1234);
+        XPSetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarMax, 1334);
+        XPSetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarPageAmount,1)
+        XPSetWidgetProperty(self.TSeed_scrollbar, xpProperty_ScrollBarSliderPosition,world.seed_number)               
+        XPSetWidgetDescriptor(self.TSeed_value, str(world.seed_number))
         y -=75
 
-        #define button 
-        self.TRandom_button = XPCreateWidget(x+60, y-60, x+200, y-82,
-                                           1, "Surprise me!", 0,self.TCWidget,xpWidgetClass_Button)
-        XPSetWidgetProperty(self.TRandom_button, xpProperty_ButtonType, xpPushButton)
+        #Define checkbox for cloud streets
+        #XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'Align on cloud streets', 0,self.TCWidget, xpWidgetClass_Caption)
+        #self.enableCheck = XPCreateWidget(x+180, y-80, x+220, y-102, 1, '', 0,self.TCWidget, xpWidgetClass_Button)
+        #XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonType, xpRadioButton)
+        #XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
+        #XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonState, world.cloud_streets)
+        #y -=75
 
         #define button 
         self.TGenerate_button = XPCreateWidget(x+320, y-60, x+440, y-82,
@@ -650,3 +673,164 @@ class PythonInterface:
         # --------------------------
         self.CGHandlerCB = self.CGHandler
         XPAddWidgetCallback(self,self.CGWidget, self.CGHandlerCB)
+
+        # CSV MENU
+
+    def CSVHandler(self, inMessage, inWidget, inParam1, inParam2):
+        # When widget close cross is clicked we only hide the widget
+        if (inMessage == xpMessage_CloseButtonPushed):
+            print "close button pushed"
+            if (self.CSVMenuItem == 1):
+                print "hide the widget"
+                XPHideWidget(self.CSVWidget)
+                return 1
+                
+        # Process when a button on the widget is pressed
+        if (inMessage == xpMsg_PushButtonPressed):
+            print "[button was pressed",inParam1,"]"
+
+            # Tests the Command API, will find command
+            if (inParam1 == self.CSVTGenerate_button):
+                print "Generate" 
+                print world.seed_number
+                random.seed(world.seed_number)
+                lat = XPLMGetDataf(self.PlaneLat)
+                lon = XPLMGetDataf(self.PlaneLon)
+                world.thermal_dict = MakeCSVThermalMap(lat,lon,world.thermal_power,world.thermal_density,world.thermal_size)    
+                world.world_update = True
+                return 1
+                
+
+        
+        if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
+            #Thermal Tops
+            val = XPGetWidgetProperty(self.CSVTTops_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CSVTTops_value, str(val))
+            world.thermal_tops = int( val * world.f2m )
+            
+            #Thermal Density
+            val = XPGetWidgetProperty(self.CSVTDensity_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CSVTDensity_value, str(val))
+            world.thermal_density = val
+            
+            #Thermal Size
+            val = XPGetWidgetProperty(self.CSVTSize_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CSVTSize_value, str(val))
+            world.thermal_size = val
+            
+            #Thermal Power
+            val = XPGetWidgetProperty(self.CSVTPower_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CSVTPower_value, str(val))
+            world.thermal_power = val
+            
+            #Thermal Cycle
+            val = XPGetWidgetProperty(self.CSVTCycle_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CSVTCycle_value, str(val))
+            world.thermal_cycle = val
+
+            #Seed
+            val = XPGetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.CSVSeed_value, str(val))
+            world.seed_number = val
+
+        return 0
+
+
+        
+    # Creates the widget with buttons for test and edit boxes for info
+    def CreateCSVWindow(self, x, y, w, h):
+        x2 = x + w
+        y2 = y - h
+        Title = "Thermal generation from CSV" 
+        
+        #create the window
+        self.CSVWidget = XPCreateWidget(x, y, x2, y2, 1, Title, 1,     0, xpWidgetClass_MainWindow)        
+        XPSetWidgetProperty(self.CSVWidget, xpProperty_MainWindowHasCloseBoxes, 1)
+        CSVWindow = XPCreateWidget(x+50, y-50, x2-50, y2+50, 1, "",     0,self.CSVWidget, xpWidgetClass_SubWindow)
+        XPSetWidgetProperty(CSVWindow, xpProperty_SubWindowType, xpSubWindowStyle_SubWindow)
+
+        #-----------------------------
+        # Thermal Tops
+        self.CSVTTops_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Thermals Tops", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTTops_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Feet", 0, self.CSVWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.CSVTTops_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTTops_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CSVWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CSVTTops_scrollbar, xpProperty_ScrollBarMin, 100);
+        XPSetWidgetProperty(self.CSVTTops_scrollbar, xpProperty_ScrollBarMax, 20000);
+        XPSetWidgetProperty(self.CSVTTops_scrollbar, xpProperty_ScrollBarPageAmount,500)        
+        XPSetWidgetProperty(self.CSVTTops_scrollbar, xpProperty_ScrollBarSliderPosition, int(world.thermal_tops*world.m2f) )               
+        XPSetWidgetDescriptor(self.CSVTTops_value, str( int(world.thermal_tops*world.m2f) ))
+        y -=32
+
+        # Thermal Density
+        self.CSVTDensity_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Thermal Density", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTDensity_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Max # of Thermals", 0, self.CSVWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.CSVTDensity_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTDensity_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CSVWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CSVTDensity_scrollbar, xpProperty_ScrollBarMin, 1);
+        XPSetWidgetProperty(self.CSVTDensity_scrollbar, xpProperty_ScrollBarMax, 500);
+        XPSetWidgetProperty(self.CSVTDensity_scrollbar, xpProperty_ScrollBarPageAmount,10)
+        XPSetWidgetProperty(self.CSVTDensity_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_density)               
+        XPSetWidgetDescriptor(self.CSVTDensity_value, str(world.thermal_density))
+        y -=32
+
+        # Thermal Size
+        self.CSVTSize_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Thermal Size", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTSize_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Max Diameter m", 0, self.CSVWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.CSVTSize_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTSize_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CSVWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CSVTSize_scrollbar, xpProperty_ScrollBarMin, 50);
+        XPSetWidgetProperty(self.CSVTSize_scrollbar, xpProperty_ScrollBarMax, 1500);
+        XPSetWidgetProperty(self.CSVTSize_scrollbar, xpProperty_ScrollBarPageAmount,20)
+        XPSetWidgetProperty(self.CSVTSize_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_size)
+        XPSetWidgetDescriptor(self.CSVTSize_value, str(world.thermal_size))
+        y -=32
+
+        # Thermal Strength
+        self.CSVTPower_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Thermal Power", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTPower_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Max fpm", 0, self.CSVWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.CSVTPower_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTPower_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CSVWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CSVTPower_scrollbar, xpProperty_ScrollBarMin, 250);
+        XPSetWidgetProperty(self.CSVTPower_scrollbar, xpProperty_ScrollBarMax, 3500);
+        XPSetWidgetProperty(self.CSVTPower_scrollbar, xpProperty_ScrollBarPageAmount,10)
+        XPSetWidgetProperty(self.CSVTPower_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_power)
+        XPSetWidgetDescriptor(self.CSVTPower_value, str(world.thermal_power))
+        y -=32
+
+        # Thermal Cycle time
+        self.CSVTCycle_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Cycle Time", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTCycle_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Minutes", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTCycle_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVTCycle_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CSVWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CSVTCycle_scrollbar, xpProperty_ScrollBarMin, 5);
+        XPSetWidgetProperty(self.CSVTCycle_scrollbar, xpProperty_ScrollBarMax, 90);
+        XPSetWidgetProperty(self.CSVTCycle_scrollbar, xpProperty_ScrollBarPageAmount,1)
+        XPSetWidgetProperty(self.CSVTCycle_scrollbar, xpProperty_ScrollBarSliderPosition,world.thermal_cycle)               
+        XPSetWidgetDescriptor(self.CSVTCycle_value, str(world.thermal_cycle))
+        y -=30
+
+        # Seed
+        self.CSVSeed_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Seed Number", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVSeed_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+        self.CSVSeed_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.CSVWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarMin, 1234);
+        XPSetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarMax, 1334);
+        XPSetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarPageAmount,1)
+        XPSetWidgetProperty(self.CSVSeed_scrollbar, xpProperty_ScrollBarSliderPosition,world.seed_number)               
+        XPSetWidgetDescriptor(self.CSVSeed_value, str(world.seed_number))
+        y -=75
+
+        #define button 
+        self.CSVTGenerate_button = XPCreateWidget(x+320, y-60, x+440, y-82,
+                                           1, "Generate Thermals", 0,self.CSVWidget,xpWidgetClass_Button)
+        XPSetWidgetProperty(self.CSVTGenerate_button, xpProperty_ButtonType, xpPushButton)
+        
+        
+        # --------------------------
+        self.CSVHandlerCB = self.CSVHandler
+        XPAddWidgetCallback(self,self.CSVWidget, self.CSVHandlerCB)

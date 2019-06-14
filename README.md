@@ -33,6 +33,10 @@ A random thermal generator menu allows the user to select quantity of thermals, 
 
 A thermal visualization aid (shows markers where the thermals are) exists with an option to turn it on/off on the plugin menu.
 
+UPDATE
+-----
+- Loading CSV hotspots from https://thermal.kk7.ch/ added. Download your fav. thermal hotspots and put the hotspot.csv into your X-plane root directory
+
 
 TODOs
 -----
@@ -50,7 +54,6 @@ The lengths of this cycles varies depending on temperature, humidity, altitude e
 
 - Thermal streets
 - Clouds at the top of the thermal (* this is a big one, but I don't know how to do it yet) 
-- Read thermals from a user given CSV file
 
 
 Installation

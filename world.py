@@ -10,6 +10,22 @@
  
   * We store variables in their ready to use units format, (usually metric)
 '''
+# import CSV from https://thermal.kk7.ch/ ,  clean the header and save the converted csv 
+from thermal import Thermal
+import csv
+import os
+if os.path.exists('hotspots.csv') == True:
+  with open("hotspots.csv",'r') as f:
+      with open("converted_hotspots.csv",'w') as f1:
+          f.next() # skip header line
+          for line in f:
+              f1.write(line)
+  with open('converted_hotspots.csv', 'rU') as f:
+      reader = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
+      hotspots = map(tuple, reader)
+else:
+  hotspots = []
+  print "Can't find hotspots.csv in X-Plane root directory"
 
 # Conversion constants
 nm2meter = 1852 # nautical miles to meters
@@ -41,8 +57,14 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 
 # ask21 turn diameter at 60mph = 133m, 80mph = 420m
 
-# A dictionary of thermals for testing { (lat,lon):(radius,strength) }
-default_thermal_dict = {(-12.3890,-76.7581):(500,30),(-12.3994,-76.7666):(400,10),(-12.3774,-76.7815):(300,20),(-12.3016,-76.8448):(200,40),(-12.4647,-76.7516):(150,50),(-12.7623,-76.6061):(900,60) }
+# A list of thermals for testing { (lat,lon):(radius,strength) }
+default_thermal_dict = [
+        Thermal(33.0678333,-96.0653333, 500,30),
+        Thermal(-12.3994,-76.7666, 400,10),
+        Thermal(-12.3774,-76.7815, 300,20),
+        Thermal(-12.3016,-76.8448, 200,40),
+        Thermal(-12.4647,-76.7516, 150,50),
+        Thermal(-12.7623,-76.6061, 900,60) ]
 
 thermal_dict = default_thermal_dict
 
@@ -77,6 +99,7 @@ thermal_size    = 500     # diameter of thermals in meters
 thermal_power   = 1000     # strength of thermals in fpm lift
 thermal_cycle   = 30      # thermal life cycle time in minutes
 cloud_streets   = False   # not yet implemented.. 
+seed_number = 1234
 
 ''' 
 Control factors

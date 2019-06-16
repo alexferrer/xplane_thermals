@@ -51,10 +51,8 @@ csvThermal = 3
 aboutThermal = 4
 configGlider = 5
 
-#add random seed for multiplayer session - just press "reset seed" and then "generate thermals"
+# add random seed for multiplayer session - just press "reset seed" and then "generate thermals"
 seed_number = world.seed_number
-
-
 
 def xplane_world_to_local(lat, lon, alt):
     x,y,z = XPLMWorldToLocal(lat,lon,alt)

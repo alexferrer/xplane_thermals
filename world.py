@@ -10,29 +10,29 @@
  
   * We store variables in their ready to use units format, (usually metric)
 '''
-# import CSV from https://thermal.kk7.ch/ ,  clean the header and save the converted csv 
+# import CSV from https://thermal.kk7.ch/ ,  clean the header and save the converted csv
 from thermal import Thermal
 import csv
 import os
 if os.path.exists('hotspots.csv') == True:
-  with open("hotspots.csv",'r') as f:
-      with open("converted_hotspots.csv",'w') as f1:
-          f.next() # skip header line
-          for line in f:
-              f1.write(line)
-  with open('converted_hotspots.csv', 'rU') as f:
-      reader = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
-      hotspots = map(tuple, reader)
+    with open("hotspots.csv", 'r') as f:
+        with open("converted_hotspots.csv", 'w') as f1:
+            f.next()  # skip header line
+            for line in f:
+                f1.write(line)
+    with open('converted_hotspots.csv', 'rU') as f:
+        reader = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
+        hotspots = map(tuple, reader)
 else:
-  hotspots = []
-  print "Can't find hotspots.csv in X-Plane root directory"
+    hotspots = []
+    print "Can't find hotspots.csv in X-Plane root directory"
 
 # Conversion constants
-nm2meter = 1852 # nautical miles to meters
+nm2meter = 1852  # nautical miles to meters
 latlon2meter = 111200  # crude conversion value for lat/lon to meters
 f2m = 0.3048        # feet to meter conversion value
 m2f = 3.280         # meter to feet
-max_draw_distance = 18520 # furthest thermals shown, 18.52km = 10nm visibility
+max_draw_distance = 18520  # furthest thermals shown, 18.52km = 10nm visibility
 
 ''' The wind vector is used to calculate the thermal drift 
     and it is considered when reading thermal strength and
@@ -40,8 +40,8 @@ max_draw_distance = 18520 # furthest thermals shown, 18.52km = 10nm visibility
     * later may want to consider more wind layers
 '''
 wind_speed = 0  # m/s
-wind_dir   = 0    # radians
-world_update = False # toggle on wind change
+wind_dir = 0    # radians
+world_update = False  # toggle on wind change
 '''
    Thermal behaviour information
    There are many factors that affect thermal size and strength as they move
@@ -59,19 +59,20 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 
 # A list of thermals for testing { (lat,lon):(radius,strength) }
 default_thermal_dict = [
-        Thermal(33.0678333,-96.0653333, 500,30),
-        Thermal(-12.3994,-76.7666, 400,10),
-        Thermal(-12.3774,-76.7815, 300,20),
-        Thermal(-12.3016,-76.8448, 200,40),
-        Thermal(-12.4647,-76.7516, 150,50),
-        Thermal(-12.7623,-76.6061, 900,60) ]
+    Thermal(33.0678333, -96.0653333, 500, 30),
+    Thermal(-12.3994, -76.7666, 400, 10),
+    Thermal(-12.3774, -76.7815, 300, 20),
+    Thermal(-12.3016, -76.8448, 200, 40),
+    Thermal(-12.4647, -76.7516, 150, 50),
+    Thermal(-12.7623, -76.6061, 900, 60)]
 
 thermal_dict = default_thermal_dict
 
-thermal_band = {1000:.8,2000:.9,3000:1,5000:1,5100:.4,5500:0}
+thermal_band = {1000: .8, 2000: .9, 3000: 1, 5000: 1, 5100: .4, 5500: 0}
 
-thermal_tops  = 1500 # maximum altitude for thermals in meters (may change based on temp/time of day/ etc. 
-#thermal_height_band # size/strength of thermal depending on altitude
+# maximum altitude for thermals in meters (may change based on temp/time of day/ etc.
+thermal_tops = 1500
+# thermal_height_band # size/strength of thermal depending on altitude
 ''' need to model size/strenght of thermal against:
         time of day    : average lift depends on sun angle over the earth. 
                          sunrise  - - | - - - - - -| - sunset
@@ -89,16 +90,17 @@ thermal_tops  = 1500 # maximum altitude for thermals in meters (may change based
                         
         raob ?
 '''
-#GUI state variables
+# GUI state variables
 thermals_visible = True
 
-#Default thermal config values
-thermal_tops    = 2000    # meters thermal top
+# Default thermal config values
+thermal_tops = 2000    # meters thermal top
+thermal_distance = 500     # meters min separation distance between thermals
 thermal_density = 60      # qty of thermal generated
-thermal_size    = 500     # diameter of thermals in meters
-thermal_power   = 1000     # strength of thermals in fpm lift
-thermal_cycle   = 30      # thermal life cycle time in minutes
-cloud_streets   = False   # not yet implemented.. 
+thermal_size = 500     # diameter of thermals in meters
+thermal_power = 1000     # strength of thermals in fpm lift
+thermal_cycle = 30      # thermal life cycle time in minutes
+cloud_streets = False   # not yet implemented..
 seed_number = 1234
 
 ''' 
@@ -109,30 +111,31 @@ I suspect that different CPU's  will need different values and since a larger pl
 have larger wing area, the lift factor will be different too.
 Adjust at your own peril.. :) 
 '''
-        # 1kilo weights ~ 1 newton (9.8) newton               
-        # ask21 (360kg) + pilot (80) = = 440kg, 
-        # lift 440kg 1/ms = ~ 4400 newtons ?
-        # according to Ask21 manual at 70mph sink is 1m/s
-        # multiplication factor, calculated experimentally = 500...
-        # plugin refesh time affects this a lot!
+# 1kilo weights ~ 1 newton (9.8) newton
+# ask21 (360kg) + pilot (80) = = 440kg,
+# lift 440kg 1/ms = ~ 4400 newtons ?
+# according to Ask21 manual at 70mph sink is 1m/s
+# multiplication factor, calculated experimentally = 500...
+# plugin refesh time affects this a lot!
 
 # Lift force generated by the wings adjusted for ask21
-lift_factor   = 6.0   #ask21  3.9
+lift_factor = 6.0  # ask21  3.9
 
-# Roll effect because of differential lift between wings. 
-roll_factor   = 100   #ask21  100
+# Roll effect because of differential lift between wings.
+roll_factor = 100  # ask21  100
 
 # For realism purposes, some of the lift has to go to forward thrust
-thrust_factor = 5.0  #ask21  1.1
+thrust_factor = 5.0  # ask21  1.1
 
 # wing span in meters for lift differential calculation
 # size of each wing   10m -> -----(*)----- <-10m
-wing_size     = 10     #10
+wing_size = 10  # 10
 
 
 # Function that converts a geo location lat/lon/alt to coordinates x/y/z; returns tuple(x,y,z)
 def dummy_world_to_local(lat, lon, alt):
     return (lat, lon, alt)
+
 
 world_to_local = dummy_world_to_local
 
@@ -140,5 +143,6 @@ world_to_local = dummy_world_to_local
 # Function that gets a value indicating whether the terrain at the geo location is water
 def dummy_terrain_is_water(lat, lon):
     return False
+
 
 terrain_is_water = dummy_terrain_is_water

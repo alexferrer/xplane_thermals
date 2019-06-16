@@ -365,6 +365,11 @@ class PythonInterface:
             XPSetWidgetDescriptor(self.TDensity_value, str(val))
             world.thermal_density = val
             
+            #Minimum Distance Between  Thermals
+            val = XPGetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.TDistance_value, str(val))
+            world.thermal_distance =  val 
+            
             #Thermal Size
             val = XPGetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TSize_value, str(val))
@@ -413,6 +418,19 @@ class PythonInterface:
         XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarPageAmount,500)        
         XPSetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarSliderPosition, int(world.thermal_tops*world.m2f) )               
         XPSetWidgetDescriptor(self.TTops_value, str( int(world.thermal_tops*world.m2f) ))
+        y -=32
+
+        # Thermal Distance
+        self.TDistance_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Thermals Tops", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TDistance_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Feet", 0, self.TCWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.TDistance_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TDistance_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarMin, 100);
+        XPSetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarMax, 20000);
+        XPSetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarPageAmount,500)        
+        XPSetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarSliderPosition, int(world.thermal_tops*world.m2f) )               
+        XPSetWidgetDescriptor(self.TDistance_value, str( int(world.thermal_tops*world.m2f) ))
         y -=32
 
         # Thermal Density

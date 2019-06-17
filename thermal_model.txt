@@ -1,0 +1,38 @@
+xplane thermals thermal model explained. 
+
+On xplane_thermals we use a dictionary of thermals with [lat,lon] as key and thermal radius, avg strength as data (I planned to add more data like thermal band, cycle time and others). For every game cycle of Xplane, a function searches the dictionary using the plane current lat,lon as key (fast!). If there is a match, then calculates the generated lift for the fuselage and the tips of the wings, then injects the calculated energy as lift and rotation (based on the lift differential between wings) to the plane. I also inject a small forward vector, otherwise, the plane can fly sitting still. the idea is to make it "feel" realistic more than simulating mathematically perfect thermals.
+
+The dictionary can be loaded anyway you want, be it a simple random function from the menu or from a local CSV file with your favourite area house thermals. It could also be generated externally with far more complex parameters (type of terrain, elevation, terrain color, wind, season, humidity etc) For multiuser championships, the file could be shared, or currently using a given seed, so the random generator produces the same thermals for everyone.
+
+The way the random generator works is: 
+Given a 200 x 200 grid of points on your terrain, defined by rows an cols like: 
+
+row   1:   1   2   3 4 5 6 7 ... 200
+row   2: 201 202 203 ...         400
+row ...
+row 200:                    ...40000  
+
+Each node on the terrain grid is be identified by its corresponding number (from 1 to 40,000)
+
+If we place the plane at the exact middle or row = 100 col = 100, and we define the grid size to be 
+.001 decimal degrees of latitude then a thermal defined at grid point [101,101] would be placed at 
+lat+.001, lon+.001, since .001 decimal degrees is ~ 110 meters at the equator, the thermal would efectively 
+be placed at 110 meter to your west and 110 meters to the north.
+
+This also means that if we use a  default 100 meters per grid point distance, then the furthest away thermal on the model will be at 100 grid points*100m away (10Km). If we increase that grid size, the play area increases acordingly. 300m gives a nice 30km radius play area
+
+To create random thermals we get a n size random sample (no repeats) of numbers from 0 to 40,000 to select 
+N number of thermal trigger points. and asign random diameters and stregths to the thermal. 
+
+Regarding thermal visualization, it is an expensive function (cpu wise) so it only displays thermals 10km around the plane or closer.. if you move forward, thermals will show up on their own.
+
+There are other refinements on the model, like position of the sun, wind drift and season to affect the strength oft he thermal, but other than that is a very simple model. I am currently adding a parameter to the thermal generator model to make the minimum thermal separation distance user adjustable ( creating a a larger/harder play area) and increasing the generated thermal initial grid size.. (currently 10km) 
+
+I am adding a timed auto re-generate function to refresh thermals around the plane current position every x (user defined) minutes, but this will break multiuser mode, as the players will have different thermal maps. 
+
+I am thinking that the solution to this may be to generate a large common csv file of terrain thermals, and to auto load thermals around player positions every 10 minutes or so. That way we don't have to have a large dictionary of thermals loaded all the time (Expensive cpu wise) and all players get to share the same environment. 
+
+Another feature would be to have that thermal map stored at a central repository that may be changing the thermal map as the day passes, adding a new dimension to the simulation. This thermal map, could be hand designed, primed from local gps tracks, or maybe defined by some sort of fancy AI based thermal generator. Personally I believe that using online soaring competitions tracks to reverse engineer thermal trigger points, then using generated RAOB information to define strenght size and cycle times,  would be the most realistic option. 
+
+
+

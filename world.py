@@ -93,14 +93,19 @@ thermal_tops = 1500
 # GUI state variables
 thermals_visible = True
 
+# Thermal auto refersh data
+thermal_map_start_time = 0    # Thermal map age in seconds
+thermal_refresh_time = 20  # auto-refresh timr for thermal map in minutes
+
+
 # Default thermal config values
-thermal_tops = 2000    # meters thermal top
-thermal_distance = 500     # meters min separation distance between thermals
-thermal_density = 60      # qty of thermal generated
-thermal_size = 500     # diameter of thermals in meters
+thermal_tops = 2000      # meters thermal top
+thermal_distance = 500   # meters min separation distance between thermals
+thermal_density = 60     # qty of thermal generated
+thermal_size = 500       # diameter of thermals in meters
 thermal_power = 1000     # strength of thermals in fpm lift
-thermal_cycle = 30      # thermal life cycle time in minutes
-cloud_streets = False   # not yet implemented..
+thermal_cycle = 30       # thermal life cycle time in minutes
+cloud_streets = False    # not yet implemented..
 seed_number = 1234
 
 ''' 

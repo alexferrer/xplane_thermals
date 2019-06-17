@@ -111,7 +111,7 @@ class PythonInterface:
         
         # is the sim paused?
         self.runningTime  = XPLMFindDataRef("sim/time/total_running_time_sec")
-        self.sim_time = 0 
+        self.sim_time = 0
         
         # sun pitch from flat in OGL coordinates degrees, for thermal strength calculation
         # from zero to 90 at 12pm in summer near the equator .. 
@@ -254,7 +254,23 @@ class PythonInterface:
         # Terrain probe -------
         self.probe = XPLMCreateProbe(xplm_ProbeY)
         
+                #refresh thermals on given time 
         
+        #Check if it is time to referesh the thermal map
+        if  (self.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60) :
+            lat = XPLMGetDataf(self.PlaneLat)
+            lon = XPLMGetDataf(self.PlaneLon)
+            world.thermal_dict = MakeRandomThermalMap(self.sim_time,
+                               lat,lon,
+                               world.thermal_power,
+                               world.thermal_density,
+                               world.thermal_size)
+
+            world.world_update = True 
+        
+
+
+
         # set the next callback time in +n for # of seconds and -n for # of Frames
         return .01 # works good on my (pretty fast) machine..
 
@@ -343,28 +359,38 @@ class PythonInterface:
                 lon = XPLMGetDataf(self.PlaneLon)
                 # world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
                                                        # lat,lon,stregth,count
-                world.thermal_dict = MakeRandomThermalMap(lat,lon,world.thermal_power,world.thermal_density,world.thermal_size)    
+                world.thermal_dict = MakeRandomThermalMap(self.sim_time,
+                               lat,lon,
+                               world.thermal_power,
+                               world.thermal_density,
+                               world.thermal_size)    
                 world.world_update = True
                 return 1
                 
 
         
         if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
-            #Thermal Tops
+            # Thermal Tops
             val = XPGetWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TTops_value, str(val))
             world.thermal_tops = int( val * world.f2m )
             
-            #Thermal Density
+            # Thermal Density
             val = XPGetWidgetProperty(self.TDensity_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TDensity_value, str(val))
             world.thermal_density = val
             
-            #Minimum Distance Between  Thermals
+            # Minimum Distance Between  Thermals
             val = XPGetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TDistance_value, str(val))
             world.thermal_distance =  val 
-            
+
+            # Thermals refresh time
+            val = XPGetWidgetProperty(self.TRefresh_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+            XPSetWidgetDescriptor(self.TRefresh_value, str(val))
+            world.thermal_refresh_time =  val 
+
+
             #Thermal Size
             val = XPGetWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TSize_value, str(val))
@@ -422,10 +448,23 @@ class PythonInterface:
         self.TDistance_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
         self.TDistance_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
         XPSetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarMin, 100);
-        XPSetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarMax, 5000);
+        XPSetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarMax, 2000);
         XPSetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarPageAmount,100)        
         XPSetWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarSliderPosition, int(world.thermal_distance) )               
         XPSetWidgetDescriptor(self.TDistance_value, str( int(world.thermal_distance) ))
+        y -=32
+
+        # Thermal map Refresh time
+        self.TRefresh_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1,"Thermals Refresh", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TRefresh_label2 = XPCreateWidget(x+375, y-80, x+410, y-102,1,"Minutes", 0, self.TCWidget, xpWidgetClass_Caption)
+        #define scrollbar
+        self.TRefresh_value = XPCreateWidget(x+260, y-68, x+330, y-82,1,"  0", 0, self.TCWidget, xpWidgetClass_Caption)
+        self.TRefresh_scrollbar = XPCreateWidget(x+170, y-80, x+370, y-102, 1, "", 0,self.TCWidget,xpWidgetClass_ScrollBar)
+        XPSetWidgetProperty(self.TRefresh_scrollbar, xpProperty_ScrollBarMin, 10);
+        XPSetWidgetProperty(self.TRefresh_scrollbar, xpProperty_ScrollBarMax, 200);
+        XPSetWidgetProperty(self.TRefresh_scrollbar, xpProperty_ScrollBarPageAmount,20)        
+        XPSetWidgetProperty(self.TRefresh_scrollbar, xpProperty_ScrollBarSliderPosition, int(world.thermal_refresh_time) )               
+        XPSetWidgetDescriptor(self.TRefresh_value, str( int(world.thermal_refresh_time) ))
         y -=32
 
         # Thermal Density

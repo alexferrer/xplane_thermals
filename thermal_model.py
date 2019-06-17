@@ -154,7 +154,7 @@ def CalcThermal(lat, lon, alt, heading, roll_angle):
     #---------------- should move below to a different file
 
 
-def MakeRandomThermalMap(_lat, _lon, _strength, _count, _radius):
+def MakeRandomThermalMap(time, _lat, _lon, _strength, _count, _radius):
     ''' Create xx random thermals around the current lat/lon point 
       us parameters average strength
       Params: center (lat,lon) , max strength, count , radius 
@@ -188,7 +188,8 @@ def MakeRandomThermalMap(_lat, _lon, _strength, _count, _radius):
         # print "makeRandomThermal",lat,lon,radius,strength
         #thermals[(lat,lon)] = (radius,strength)
         thermals.append(thermal.Thermal(lat, lon, radius, strength))
-
+        # reset the thermal start time to now
+        world.thermal_map_start_time = time
     return thermals
 
 

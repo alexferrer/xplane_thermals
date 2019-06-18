@@ -1,0 +1,25 @@
+Easy installation instructions: 
+
+1: Install the python script plugin according to :
+2: Click on the green [Clone or Download]  button on the top right of this page
+3. Click on the blue [Download Zip] button
+4. Unzip all the actual files (Not the directory they are on) onto your Xplane python plugin directory: 
+   The directory should be something like: ... X-Plane 11/Resources/plugins/PythonScripts/
+
+Your directory should end up looking like: 
+
+~/X-Plane 11/Resources/plugins/PythonScripts$ 
+total 11
+-rw-rw-r-- 1 alex alex  3113 Jun 17 14:35 EasyDref.py
+-rw-rw-r-- 1 alex alex 18026 Jun 17 14:35 LICENSE
+-rw-rw-r-- 1 alex alex 45480 Jun 17 14:35 PI_ThermalSim.py
+-rw-rw-r-- 1 alex alex  4173 Jun 17 14:35 README.md
+-rwxr-xr-x 1 alex alex  3421 Jun 17 14:35 test_thermal_model.py
+-rwxr-xr-x 1 alex alex  8922 Jun 17 14:35 thermal_model.py
+-rw-rw-r-- 1 alex alex  4096 Jun 17 14:35 thermal_model.txt
+-rw-rw-r-- 1 alex alex   514 Jun 17 14:35 thermal.py
+-rwxr-xr-x 1 alex alex  5721 Jun 17 14:35 world.py
+
+*note: you only need the ones that end on .py, but the other ones won't hurt. 
+
+

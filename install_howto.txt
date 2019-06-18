@@ -1,7 +1,7 @@
 Easy installation instructions: 
 
 Step 0 Make sure you have python installed on your computer , if so skip to Step 1
-(If not google how to install Python 2.7 on your computer) 
+(If not, google "how to install Python 2.7" on your computer) 
 
 Step 1 [Sandy Barbour's Xplane Python plugin]
 If you already have installed Sandy Barbour's Xplane Python plugin, skip to Step 2
@@ -47,3 +47,7 @@ total 11
 *note: you only need the ones that end on .py, but the other ones won't hurt. 
 ** make sure that the files did NOT get created inside a xplane_thermals directory, that won't work. 
 
+
+
+Step 3
+Load Xplane 11, you should now have a new menu option with the thermals plugin choices. 

@@ -1,0 +1,53 @@
+Easy installation instructions: 
+
+Step 0 Make sure you have python installed on your computer , if so skip to Step 1
+(If not, google "how to install Python 2.7" on your computer) 
+
+Step 1 [Sandy Barbour's Xplane Python plugin]
+If you already have installed Sandy Barbour's Xplane Python plugin, skip to Step 2
+If not, You can get the latest plugin from his website.  http://www.xpluginsdk.org/python_interface.htm
+
+[this are his instructions] 
+Make sure that you get the version that matches the version of Python that you have
+installed, this is very important.  The files are at: http://www.xpluginsdk.org/python_interface_latest_downloads.htm
+
+If your OS has python 2.6 installed then make sure you use a PythonInterface plugin that
+has a 26 suffix.
+e.g. PythonInterfaceXXX26.xpl, were XXX is Win, Lin or Mac depending on the OS that
+you are using.
+Extract the plugin and the INI file from the zip file.
+Copy the PythonInterfaceXXX26.xpl and the PythonInterface.ini files to the plugins
+folder.
+e.g. copy to “D:\X-Plane 9.00\Resources\plugins”
+This could be C:\ or any other drive letter depending where you have installed XPlane.
+
+
+Step 2 [Xplane Thermals Plugin ]
+On your browser go to    https://github.com/alexferrer/xplane_thermals
+On the github page :
+Click on the green [Clone or Download]  button on the top right of the page
+Click on the blue [Download Zip] button
+Unzip all the actual files onto your Xplane python plugin directory: 
+   The directory should looke like  ...X-Plane 11/Resources/plugins/PythonScripts/
+
+Your directory should end up looking like: 
+
+~/X-Plane 11/Resources/plugins/PythonScripts$ 
+total 11
+-rw-rw-r-- 1 alex alex  3113 Jun 17 14:35 EasyDref.py
+-rw-rw-r-- 1 alex alex 18026 Jun 17 14:35 LICENSE
+-rw-rw-r-- 1 alex alex 45480 Jun 17 14:35 PI_ThermalSim.py
+-rw-rw-r-- 1 alex alex  4173 Jun 17 14:35 README.md
+-rwxr-xr-x 1 alex alex  3421 Jun 17 14:35 test_thermal_model.py
+-rwxr-xr-x 1 alex alex  8922 Jun 17 14:35 thermal_model.py
+-rw-rw-r-- 1 alex alex  4096 Jun 17 14:35 thermal_model.txt
+-rw-rw-r-- 1 alex alex   514 Jun 17 14:35 thermal.py
+-rwxr-xr-x 1 alex alex  5721 Jun 17 14:35 world.py
+
+*note: you only need the ones that end on .py, but the other ones won't hurt. 
+** make sure that the files did NOT get created inside a xplane_thermals directory, that won't work. 
+
+
+
+Step 3
+Load Xplane 11, you should now have a new menu option with the thermals plugin choices. 

@@ -84,15 +84,40 @@ def DrawThermal(lat, lon):  # min_alt,max_alt
     return locs
 
 
+def DrawCloud(lat, lon):
+    ''' Return the location for a cloud at the top of the raising thermal, accounting
+        for wind drift along the climb.
+    '''
+    Dew, Dud, Dns = world.world_to_local(lat, lon, 0)  # Dew=E/W,Dud=Up/Down,Dns=N/S
+    locs = []  # locations
+    alt = world.thermal_tops
+    dX, dY = calcDrift(alt)
+    locs.append([Dew + dX, Dud + alt, Dns + dY, 0, 0, 0])
+
+    return locs
+
+
 def DrawThermalMap(lat, lon):
     locations = []
     p1x, p1y = convertLatLon2Meters(lat, lon)
 
-    for thermal in world.thermal_dict:
-        p2x, p2y = thermal.px, thermal.py
+    for athermal in world.thermal_dict:
+        p2x, p2y = athermal.px, athermal.py
         # print "DrawThermalmap:",p1x,p1y,p2x,p2y
         if calcDist(p1x, p1y, p2x, p2y) < world.max_draw_distance:
-            locations = locations + DrawThermal(thermal.lat, thermal.lon)
+            locations = locations + DrawThermal(athermal.lat, athermal.lon)
+    return locations
+
+
+def DrawCloudMap(lat, lon):
+    locations = []
+    p1x, p1y = convertLatLon2Meters(lat, lon)
+
+    for athermal in world.thermal_dict:
+        p2x, p2y = athermal.px, athermal.py
+        # print "DrawThermalmap:",p1x,p1y,p2x,p2y
+        if calcDist(p1x, p1y, p2x, p2y) < world.max_draw_distance:
+            locations = locations + DrawCloud(athermal.lat, athermal.lon)
     return locations
 
 

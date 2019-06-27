@@ -18,6 +18,9 @@ from EasyDref import EasyDref
 from thermal_model import CalcThermal
 from thermal_model import DrawThermal
 from thermal_model import DrawThermalMap
+from thermal_model import DrawCloud
+from thermal_model import DrawCloudMap
+
 from thermal_model import MakeRandomThermalMap
 from thermal_model import MakeCSVThermalMap
 
@@ -171,10 +174,7 @@ class PythonInterface:
     def LoadObject(self, fname, ref):
         self.Object = XPLMLoadObject(fname)        
      
-    def DrawObject(self, inPhase, inIsBefore, inRefcon):
-        if not world.thermals_visible :  # exit if visibility is off !
-            return 1
-    
+    def DrawObject(self, inPhase, inIsBefore, inRefcon):  
         self.LoadObjectCB = self.LoadObject
         XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)  
         
@@ -182,7 +182,12 @@ class PythonInterface:
         if world.world_update :
            lat = XPLMGetDataf(self.PlaneLat)
            lon = XPLMGetDataf(self.PlaneLon)
-           self.locations = DrawThermalMap(lat,lon)   #get the locations where to draw the objects..
+
+           if not world.thermals_visible :  # if visibility is off, only draw clouds at cloudbase
+               self.locations = DrawCloudMap(lat,lon)   #get the locations where to draw the Cloud objects..
+           else:
+               self.locations = DrawThermalMap(lat,lon)   #get the locations where to draw the thermal Marker objects..
+
            world.world_update = False
            #print "number of draw objects = ", len(self.locations)
            

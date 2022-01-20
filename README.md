@@ -35,8 +35,11 @@ A thermal visualization aid (shows markers where the thermals are) exists with a
 
 UPDATE
 -----
-- Loading CSV hotspots from https://thermal.kk7.ch/ added. Download your fav. thermal hotspots and put the hotspot.csv into your X-plane root directory
+- New branch for Python 3+ development (Work in process) :
+- https://forums.x-plane.org/index.php?/forums/topic/225976-xppython3-v312-now-available/
+- https://xppython3.readthedocs.io/en/stable/
 
+- Loading CSV hotspots from https://thermal.kk7.ch/ added. Download your fav. thermal hotspots and put the hotspot.csv into your X-plane root directory
 
 TODOs
 -----
@@ -59,7 +62,7 @@ The lengths of this cycles varies depending on temperature, humidity, altitude e
 Installation
 ------------
 
-This is a Python plugin, so the python interface is required. ( http://www.xpluginsdk.org/python_interface.htm ) For installation copy the Python files to the X-Plane Resources/PythonScripts folder so that the Python plugin can find them.
+This is a Python 3 plugin, so the python interface is required. ( https://xppython3.readthedocs.io/en/stable/) For installation copy the Python files to the X-Plane Resources/PythonScripts folder so that the Python plugin can find them.
 
 As a helper, I am using Easy Dataref access class from Joan Perez i Cauhe, and I am including the class on the sources. 
 Other than that, all is needed is PI_ThermalSym, thermal_model.py and world.py anything else is test stuff or helpers. 
@@ -69,6 +72,7 @@ V 0.3 has a nice menu to define thermal parameters, better thermal simulation, b
 
 Older versions
 --------------
+All previous versions where Python 2.6 
 
 V 0.2 (current) Is already quite usable. It has a matrix of 10000x10000 ~70nm^2 , implements all the concepts listed above. At this point there are several variables (wind, thermal tops, thermal generation) that are hardcoded and require changes of code if you wish to modify.
 

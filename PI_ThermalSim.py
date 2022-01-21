@@ -69,9 +69,7 @@ def xplane_terrain_is_water(lat, lon):
     #info = []       
     x,y,z = XPLMWorldToLocal(lat,lon,0)
     info = XPLMProbeTerrainXYZ(world.probe,x,y,z)
-    #if XPLMProbeTerrainXYZ(world.probe,x,y,z) == xplm_ProbeHitTerrain:
-    print("xplmWorlprobe info = ",dir(info))
-    #xplmWorlprobe info =  <class 'xppython3.ProbeInfo'>
+    #print("xplmWorlprobe info = ",dir(info))
 
     if info.is_wet:
         print("------------- we are over water")
@@ -105,8 +103,6 @@ class PythonInterface:
         self.Name = "ThermalSim2"
         self.Sig =  "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"
-        self.Clicked = False
-
 
         """ Data refs we want to record."""
         # airplane current flight info
@@ -157,7 +153,7 @@ class PythonInterface:
         XPLMRegisterFlightLoopCallback(self.FlightLoopCB, 1.0, 0)
         
         # Register Drawing callback
-        self.DrawObjectCB = self.DrawObject
+        #self.DrawObjectCB = self.DrawObject
         #XPLMRegisterDrawCallback(self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
         #deprecated https://developer.x-plane.com/sdk/XPLMDrawingPhase/#xplm_Phase_Objects
      
@@ -191,7 +187,7 @@ class PythonInterface:
      
     def DrawObject(self, inPhase, inIsBefore, inRefcon):  
         self.LoadObjectCB = self.LoadObject
-        XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)  
+        #XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)  
         
         # build object list for drawing
         if world.world_update :
@@ -208,7 +204,9 @@ class PythonInterface:
            
         locations = self.locations
         if locations : # only draw if not zero !
-            XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
+            print("deprecated: drawing objects........",len(locations))
+            #XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
+            # alx Deprecating https://developer.x-plane.com/sdk/XPLMDrawObjects/
         return 1
 
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):

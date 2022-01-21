@@ -197,7 +197,7 @@ def MakeRandomThermalMap(time, _lat, _lon, _strength, _count, _radius):
     for r in sample(range(1, 40000), _count):
         x = r / 200      # col
         y = r - x * 200  # row
-        radius = randrange(average_radius / 5, average_radius)  # random diameter for the thermal
+        radius = randrange(int(average_radius / 5), average_radius)  # random diameter for the thermal
         # randomize thermal strength weighted towards stronger
         strength = choice((3, 4, 5, 6, 6, 7, 7, 7, 8, 8, 9, 9, 10)) * _strength * .1
 

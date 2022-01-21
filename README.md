@@ -35,9 +35,13 @@ A thermal visualization aid (shows markers where the thermals are) exists with a
 
 UPDATE
 -----
+
+- First update for Python 3, working but still work in progress.. 
 - New branch for Python 3+ development (Work in process) :
 - https://forums.x-plane.org/index.php?/forums/topic/225976-xppython3-v312-now-available/
 - https://xppython3.readthedocs.io/en/stable/
+
+
 
 - Loading CSV hotspots from https://thermal.kk7.ch/ added. Download your fav. thermal hotspots and put the hotspot.csv into your X-plane root directory
 

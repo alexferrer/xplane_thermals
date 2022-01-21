@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 
 from world import *
 from thermal_model import *
@@ -98,13 +97,13 @@ def testPerformance():
     tstart = timeit.default_timer()
     world.thermal_dict = MakeRandomThermalMap(1, lat, lon, strength, count, radius)
     tend = timeit.default_timer()
-    print "MakeRandomThermalMap took %f s" % (tend - tstart)
+    print( "MakeRandomThermalMap took %f s" % (tend - tstart))
 
     tstart = timeit.default_timer()
     for i in xrange(count):
         calcLift(lat, lon)
     tend = timeit.default_timer()
-    print "calcLift took %f s" % (tend - tstart)
+    print( "calcLift took %f s" % (tend - tstart))
 
 
 if __name__ == "__main__":

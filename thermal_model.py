@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 
 # thermal model generator library.
 ''' Thermal generator module
@@ -54,13 +53,13 @@ def calcLift(p1x, p1y):
     # test if we are inside any listed thermal
     for thermal in world.thermal_dict:
         p2x, p2y = thermal.px, thermal.py
-        # print "calclift:",p1x,p1y,p2x,p2y
+        # print( "calclift:",p1x,p1y,p2x,p2y)
 
         distance_square = calcDistSquare(p1x, p1y, p2x, p2y)
         if distance_square < thermal.radius_square:
             distance = math.sqrt(distance_square)
             lift += thermal.strength * round((thermal.radius - distance) / thermal.radius, 2)
-            # print "Dist ",lat1,lon1,radius, distance ,lift
+            # print( "Dist ",lat1,lon1,radius, distance ,lift)
     return lift
 
 
@@ -103,7 +102,7 @@ def DrawThermalMap(lat, lon):
 
     for athermal in world.thermal_dict:
         p2x, p2y = athermal.px, athermal.py
-        # print "DrawThermalmap:",p1x,p1y,p2x,p2y
+        # print( "DrawThermalmap:",p1x,p1y,p2x,p2y)
         if calcDist(p1x, p1y, p2x, p2y) < world.max_draw_distance:
             locations = locations + DrawThermal(athermal.lat, athermal.lon)
     return locations
@@ -115,7 +114,7 @@ def DrawCloudMap(lat, lon):
 
     for athermal in world.thermal_dict:
         p2x, p2y = athermal.px, athermal.py
-        # print "DrawThermalmap:",p1x,p1y,p2x,p2y
+        # print( "DrawThermalmap:",p1x,p1y,p2x,p2y)
         if calcDist(p1x, p1y, p2x, p2y) < world.max_draw_distance:
             locations = locations + DrawCloud(athermal.lat, athermal.lon)
     return locations
@@ -169,8 +168,8 @@ def CalcThermal(lat, lon, alt, heading, roll_angle):
     roll_value = -(liftR - liftL) * roll_factor
 
     # for debug
-    # print "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
-    #     ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt
+    # print( "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
+    #     ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|", '%.1f'%roll_value ,"]**",'%.1f'%alt)
 
     # todo: thermals have cycles, begin, middle , end.. and reflect in strength..
 
@@ -195,7 +194,7 @@ def MakeRandomThermalMap(time, _lat, _lon, _strength, _count, _radius):
       add distance to current plane lat/lon
        
       '''
-    for r in sample(xrange(1, 40000), _count):
+    for r in sample(range(1, 40000), _count):
         x = r / 200      # col
         y = r - x * 200  # row
         radius = randrange(average_radius / 5, average_radius)  # random diameter for the thermal
@@ -210,7 +209,7 @@ def MakeRandomThermalMap(time, _lat, _lon, _strength, _count, _radius):
             continue
 
         #(lat,lon):(radius,strength)
-        # print "makeRandomThermal",lat,lon,radius,strength
+        # print( "makeRandomThermal",lat,lon,radius,strength)
         #thermals[(lat,lon)] = (radius,strength)
         thermals.append(thermal.Thermal(lat, lon, radius, strength))
         # reset the thermal start time to now
@@ -226,18 +225,18 @@ def MakeCSVThermalMap(_lat, _lon, _strength, _count, _radius):
     '''
     #csv_list = world.hotspots
     hotspots = world.hotspots
-    # print csv_list
+    # print( csv_list)
     #hotspots = [(36.7913278, -119.3000250,255,70),(36.7845528, -119.3029139,275, 20),(36.7974417, -119.2900083,435, 100)]
-    # print hotspots
+    # print( hotspots)
     average_radius = _radius
     thermals = []
-    print _strength
+    print( _strength)
     if _count < len(hotspots):
         count = _count
     else:
         count = len(hotspots)
 
-    for select_spot in sample(xrange(0, len(hotspots)), count):
+    for select_spot in sample(range(0, len(hotspots)), count):
 
         r = randrange(1, 40000)
         prob_test = random.random() * 100 / 2
@@ -260,7 +259,7 @@ def MakeCSVThermalMap(_lat, _lon, _strength, _count, _radius):
                 continue
 
             #(lat,lon):(radius,strength)
-            # print "makeRandomThermal",lat,lon,radius,strength
+            # print( "makeRandomThermal",lat,lon,radius,strength)
             #thermals[(lat,lon)] = (radius,strength)
             thermals.append(thermal.Thermal(lat, lon, radius, strength))
 
@@ -269,4 +268,4 @@ def MakeCSVThermalMap(_lat, _lon, _strength, _count, _radius):
 
 # ----- begin test code --------
 
-# print CalcThermal(-12.389,-76.7582,1000,0,45)
+# print( CalcThermal(-12.389,-76.7582,1000,0,45))

@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 
 from thermal_model import convertLatLon2Meters
 

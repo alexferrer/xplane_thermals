@@ -43,12 +43,12 @@ class EasyDref:
             self.dr_set = XPLMSetDatad
             self.cast = float
         else:
-            print "ERROR: invalid DataRef type", type
+            print( "ERROR: invalid DataRef type", type)
         
         if dref: dataref = dref
         self.DataRef = XPLMFindDataRef(dataref)
         if self.DataRef == False:
-            print "Can't find " + dataref + " DataRef"
+            print( "Can't find " + dataref + " DataRef")
     
     def initArrayDref(self, first, last, type):
         self.index = int(first)
@@ -68,7 +68,7 @@ class EasyDref:
             self.rset = XPLMSetDatab
             self.cast = float
         else:
-            print "ERROR: invalid DataRef type", type
+            print( "ERROR: invalid DataRef type", type)
         pass
 
     def set(self, value):

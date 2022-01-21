@@ -10,9 +10,9 @@ Thermal simulator  Ver .04
 """
 
 import world
-
 from XPLMDefs import *
 from EasyDref import EasyDref
+
 
 # thermal modeling tools
 from thermal_model import CalcThermal
@@ -47,6 +47,7 @@ from XPWidgets import *
 from XPWidgetDefs import *
 from XPStandardWidgets import *
 from XPLMPlugin import *
+import xp
 
 toggleThermal = 1
 randomThermal = 2
@@ -64,11 +65,17 @@ def xplane_world_to_local(lat, lon, alt):
 
 
 def xplane_terrain_is_water(lat, lon):
-    info = []       
+    # https://xppython3.readthedocs.io/en/stable/development/changesfromp2.html?highlight=xplmprobeterrainxyz
+    #info = []       
     x,y,z = XPLMWorldToLocal(lat,lon,0)
-    if XPLMProbeTerrainXYZ(world.probe,x,y,z,info) == xplm_ProbeHitTerrain:
-        if info[10]:
-            return True
+    info = XPLMProbeTerrainXYZ(world.probe,x,y,z)
+    #if XPLMProbeTerrainXYZ(world.probe,x,y,z) == xplm_ProbeHitTerrain:
+    print("xplmWorlprobe info = ",dir(info))
+    #xplmWorlprobe info =  <class 'xppython3.ProbeInfo'>
+
+    if info.is_wet:
+        print("------------- we are over water")
+        return True
     return False
 
 
@@ -83,11 +90,10 @@ class PythonInterface:
         self.CGMenuItem = 0
         self.AboutMenuItem = 0       
          
-        
         global myMenu
         mySubMenuItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(), "Thermal Simulator", 0, 1)
         self.MyMenuHandlerCB = self.MyMenuHandlerCallback
-        self.myMenu = XPLMCreateMenu(self, "Thermals", XPLMFindPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
+        self.myMenu = XPLMCreateMenu("Thermals", XPLMFindPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         XPLMAppendMenuItem(self.myMenu, "Thermal Visibility On/Off " , toggleThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Generate Random Thermals", randomThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Generate CSV Thermals", csvThermal, 1)
@@ -96,10 +102,11 @@ class PythonInterface:
         # -------------------------------------------------
         
         world.thermals_visible = False
-        
         self.Name = "ThermalSim2"
         self.Sig =  "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"
+        self.Clicked = False
+
 
         """ Data refs we want to record."""
         # airplane current flight info
@@ -145,21 +152,28 @@ class PythonInterface:
         are in seconds, negative are the negative of sim frames.  Zero
         registers but does not schedule a callback for time.
         """
+
         self.FlightLoopCB = self.FlightLoopCallback
-        XPLMRegisterFlightLoopCallback(self, self.FlightLoopCB, 1.0, 0)
+        XPLMRegisterFlightLoopCallback(self.FlightLoopCB, 1.0, 0)
         
         # Register Drawing callback
         self.DrawObjectCB = self.DrawObject
-        XPLMRegisterDrawCallback(self, self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
-
+        #XPLMRegisterDrawCallback(self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
+        #deprecated https://developer.x-plane.com/sdk/XPLMDrawingPhase/#xplm_Phase_Objects
+     
         return self.Name, self.Sig, self.Desc
 
     def XPluginStop(self):    # Unregister the callbacks
         XPLMUnregisterFlightLoopCallback(self, self.FlightLoopCB, 0)
-        XPLMUnregisterDrawCallback(self, self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
+        #XPLMUnregisterDrawCallback(self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
+        #deprecated...    https://developer.x-plane.com/sdk/XPLMDrawingPhase/#xplm_Phase_Objects  
+
         XPLMDestroyMenu(self, self.myMenu)
         # for probe suff
         XPLMDestroyProbe(world.probe)
+        #debug
+        xp.destroyWindow(self.WindowId)
+
 
     def XPluginEnable(self):
         return 1
@@ -169,7 +183,8 @@ class PythonInterface:
 
     def XPluginReceiveMessage(self, inFromWho, inMessage, inParam):
         pass
-        
+
+
     # Functions for graphics drawing
     def LoadObject(self, fname, ref):
         self.Object = XPLMLoadObject(fname)        
@@ -189,7 +204,7 @@ class PythonInterface:
                self.locations = DrawThermalMap(lat,lon)   #get the locations where to draw the thermal Marker objects..
 
            world.world_update = False
-           #print "number of draw objects = ", len(self.locations)
+           #print( "number of draw objects = ", len(self.locations))
            
         locations = self.locations
         if locations : # only draw if not zero !
@@ -201,7 +216,7 @@ class PythonInterface:
         # is the sim paused? , then skip
         runtime = XPLMGetDataf(self.runningTime)
         if self.sim_time == runtime :
-           print "Paused!"
+           print( "Paused!")
            return 1 
         self.sim_time = runtime
         
@@ -222,10 +237,10 @@ class PythonInterface:
            sun_factor = 0 
 
         #keep up with wind changes
-        if [wind_speed,wind_dir] <>  [world.wind_speed,world.wind_dir] :
+        if [wind_speed,wind_dir] !=  [world.wind_speed,world.wind_dir] :
             [world.wind_speed,world.wind_dir] = [wind_speed,wind_dir]  
             world.world_update = True
-            #print "wind changed",wind_speed,world.wind_speed,wind_dir,world.wind_dir
+            #print( "wind changed",wind_speed,world.wind_speed,wind_dir,world.wind_dir)
         
         #Get the lift value of the current position from the world thermal map
         lift_val, roll_val  = CalcThermal(lat,lon,elevation,heading,roll_angle)    
@@ -234,10 +249,10 @@ class PythonInterface:
         # average lift depends on sun angle over the earth. 
         lift_val = lift_val * sun_factor
         
-        '''----------------------------- for fine tuning!!! -----------------------'''
+        #----------------------------- for fine tuning!!! -----------------------
         # lift_val = 500
         # roll_val = 0
-        '''------------------------------------------------------------------------'''
+        #------------------------------------------------------------------------
 
         # apply the force to the airplanes lift.value dataref
         lval = lift_val * world.lift_factor + self.lift.value  
@@ -291,74 +306,74 @@ class PythonInterface:
 
     def MyMenuHandlerCallback(self, inMenuRef, inItemRef):
         if (inItemRef == toggleThermal):
-            print " Thermal Visibility  "
+            print( " Thermal Visibility  ")
             world.thermals_visible = not world.thermals_visible
             
         if (inItemRef == randomThermal):
-            print "show thermal config box "
+            print( "show thermal config box ")
             if (self.TCMenuItem == 0):
-                print " create the thermal config box "
+                print( " create the thermal config box ")
                 self.CreateTCWindow(100, 600, 600, 400)
                 self.TCMenuItem = 1
             else:
                 if(not XPIsWidgetVisible(self.TCWidget)):
-                    print "re-show test config box "
+                    print( "re-show test config box ")
                     XPShowWidget(self.TCWidget)
 
         if (inItemRef == csvThermal):
-            print "Making thermals from list"
+            print( "Making thermals from list")
             if (self.CSVMenuItem == 0):
-                print " create the thermal config box "
+                print( " create the thermal config box ")
                 self.CreateCSVWindow(100, 550, 550, 330)
                 self.CSVMenuItem = 1
             else:
                 if(not XPIsWidgetVisible(self.CSVWidget)):
-                    print "re-show test config box "
+                    print( "re-show test config box ")
                     XPShowWidget(self.CSVWidget)
 
         if (inItemRef == configGlider):
-            print "show thermal config box "
+            print( "show thermal config box ")
             if (self.CGMenuItem == 0):
-                print " create the thermal config box "
+                print( " create the thermal config box ")
                 self.CreateCGWindow(100, 550, 550, 330)
                 self.CGMenuItem = 1
             else:
                 if(not XPIsWidgetVisible(self.CGWidget)):
-                    print "re-show test config box "
+                    print( "re-show test config box ")
                     XPShowWidget(self.CGWidget)
                     
-        print "------>",inItemRef
+        print( "------>",inItemRef)
         if (inItemRef == aboutThermal):
-            print "show about box "
+            print( "show about box ")
             if (self.AboutMenuItem == 0):
-                print " create the thermal config box "
+                print( " create the thermal config box ")
                 self.CreateAboutWindow(100, 550, 450, 230)
                 self.AboutMenuItem = 1
             else:
                 if(not XPIsWidgetVisible(self.AboutWidget)):
-                    print "re-show about box "
+                    print( "re-show about box ")
                     XPShowWidget(self.AboutWidget)
 
 
     def TCHandler(self, inMessage, inWidget,       inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
         if (inMessage == xpMessage_CloseButtonPushed):
-            print "close button pushed"
+            print( "close button pushed")
             if (self.TCMenuItem == 1):
-                print "hide the widget"
+                print( "hide the widget")
                 XPHideWidget(self.TCWidget)
                 return 1
                 
         # Process when a button on the widget is pressed
         if (inMessage == xpMsg_PushButtonPressed):
-            print "[button was pressed",inParam1,"]"
+            print( "[button was pressed",inParam1,"]")
 
             # Tests the Command API, will find command
             if (inParam1 == self.TGenerate_button):
-                print "Generate" 
-                print world.seed_number
-                print "minimum separation between thermals "
-                print world.thermal_distance
+                print( "Generate" )
+                print( world.seed_number)
+                print( "minimum separation between thermals ")
+                print( world.thermal_distance)
                 random.seed(world.seed_number)
                 lat = XPLMGetDataf(self.PlaneLat)
                 lon = XPLMGetDataf(self.PlaneLon)
@@ -550,7 +565,7 @@ class PythonInterface:
         
         # --------------------------
         self.TCHandlerCB = self.TCHandler
-        XPAddWidgetCallback(self,self.TCWidget, self.TCHandlerCB)
+        XPAddWidgetCallback(self.TCWidget, self.TCHandlerCB)
 
 
 
@@ -579,15 +594,15 @@ class PythonInterface:
         self.About_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1, text3, 0, self.AboutWidget, xpWidgetClass_Caption)
 
         self.AboutHandlerCB = self.AboutHandler
-        XPAddWidgetCallback(self,self.AboutWidget, self.AboutHandlerCB)
+        XPAddWidgetCallback(self.AboutWidget, self.AboutHandlerCB)
      # ----
      
     def AboutHandler(self, inMessage, inWidget,       inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
         if (inMessage == xpMessage_CloseButtonPushed):
-            print "about close button pushed"
+            print( "about close button pushed")
             if (self.AboutMenuItem == 1):
-                print "hide the widget"
+                print( "hide the widget")
                 XPHideWidget(self.AboutWidget)
                 return 1
         return 0
@@ -596,24 +611,24 @@ class PythonInterface:
     def CGHandler(self, inMessage, inWidget,       inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
         if (inMessage == xpMessage_CloseButtonPushed):
-            print "close button pushed"
+            print( "close button pushed")
             if (self.CGMenuItem == 1):
-                print "hide the widget"
+                print( "hide the widget")
                 XPHideWidget(self.CGWidget)
                 return 1
                 
         # Process when a button on the widget is pressed
         if (inMessage == xpMsg_PushButtonPressed):
-            print "[button was pressed",inParam1,"]"
+            print( "[button was pressed",inParam1,"]")
 
             # Tests the Command API, will find command
             if (inParam1 == self.CGGenerate_button):
-                print "Generate" 
+                print( "Generate" )
                 return 1
                 
 
             if (inParam1 == self.CGRandom_button):
-                print "Set thermal config randomly" 
+                print( "Set thermal config randomly" )
                 return 1
 
         
@@ -677,7 +692,7 @@ class PythonInterface:
         XPSetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarMin, 0);
         XPSetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarMax, 100);
         XPSetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarPageAmount,1)
-        XPSetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarSliderPosition,world.thrust_factor*10)               
+        XPSetWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarSliderPosition,int(world.thrust_factor*10) )               
         XPSetWidgetDescriptor(self.CGThrust_value, str(world.thrust_factor*10))
         y -=32
 
@@ -729,27 +744,27 @@ class PythonInterface:
         
         # --------------------------
         self.CGHandlerCB = self.CGHandler
-        XPAddWidgetCallback(self,self.CGWidget, self.CGHandlerCB)
+        XPAddWidgetCallback(self.CGWidget, self.CGHandlerCB)
 
         # CSV MENU
 
     def CSVHandler(self, inMessage, inWidget, inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
         if (inMessage == xpMessage_CloseButtonPushed):
-            print "close button pushed"
+            print( "close button pushed")
             if (self.CSVMenuItem == 1):
-                print "hide the widget"
+                print( "hide the widget")
                 XPHideWidget(self.CSVWidget)
                 return 1
                 
         # Process when a button on the widget is pressed
         if (inMessage == xpMsg_PushButtonPressed):
-            print "[button was pressed",inParam1,"]"
+            print( "[button was pressed",inParam1,"]")
 
             # Tests the Command API, will find command
             if (inParam1 == self.CSVTGenerate_button):
-                print "Generate" 
-                print world.seed_number
+                print( "Generate" )
+                print( world.seed_number)
                 random.seed(world.seed_number)
                 lat = XPLMGetDataf(self.PlaneLat)
                 lon = XPLMGetDataf(self.PlaneLon)
@@ -890,4 +905,8 @@ class PythonInterface:
         
         # --------------------------
         self.CSVHandlerCB = self.CSVHandler
-        XPAddWidgetCallback(self,self.CSVWidget, self.CSVHandlerCB)
+        XPAddWidgetCallback(self.CSVWidget, self.CSVHandlerCB)
+    
+    #------- after this debug 
+
+    

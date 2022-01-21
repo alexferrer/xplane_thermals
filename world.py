@@ -1,5 +1,3 @@
-#!/usr/bin/env python2
-
 ''' 
   File: world.py
   Auth: Alex Ferrer @ 2014
@@ -25,7 +23,7 @@ if os.path.exists('hotspots.csv') == True:
         hotspots = map(tuple, reader)
 else:
     hotspots = []
-    print "Can't find hotspots.csv in X-Plane root directory"
+    print( "Can't find hotspots.csv in X-Plane root directory")
 
 # Conversion constants
 nm2meter = 1852  # nautical miles to meters

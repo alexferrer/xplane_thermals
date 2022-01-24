@@ -1,13 +1,13 @@
-xplane_thermals
+xplane_thermals - (Updated for Python 3)
 ===============
 
 Author: Alex Ferrer
-License: GPL 2014
+License: GPL 2014 / Updated Jan 2022
 
 
 X-Plane plugin to generate more realistic thermals 
 
-The current X-Plane (Ver 10.30+) thermal model is quite simplistic. This is an attempt to create a plugin that simulates more realistic thermals.
+This updated plugin only works with the new Python3 plugin and XPlane 11.5 and above!
 
 Basic concept:
 Create a fixed or random list of thermals with lat,lon,thermal diameter, thermal strength.
@@ -36,7 +36,8 @@ A thermal visualization aid (shows markers where the thermals are) exists with a
 UPDATE
 -----
 
-- First update for Python 3, working but still work in progress.. 
+- (For Dev only) New PlotThermals.py program to plot the thermal map
+- First update for Python 3, it Works! try it, report bugs 
 - New branch for Python 3+ development (Work in process) :
 - https://forums.x-plane.org/index.php?/forums/topic/225976-xppython3-v312-now-available/
 - https://xppython3.readthedocs.io/en/stable/
@@ -68,10 +69,11 @@ Installation
 
 This is a Python 3 plugin, so the python interface is required. ( https://xppython3.readthedocs.io/en/stable/) For installation copy the Python files to the X-Plane Resources/PythonScripts folder so that the Python plugin can find them.
 
-As a helper, I am using Easy Dataref access class from Joan Perez i Cauhe, and I am including the class on the sources. 
+As a helper, I am using Easy Dataref access class from Joan Perez i Cauhe, and I am including the class on the sources. (with changes for Python 3)
 Other than that, all is needed is PI_ThermalSym, thermal_model.py and world.py anything else is test stuff or helpers. 
 
 V 0.3 has a nice menu to define thermal parameters, better thermal simulation, better performance and reduced memory space. 
+
 
 
 Older versions

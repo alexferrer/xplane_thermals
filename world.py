@@ -12,6 +12,14 @@
 from thermal import Thermal
 import csv
 import os
+
+#debug mode
+DEBUG = False
+
+
+
+
+
 if os.path.exists('hotspots.csv') == True:
     with open("hotspots.csv", 'r') as f:
         with open("converted_hotspots.csv", 'w') as f1:
@@ -30,7 +38,8 @@ nm2meter = 1852  # nautical miles to meters
 latlon2meter = 111200  # crude conversion value for lat/lon to meters
 f2m = 0.3048        # feet to meter conversion value
 m2f = 3.280         # meter to feet
-max_draw_distance = 18520  # furthest thermals shown, 18.52km = 10nm visibility
+#max_draw_distance = 18520  # furthest thermals shown, 18.52km = 10nm visibility
+max_draw_distance = 18520000  # furthest thermals shown, 18.52km = 10nm visibility
 
 ''' The wind vector is used to calculate the thermal drift 
     and it is considered when reading thermal strength and
@@ -57,19 +66,18 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 
 # A list of thermals for testing { (lat,lon):(radius,strength) }
 default_thermal_dict = [
-    Thermal(33.0678333, -96.0653333, 500, 30),
-    Thermal(-12.3994, -76.7666, 400, 10),
-    Thermal(-12.3774, -76.7815, 300, 20),
-    Thermal(-12.3016, -76.8448, 200, 40),
-    Thermal(-12.4647, -76.7516, 150, 50),
+    Thermal(47.3500, -122.1633333, 500, 30),
+    Thermal(47.3600, -122.1643333, 500, 30),
+    Thermal(47.3700, -122.1653333, 500, 30),
+    Thermal(47.3400, -122.1663333, 500, 30),
+    Thermal(47.3300, -122.1673333, 500, 30),
+
     Thermal(-12.7623, -76.6061, 900, 60)]
 
 thermal_dict = default_thermal_dict
 
 thermal_band = {1000: .8, 2000: .9, 3000: 1, 5000: 1, 5100: .4, 5500: 0}
 
-# maximum altitude for thermals in meters (may change based on temp/time of day/ etc.
-thermal_tops = 1500
 # thermal_height_band # size/strength of thermal depending on altitude
 ''' need to model size/strenght of thermal against:
         time of day    : average lift depends on sun angle over the earth. 
@@ -89,7 +97,8 @@ thermal_tops = 1500
         raob ?
 '''
 # GUI state variables
-thermals_visible = True
+thermals_visible = True        #are thermals visible at all (as balloons) 
+thermals_show_column = False   # show a thermal column?
 
 # Thermal auto refersh data
 thermal_map_start_time = 0    # Thermal map age in seconds
@@ -97,9 +106,9 @@ thermal_refresh_time = 20  # auto-refresh timr for thermal map in minutes
 
 
 # Default thermal config values
-thermal_tops = 2000      # meters thermal top
-thermal_distance = 500   # meters min separation distance between thermals
-thermal_density = 60     # qty of thermal generated
+thermal_tops = 500      #alx 2000 meters thermal top
+thermal_distance = 100   #alx 500 meters min separation distance between thermals
+thermal_density = 260     #alx 60 qty of thermal generated
 thermal_size = 500       # diameter of thermals in meters
 thermal_power = 1000     # strength of thermals in fpm lift
 thermal_cycle = 30       # thermal life cycle time in minutes
@@ -135,13 +144,6 @@ thrust_factor = 5.0  # ask21  1.1
 wing_size = 10  # 10
 
 
-# Function that converts a geo location lat/lon/alt to coordinates x/y/z; returns tuple(x,y,z)
-def dummy_world_to_local(lat, lon, alt):
-    return (lat, lon, alt)
-
-
-world_to_local = dummy_world_to_local
-
 
 # Function that gets a value indicating whether the terrain at the geo location is water
 def dummy_terrain_is_water(lat, lon):
@@ -149,3 +151,6 @@ def dummy_terrain_is_water(lat, lon):
 
 
 terrain_is_water = dummy_terrain_is_water
+
+#stuff for drawing of thermals
+instance_list = [] # a list of all draw object instances

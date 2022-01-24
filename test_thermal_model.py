@@ -100,7 +100,7 @@ def testPerformance():
     print( "MakeRandomThermalMap took %f s" % (tend - tstart))
 
     tstart = timeit.default_timer()
-    for i in xrange(count):
+    for i in range(count):
         calcLift(lat, lon)
     tend = timeit.default_timer()
     print( "calcLift took %f s" % (tend - tstart))

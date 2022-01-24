@@ -14,6 +14,8 @@ from random import randrange, sample, choice
 import math
 import csv
 
+#comment out before testing with PlotThermals!!
+#import xp
 
 # Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2
 def calcDistSquare(p1x, p1y, p2x, p2y):
@@ -53,9 +55,9 @@ def calcLift(p1x, p1y):
     # test if we are inside any listed thermal
     for thermal in world.thermal_dict:
         p2x, p2y = thermal.px, thermal.py
-        # print( "calclift:",p1x,p1y,p2x,p2y)
-
         distance_square = calcDistSquare(p1x, p1y, p2x, p2y)
+        #print( "calclift:",int(p1x), int(p1y), int(p2x), int(p2y), "dist >",int(distance_square),thermal.radius )
+
         if distance_square < thermal.radius_square:
             distance = math.sqrt(distance_square)
             lift += thermal.strength * round((thermal.radius - distance) / thermal.radius, 2)
@@ -70,54 +72,6 @@ def calcThermalBand(alt):
     return top_factor
 
 
-def DrawThermal(lat, lon):  # min_alt,max_alt
-    ''' make a location list of thermal images along the raising thermal, accounting
-        for wind drift along the climb. end at thermal tops
-    '''
-    base = 1
-    Dew, Dud, Dns = world.world_to_local(lat, lon, 0)  # Dew=E/W,Dud=Up/Down,Dns=N/S
-    locs = []  # locations
-    for alt in range(base, world.thermal_tops, 200):  # from 100 to thermal top steps of  200
-        dX, dY = calcDrift(alt)
-        locs.append([Dew + dX, Dud + alt, Dns + dY, 0, 0, 0])
-    return locs
-
-
-def DrawCloud(lat, lon):
-    ''' Return the location for a cloud at the top of the raising thermal, accounting
-        for wind drift along the climb.
-    '''
-    Dew, Dud, Dns = world.world_to_local(lat, lon, 0)  # Dew=E/W,Dud=Up/Down,Dns=N/S
-    locs = []  # locations
-    alt = world.thermal_tops
-    dX, dY = calcDrift(alt)
-    locs.append([Dew + dX, Dud + alt, Dns + dY, 0, 0, 0])
-
-    return locs
-
-
-def DrawThermalMap(lat, lon):
-    locations = []
-    p1x, p1y = convertLatLon2Meters(lat, lon)
-
-    for athermal in world.thermal_dict:
-        p2x, p2y = athermal.px, athermal.py
-        # print( "DrawThermalmap:",p1x,p1y,p2x,p2y)
-        if calcDist(p1x, p1y, p2x, p2y) < world.max_draw_distance:
-            locations = locations + DrawThermal(athermal.lat, athermal.lon)
-    return locations
-
-
-def DrawCloudMap(lat, lon):
-    locations = []
-    p1x, p1y = convertLatLon2Meters(lat, lon)
-
-    for athermal in world.thermal_dict:
-        p2x, p2y = athermal.px, athermal.py
-        # print( "DrawThermalmap:",p1x,p1y,p2x,p2y)
-        if calcDist(p1x, p1y, p2x, p2y) < world.max_draw_distance:
-            locations = locations + DrawCloud(athermal.lat, athermal.lon)
-    return locations
 
 
 def CalcThermal(lat, lon, alt, heading, roll_angle):
@@ -184,7 +138,6 @@ def MakeRandomThermalMap(time, _lat, _lon, _strength, _count, _radius):
       Params: center (lat,lon) , max strength, count , radius 
       thermal_list =     { (lat,lon):(radius,strength) }
     '''
-
     average_radius = _radius
     thermals = []
     '''
@@ -194,26 +147,36 @@ def MakeRandomThermalMap(time, _lat, _lon, _strength, _count, _radius):
       add distance to current plane lat/lon
        
       '''
-    for r in sample(range(1, 40000), _count):
-        x = r / 200      # col
-        y = r - x * 200  # row
+    for r in sample(range(1, 40000), _count):      
+        x = int(r / 200)      # get a column from 0 - 200
+        y = r % 200     # get row from 0 - 200
+        #print("new thermal = ",r,x,y )
+
         radius = randrange(int(average_radius / 5), average_radius)  # random diameter for the thermal
         # randomize thermal strength weighted towards stronger
         strength = choice((3, 4, 5, 6, 6, 7, 7, 7, 8, 8, 9, 9, 10)) * _strength * .1
 
-        lat = _lat + (x - 100) * world.thermal_distance * .00001   # thermal separation in meters
-        lon = _lon + (y - 100) * world.thermal_distance * .00001
+        #calculate position for new thermal
+        lat = _lat + (x-100) * world.thermal_distance * .00001   # thermal separation in meters
+        lon = _lon + (y-100) * world.thermal_distance * .00001
 
         # No thermals start over water..
         if world.terrain_is_water(lat, lon):
+            #print("we are over water ?....")
             continue
 
-        #(lat,lon):(radius,strength)
-        # print( "makeRandomThermal",lat,lon,radius,strength)
-        #thermals[(lat,lon)] = (radius,strength)
+        #create the thermal 
         thermals.append(thermal.Thermal(lat, lon, radius, strength))
-        # reset the thermal start time to now
-        world.thermal_map_start_time = time
+        if world.DEBUG :
+            print( "makeRandomThermal",lat,lon,radius,strength)
+
+    #for debug make a large thermal arount current _lat,_lon position  
+    if world.DEBUG :
+        thermals.append(thermal.Thermal(_lat, _lon, average_radius*10, _strength*10))
+
+    # reset the thermal start time to now
+    world.thermal_map_start_time = time
+    print ("# of generated thermals",len(thermals))   
     return thermals
 
 
@@ -268,4 +231,3 @@ def MakeCSVThermalMap(_lat, _lon, _strength, _count, _radius):
 
 # ----- begin test code --------
 
-# print( CalcThermal(-12.389,-76.7582,1000,0,45))

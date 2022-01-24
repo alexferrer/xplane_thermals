@@ -1,4 +1,6 @@
 from XPLMDataAccess import *
+import xp
+
 
 class EasyDref:    
     '''
@@ -35,7 +37,7 @@ class EasyDref:
             self.dr_set = XPLMSetDatai
             self.cast = int
         elif (type == "float"):
-            self.dr_get = XPLMGetDataf
+            self.dr_get = xp.getDataf
             self.dr_set = XPLMSetDataf
             self.cast = float  
         elif (type == "double"):
@@ -46,7 +48,7 @@ class EasyDref:
             print( "ERROR: invalid DataRef type", type)
         
         if dref: dataref = dref
-        self.DataRef = XPLMFindDataRef(dataref)
+        self.DataRef = xp.findDataRef(dataref)
         if self.DataRef == False:
             print( "Can't find " + dataref + " DataRef")
     

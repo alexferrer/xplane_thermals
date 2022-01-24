@@ -16,13 +16,10 @@ from EasyDref import EasyDref
 
 # thermal modeling tools
 from thermal_model import CalcThermal
-from thermal_model import DrawThermal
-from thermal_model import DrawThermalMap
-from thermal_model import DrawCloud
-from thermal_model import DrawCloudMap
-
 from thermal_model import MakeRandomThermalMap
 from thermal_model import MakeCSVThermalMap
+
+from draw_thermals import drawThermalsOnScreen, eraseThermalsOnScreen
 
 from XPLMProcessing import *
 from XPLMDataAccess import *
@@ -59,20 +56,15 @@ configGlider = 5
 # "generate thermals"
 seed_number = world.seed_number
 
-def xplane_world_to_local(lat, lon, alt):
-    x,y,z = XPLMWorldToLocal(lat,lon,alt)
-    return (x,y,z)
-
-
 def xplane_terrain_is_water(lat, lon):
     # https://xppython3.readthedocs.io/en/stable/development/changesfromp2.html?highlight=xplmprobeterrainxyz
     #info = []       
-    x,y,z = XPLMWorldToLocal(lat,lon,0)
-    info = XPLMProbeTerrainXYZ(world.probe,x,y,z)
+    x,y,z = xp.worldToLocal(lat,lon,0)
+    info = xp.probeTerrainXYZ(world.probe,x,y,z)
     #print("xplmWorlprobe info = ",dir(info))
 
     if info.is_wet:
-        print("------------- we are over water")
+        #print("------------- we are over water")
         return True
     return False
 
@@ -106,28 +98,27 @@ class PythonInterface:
 
         """ Data refs we want to record."""
         # airplane current flight info
-        self.PlaneLat  = XPLMFindDataRef("sim/flightmodel/position/latitude")
-        self.PlaneLon  = XPLMFindDataRef("sim/flightmodel/position/longitude")
-        self.PlaneElev = XPLMFindDataRef("sim/flightmodel/position/elevation")
-        self.PlaneHdg  = XPLMFindDataRef("sim/flightmodel/position/psi") # plane heading
-        self.PlaneRol  = XPLMFindDataRef("sim/flightmodel/position/phi") # plane roll
+        self.PlaneLat  = xp.findDataRef("sim/flightmodel/position/latitude")
+        self.PlaneLon  = xp.findDataRef("sim/flightmodel/position/longitude")
+        self.PlaneElev = xp.findDataRef("sim/flightmodel/position/elevation")
+        self.PlaneHdg  = xp.findDataRef("sim/flightmodel/position/psi") # plane heading
+        self.PlaneRol  = xp.findDataRef("sim/flightmodel/position/phi") # plane roll
         
-        self.WindSpeed = XPLMFindDataRef("sim/weather/wind_speed_kt[0]") # wind speed at surface
-        self.WindDir   = XPLMFindDataRef("sim/weather/wind_direction_degt[0]") # wind direction
+        self.WindSpeed = xp.findDataRef("sim/weather/wind_speed_kt[0]") # wind speed at surface
+        self.WindDir   = xp.findDataRef("sim/weather/wind_direction_degt[0]") # wind direction
         
         # is the sim paused?
-        self.runningTime  = XPLMFindDataRef("sim/time/total_running_time_sec")
+        self.runningTime  = xp.findDataRef("sim/time/total_running_time_sec")
         self.sim_time = 0
         
         # sun pitch from flat in OGL coordinates degrees, for thermal strength calculation
         # from zero to 90 at 12pm in summer near the equator .. 
-        self.SunPitch  = XPLMFindDataRef('sim/graphics/scenery/sun_pitch_degrees')
+        self.SunPitch  = xp.findDataRef('sim/graphics/scenery/sun_pitch_degrees')
         # temperature_sealevel_c
         # dewpoi_sealevel_c
         
         # terrain probe to test for height and water
-        world.probe = XPLMCreateProbe(xplm_ProbeY)
-        world.world_to_local = xplane_world_to_local
+        world.probe = xp.createProbe(xplm_ProbeY)
         world.terrain_is_water = xplane_terrain_is_water
  
         # variables to inject energy to the plane 
@@ -141,32 +132,25 @@ class PythonInterface:
         world.world_update = True
          
         # image to mark thermals
-        self.ObjectPath = "lib/dynamic/balloon.obj"    
+        self.ObjectPath = "lib/dynamic/balloon.obj"
 
         """
         Register our callback for once a second.  Positive intervals
         are in seconds, negative are the negative of sim frames.  Zero
         registers but does not schedule a callback for time.
         """
-
-        self.FlightLoopCB = self.FlightLoopCallback
-        XPLMRegisterFlightLoopCallback(self.FlightLoopCB, 1.0, 0)
-        
-        # Register Drawing callback
-        #self.DrawObjectCB = self.DrawObject
-        #XPLMRegisterDrawCallback(self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
-        #deprecated https://developer.x-plane.com/sdk/XPLMDrawingPhase/#xplm_Phase_Objects
+        xp.registerFlightLoopCallback(self.FlightLoopCallback, 1.0, 0)
      
         return self.Name, self.Sig, self.Desc
 
     def XPluginStop(self):    # Unregister the callbacks
-        XPLMUnregisterFlightLoopCallback(self, self.FlightLoopCB, 0)
+        xp.unregisterFlightLoopCallback(self.FlightLoopCallback, 0)
         #XPLMUnregisterDrawCallback(self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
         #deprecated...    https://developer.x-plane.com/sdk/XPLMDrawingPhase/#xplm_Phase_Objects  
 
         XPLMDestroyMenu(self, self.myMenu)
         # for probe suff
-        XPLMDestroyProbe(world.probe)
+        xp.destroyProbe(world.probe)
         #debug
         xp.destroyWindow(self.WindowId)
 
@@ -180,56 +164,31 @@ class PythonInterface:
     def XPluginReceiveMessage(self, inFromWho, inMessage, inParam):
         pass
 
+ 
 
-    # Functions for graphics drawing
-    def LoadObject(self, fname, ref):
-        self.Object = XPLMLoadObject(fname)        
-     
-    def DrawObject(self, inPhase, inIsBefore, inRefcon):  
-        self.LoadObjectCB = self.LoadObject
-        #XPLMLookupObjects(self, self.ObjectPath, 0, 0, self.LoadObjectCB, 0)  
-        
-        # build object list for drawing
-        if world.world_update :
-           lat = XPLMGetDataf(self.PlaneLat)
-           lon = XPLMGetDataf(self.PlaneLon)
-
-           if not world.thermals_visible :  # if visibility is off, only draw clouds at cloudbase
-               self.locations = DrawCloudMap(lat,lon)   #get the locations where to draw the Cloud objects..
-           else:
-               self.locations = DrawThermalMap(lat,lon)   #get the locations where to draw the thermal Marker objects..
-
-           world.world_update = False
-           #print( "number of draw objects = ", len(self.locations))
-           
-        locations = self.locations
-        if locations : # only draw if not zero !
-            print("deprecated: drawing objects........",len(locations))
-            #XPLMDrawObjects(self.Object, len(locations), locations, 0, 1)
-            # alx Deprecating https://developer.x-plane.com/sdk/XPLMDrawObjects/
-        return 1
 
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
-    
+        # the actual callback, runs once every x period as defined
+
         # is the sim paused? , then skip
-        runtime = XPLMGetDataf(self.runningTime)
+        runtime = xp.getDataf(self.runningTime)
         if self.sim_time == runtime :
-           print( "Paused!")
+           print( "Pause - ",end='')
            return 1 
         self.sim_time = runtime
         
         # instantiate the actual callbacks.  
         
-        lat = XPLMGetDataf(self.PlaneLat)
-        lon = XPLMGetDataf(self.PlaneLon)
-        elevation = XPLMGetDataf(self.PlaneElev)
-        heading = XPLMGetDataf(self.PlaneHdg)
-        roll_angle = XPLMGetDataf(self.PlaneRol)
-        wind_speed = round(XPLMGetDataf(self.WindSpeed)*0.5144, 2 )      # Knots to m/s
-        wind_dir = round(math.radians( XPLMGetDataf(self.WindDir) ), 4 ) # Degrees to radians
+        lat = xp.getDataf(self.PlaneLat)
+        lon = xp.getDataf(self.PlaneLon)
+        elevation = xp.getDataf(self.PlaneElev)
+        heading = xp.getDataf(self.PlaneHdg)
+        roll_angle = xp.getDataf(self.PlaneRol)
+        wind_speed = round(xp.getDataf(self.WindSpeed)*0.5144, 2 )      # Knots to m/s
+        wind_dir = round(math.radians( xp.getDataf(self.WindDir) ), 4 ) # Degrees to radians
         
         #sun pitch afects thermal power , noon in summer is the best..
-        sun_pitch = XPLMGetDataf(self.SunPitch) #Degrees
+        sun_pitch = xp.getDataf(self.SunPitch) #Degrees
         sun_factor = (sun_pitch + 10)/100
         if sun_pitch < 0 :
            sun_factor = 0 
@@ -268,16 +227,12 @@ class PythonInterface:
         # apply a roll to the plane 
         rval = roll_val * world.roll_factor + self.roll.value 
         self.roll.value = rval
-        
-        # Terrain probe -------
-        self.probe = XPLMCreateProbe(xplm_ProbeY)
-        
-                #refresh thermals on given time 
-        
+
+
         #Check if it is time to referesh the thermal map
         if  (self.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60) :
-            lat = XPLMGetDataf(self.PlaneLat)
-            lon = XPLMGetDataf(self.PlaneLon)
+            lat = xp.getDataf(self.PlaneLat)
+            lon = xp.getDataf(self.PlaneLon)
             world.thermal_dict = MakeRandomThermalMap(self.sim_time,
                                lat,lon,
                                world.thermal_power,
@@ -285,9 +240,15 @@ class PythonInterface:
                                world.thermal_size)
 
             world.world_update = True 
-        
 
-
+        #if anything has changed updte the screen drawings      
+        if world.world_update:
+            if world.thermals_visible:
+               drawThermalsOnScreen( xp.getDataf(self.PlaneLat),
+                                     xp.getDataf(self.PlaneLon)
+                                   )
+            else:
+                eraseThermalsOnScreen()
 
         # set the next callback time in +n for # of seconds and -n for # of Frames
         return .01 # works good on my (pretty fast) machine..
@@ -304,8 +265,9 @@ class PythonInterface:
 
     def MyMenuHandlerCallback(self, inMenuRef, inItemRef):
         if (inItemRef == toggleThermal):
-            print( " Thermal Visibility  ")
             world.thermals_visible = not world.thermals_visible
+            world.world_update = True
+            print( " Thermal Visibility  ", world.thermals_visible )
             
         if (inItemRef == randomThermal):
             print( "show thermal config box ")
@@ -340,7 +302,7 @@ class PythonInterface:
                     print( "re-show test config box ")
                     XPShowWidget(self.CGWidget)
                     
-        print( "------>",inItemRef)
+        print( "menu option ------>",inItemRef)
         if (inItemRef == aboutThermal):
             print( "show about box ")
             if (self.AboutMenuItem == 0):
@@ -373,8 +335,8 @@ class PythonInterface:
                 print( "minimum separation between thermals ")
                 print( world.thermal_distance)
                 random.seed(world.seed_number)
-                lat = XPLMGetDataf(self.PlaneLat)
-                lon = XPLMGetDataf(self.PlaneLon)
+                lat = xp.getDataf(self.PlaneLat)
+                lon = xp.getDataf(self.PlaneLon)
                 # world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
                                                        # lat,lon,stregth,count
                 world.thermal_dict = MakeRandomThermalMap(self.sim_time,
@@ -580,11 +542,11 @@ class PythonInterface:
         AboutWindow = XPCreateWidget(x+50, y-50, x2-50, y2+50, 1, "",     0,self.AboutWidget, xpWidgetClass_SubWindow)
         XPSetWidgetProperty(AboutWindow, xpProperty_SubWindowType, xpSubWindowStyle_SubWindow)
 
-        text1 = "Thermal Simulator"
+        text1 = "Thermal Simulator for Python 3"
         self.About_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1, text1, 0, self.AboutWidget, xpWidgetClass_Caption)
         y -=35
 
-        text2 = "Author: Alex Ferrer  @ 2014"
+        text2 = "Author: Alex Ferrer  @ 2014, 2022"
         self.About_label1 = XPCreateWidget(x+60,  y-80, x+140, y-102,1, text2, 0, self.AboutWidget, xpWidgetClass_Caption)
         y -=35
 
@@ -764,8 +726,8 @@ class PythonInterface:
                 print( "Generate" )
                 print( world.seed_number)
                 random.seed(world.seed_number)
-                lat = XPLMGetDataf(self.PlaneLat)
-                lon = XPLMGetDataf(self.PlaneLon)
+                lat = xp.getDataf(self.PlaneLat)
+                lon = xp.getDataf(self.PlaneLon)
                 world.thermal_dict = MakeCSVThermalMap(lat,lon,world.thermal_power,world.thermal_density,world.thermal_size)    
                 world.world_update = True
                 return 1

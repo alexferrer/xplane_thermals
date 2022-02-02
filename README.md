@@ -37,8 +37,7 @@ UPDATE
 -----
 
 - (For Dev only) New PlotThermals.py program to plot the thermal map
-- First update for Python 3, it Works! try it, report bugs 
-- New branch for Python 3+ development (Work in process) :
+- Python 3 now Works! try it, report bugs 
 - https://forums.x-plane.org/index.php?/forums/topic/225976-xppython3-v312-now-available/
 - https://xppython3.readthedocs.io/en/stable/
 
@@ -88,4 +87,4 @@ V 0.1 it works based on a 10x10 matrix that repeats itself. it works, but is jus
 About the author
 ----------------
 
-I have about 20 years experience flying thermals on Gliders, Paragliders and Ultralight aircrafts. I've owned and flown (sp?) many diferent gliders from a very slow 1-26 to ASK-21.  I've flown extensively on the Texas plains and on the mountains of Peru, so I feel I've got a good idea of how a thermal should feel when you fly a glider on X-Plane. I hope that this plugin helps improve the glider flying experience on X-plane for all. 
+I have about 25 years experience flying thermals on Gliders, Paragliders and Ultralight aircrafts. I've owned and flown (sp?) many diferent gliders from a very slow 1-26 to ASK-21.  I've flown extensively on the Texas plains and on the mountains of Peru, so I feel I've got a good idea of how a thermal should feel when you fly a glider on X-Plane. I hope that this plugin helps improve the glider flying experience on X-plane for all. 

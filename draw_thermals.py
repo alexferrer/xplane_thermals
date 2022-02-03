@@ -3,6 +3,13 @@ import thermal
 from thermal_model import convertLatLon2Meters, calcDist, calcDrift
 import xp
 
+HUGE_CLOUD = 'lib/dynamic/balloon.obj'
+LARGE_CLOUD = 'lib/airport/Common_Elements/Fuel_Storage/Sing_Tank_Large.obj'
+# 'lib/street/various/porta_potty.obj'
+SMALL_CLOUD = 'lib/airport/landscape/windsock.obj'
+# 'lib/airport/Common_Elements/Markers/Poles/Large_Red_White.obj'
+THERMAL_COLUMN = 'lib/dynamic/seagull_glide.obj'
+
 
 def DrawThermal(lat, lon):  # min_alt,max_alt
     ''' make a location list of thermal images along the raising thermal, accounting
@@ -79,8 +86,6 @@ def drawThermalsOnScreen(lat, lon):
     if world.DEBUG:
         print("DrawThermalsOnScreen:start")
 
-    locations = []
-
     # if visibility is off, only draw clouds at cloudbase (no visible columns)
 
     if world.thermals_visible:
@@ -94,30 +99,32 @@ def drawThermalsOnScreen(lat, lon):
         #print("thermal location = ",loc[0])
 
     paths = []
-    xp.lookupObjects('lib/dynamic/balloon.obj', 0, 0,
+    xp.lookupObjects(HUGE_CLOUD, 0, 0,
                      lambda path, refCon: paths.append(path), None)
-    # print(paths)
-    obj = xp.loadObject(paths[0])
+    huge_cloud = xp.loadObject(paths[0])
 
-    '''
-        # For testingonly 
-        # get current aircraft position
-        x = xp.getDatad(xp.findDataRef('sim/flightmodel/position/local_x'))
-        y = xp.getDatad(xp.findDataRef('sim/flightmodel/position/local_y'))
-        z = xp.getDatad(xp.findDataRef('sim/flightmodel/position/local_z'))
-        pitch, heading, roll = (0, 0, 0)
-        print("-------------------local x,y,z",x,y,z)
-        position = x+30, y+30, z + 380, pitch, heading, roll
-        instance1 = xp.createInstance(obj)
-        xp.instanceSetPosition(instance1, position )
-    '''
+    # print(paths)
+    thermal_column = xp.loadObject(
+        'Resources/default scenery/sim objects/dynamic/SailBoat.obj')
+
+    #print("object1", huge_cloud)
+    #print("object2", thermal_column)
 
     eraseThermalsOnScreen()
 
     if world.DEBUG:
         print("loop: create instances and position")
+    _p = True
     for loc in locs:
-        instance = xp.createInstance(obj)
+        # select the object to draw
+        _p = not _p
+        if _p:
+            instance = xp.createInstance(huge_cloud)
+            #print("huge cloud")
+        else:
+            instance = xp.createInstance(thermal_column)
+            # print("thermal_column")
+
         if world.DEBUG:
             print("loop: xp.instanceSetPosition(instance,", instance, loc)
         xp.instanceSetPosition(instance, loc)
@@ -125,3 +132,8 @@ def drawThermalsOnScreen(lat, lon):
 
     world.world_update = False
     return 1
+
+
+def select_cloud_type(_thermal):
+    ''' return a cloud type based on the thermal size and power'''
+    print(_thermal)

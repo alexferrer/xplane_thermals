@@ -13,11 +13,8 @@ from thermal import Thermal
 import csv
 import os
 
-#debug mode
+# debug mode
 DEBUG = False
-
-
-
 
 
 if os.path.exists('hotspots.csv') == True:
@@ -31,14 +28,14 @@ if os.path.exists('hotspots.csv') == True:
         hotspots = map(tuple, reader)
 else:
     hotspots = []
-    print( "Can't find hotspots.csv in X-Plane root directory")
+    print("Can't find hotspots.csv in X-Plane root directory")
 
 # Conversion constants
 nm2meter = 1852  # nautical miles to meters
 latlon2meter = 111200  # crude conversion value for lat/lon to meters
 f2m = 0.3048        # feet to meter conversion value
 m2f = 3.280         # meter to feet
-#max_draw_distance = 18520  # furthest thermals shown, 18.52km = 10nm visibility
+# max_draw_distance = 18520  # furthest thermals shown, 18.52km = 10nm visibility
 max_draw_distance = 18520000  # furthest thermals shown, 18.52km = 10nm visibility
 
 ''' The wind vector is used to calculate the thermal drift 
@@ -97,8 +94,7 @@ thermal_band = {1000: .8, 2000: .9, 3000: 1, 5000: 1, 5100: .4, 5500: 0}
         raob ?
 '''
 # GUI state variables
-thermals_visible = True        #are thermals visible at all (as balloons) 
-thermals_show_column = False   # show a thermal column?
+thermals_visible = True  # are thermals visible at all (as balloons)
 
 # Thermal auto refersh data
 thermal_map_start_time = 0    # Thermal map age in seconds
@@ -106,22 +102,20 @@ thermal_refresh_time = 20  # auto-refresh timr for thermal map in minutes
 
 
 # Default thermal config values
-thermal_tops = 500      #alx 2000 meters thermal top
-thermal_distance = 100   #alx 500 meters min separation distance between thermals
-thermal_density = 260     #alx 60 qty of thermal generated
-thermal_size = 500       # diameter of thermals in meters
-thermal_power = 1000     # strength of thermals in fpm lift
+thermal_tops = 2000  # alx 2000 meters thermal top
+thermal_distance = 100  # alx 500 meters min separation distance between thermals
+thermal_density = 400  # alx 60 qty of thermal generated
+thermal_size = 50       # diameter of thermals in meters
+thermal_power = 10     # strength of thermals in fpm lift
 thermal_cycle = 30       # thermal life cycle time in minutes
 cloud_streets = False    # not yet implemented..
-seed_number = 1234
 
-''' 
-Control factors
+'''Control factors
 Constants for fine tuning the value of the lift forces from the thermal model into the plane. 
 lift_val from model * lift_factor = final force to apply to plane
 I suspect that different CPU's  will need different values and since a larger plane would 
 have larger wing area, the lift factor will be different too.
-Adjust at your own peril.. :) 
+Adjust at your own peril.. :)
 '''
 # 1kilo weights ~ 1 newton (9.8) newton
 # ask21 (360kg) + pilot (80) = = 440kg,
@@ -144,7 +138,6 @@ thrust_factor = 5.0  # ask21  1.1
 wing_size = 10  # 10
 
 
-
 # Function that gets a value indicating whether the terrain at the geo location is water
 def dummy_terrain_is_water(lat, lon):
     return False
@@ -152,5 +145,5 @@ def dummy_terrain_is_water(lat, lon):
 
 terrain_is_water = dummy_terrain_is_water
 
-#stuff for drawing of thermals
-instance_list = [] # a list of all draw object instances
+# stuff for drawing of thermals
+instance_list = []  # a list of all draw object instances

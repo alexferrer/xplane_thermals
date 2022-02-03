@@ -84,8 +84,6 @@ class PythonInterface:
         self.myMenu = XPLMCreateMenu(
             "Thermals", XPLMFindPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         XPLMAppendMenuItem(
-            self.myMenu, "Thermal Visibility On/Off "+str(world.thermals_visible), toggleThermal, 1)
-        XPLMAppendMenuItem(
             self.myMenu, "Generate Random Thermals", randomThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Generate CSV Thermals", csvThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
@@ -264,10 +262,6 @@ class PythonInterface:
     # ------------------------------------ menu stuff  from here on ----------------------------------
 
     def MyMenuHandlerCallback(self, inMenuRef, inItemRef):
-        if (inItemRef == toggleThermal):
-            world.thermals_visible = not world.thermals_visible
-            world.world_update = True
-            print(" Thermal Visibility  ", world.thermals_visible)
 
         if (inItemRef == randomThermal):
             print("show thermal config box ")

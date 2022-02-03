@@ -84,7 +84,7 @@ class PythonInterface:
         self.myMenu = XPLMCreateMenu(
             "Thermals", XPLMFindPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         XPLMAppendMenuItem(
-            self.myMenu, "Thermal Visibility On/Off ", toggleThermal, 1)
+            self.myMenu, "Thermal Visibility On/Off "+str(world.thermals_visible), toggleThermal, 1)
         XPLMAppendMenuItem(
             self.myMenu, "Generate Random Thermals", randomThermal, 1)
         XPLMAppendMenuItem(self.myMenu, "Generate CSV Thermals", csvThermal, 1)
@@ -344,6 +344,12 @@ class PythonInterface:
                 world.world_update = True
                 return 1
 
+        if (inMessage == xpMsg_ButtonStateChanged):
+            #print("********************* toggle thermal column visibility *************")
+            world.thermals_visible = XPGetWidgetProperty(
+                self.enableCheck, xpProperty_ButtonState, None)
+            world.world_update = True
+
         if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
             # Thermal Tops
             val = XPGetWidgetProperty(
@@ -552,13 +558,18 @@ class PythonInterface:
         XPSetWidgetDescriptor(self.TCycle_value, str(world.thermal_cycle))
         y -= 30
 
-        # Define checkbox for cloud streets
-        #XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'Align on cloud streets', 0,self.TCWidget, xpWidgetClass_Caption)
-        #self.enableCheck = XPCreateWidget(x+180, y-80, x+220, y-102, 1, '', 0,self.TCWidget, xpWidgetClass_Button)
-        #XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonType, xpRadioButton)
-        #XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
-        #XPSetWidgetProperty(self.enableCheck, xpProperty_ButtonState, world.cloud_streets)
-        #y -=75
+        # Define checkbox for thermal column visibility
+        XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'Thermals visible (cheat)',
+                       0, self.TCWidget, xpWidgetClass_Caption)
+        self.enableCheck = XPCreateWidget(
+            x+220, y-80, x+260, y-102, 1, '', 0, self.TCWidget, xpWidgetClass_Button)
+        XPSetWidgetProperty(
+            self.enableCheck, xpProperty_ButtonType, xpRadioButton)
+        XPSetWidgetProperty(
+            self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
+        XPSetWidgetProperty(
+            self.enableCheck, xpProperty_ButtonState, world.thermals_visible)
+        y -= 75
 
         # define button
         self.TGenerate_button = XPCreateWidget(x+320, y-60, x+440, y-82,
@@ -766,7 +777,7 @@ class PythonInterface:
         XPSetWidgetDescriptor(self.CGWing_value, str(world.wing_size))
         y -= 32
 
-        # Define checkbox for cloud streets
+        # Define checkbox for thermal visibility
         XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'xx3', 0,
                        self.CGWidget, xpWidgetClass_Caption)
         self.enableCheck1 = XPCreateWidget(
@@ -776,7 +787,7 @@ class PythonInterface:
         XPSetWidgetProperty(
             self.enableCheck1, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
         XPSetWidgetProperty(self.enableCheck1,
-                            xpProperty_ButtonState, world.cloud_streets)
+                            xpProperty_ButtonState, world.thermals_visible)
         y -= 75
 
         # define button

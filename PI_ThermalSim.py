@@ -52,10 +52,6 @@ csvThermal = 3
 aboutThermal = 4
 configGlider = 5
 
-# add random seed for multiplayer session - just press "reset seed" and then
-# "generate thermals"
-seed_number = world.seed_number
-
 
 def xplane_terrain_is_water(lat, lon):
     # https://xppython3.readthedocs.io/en/stable/development/changesfromp2.html?highlight=xplmprobeterrainxyz
@@ -334,10 +330,8 @@ class PythonInterface:
             # Tests the Command API, will find command
             if (inParam1 == self.TGenerate_button):
                 print("Generate")
-                print(world.seed_number)
                 print("minimum separation between thermals ")
                 print(world.thermal_distance)
-                random.seed(world.seed_number)
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
                 # world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
@@ -397,7 +391,7 @@ class PythonInterface:
             val = XPGetWidgetProperty(
                 self.TSeed_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.TSeed_value, str(val))
-            world.seed_number = val
+            # alx   not used any more
 
         return 0
 
@@ -563,24 +557,6 @@ class PythonInterface:
             self.TCycle_scrollbar, xpProperty_ScrollBarSliderPosition, world.thermal_cycle)
         XPSetWidgetDescriptor(self.TCycle_value, str(world.thermal_cycle))
         y -= 30
-
-        # Seed
-        self.TSeed_label1 = XPCreateWidget(
-            x+60,  y-80, x+140, y-102, 1, "Seed Number", 0, self.TCWidget, xpWidgetClass_Caption)
-        self.TSeed_value = XPCreateWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget, xpWidgetClass_Caption)
-        self.TSeed_scrollbar = XPCreateWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xpWidgetClass_ScrollBar)
-        XPSetWidgetProperty(self.TSeed_scrollbar,
-                            xpProperty_ScrollBarMin, 1234)
-        XPSetWidgetProperty(self.TSeed_scrollbar,
-                            xpProperty_ScrollBarMax, 1334)
-        XPSetWidgetProperty(self.TSeed_scrollbar,
-                            xpProperty_ScrollBarPageAmount, 1)
-        XPSetWidgetProperty(
-            self.TSeed_scrollbar, xpProperty_ScrollBarSliderPosition, world.seed_number)
-        XPSetWidgetDescriptor(self.TSeed_value, str(world.seed_number))
-        y -= 75
 
         # Define checkbox for cloud streets
         #XPCreateWidget(x+60, y-80, x+140, y-102, 1, 'Align on cloud streets', 0,self.TCWidget, xpWidgetClass_Caption)
@@ -842,8 +818,6 @@ class PythonInterface:
             # Tests the Command API, will find command
             if (inParam1 == self.CSVTGenerate_button):
                 print("Generate")
-                print(world.seed_number)
-                random.seed(world.seed_number)
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
                 world.thermal_dict = MakeCSVThermalMap(
@@ -886,8 +860,7 @@ class PythonInterface:
             val = XPGetWidgetProperty(
                 self.CSVSeed_scrollbar, xpProperty_ScrollBarSliderPosition, None)
             XPSetWidgetDescriptor(self.CSVSeed_value, str(val))
-            world.seed_number = val
-
+            # not used
         return 0
 
     # Creates the widget with buttons for test and edit boxes for info
@@ -1013,24 +986,6 @@ class PythonInterface:
                             xpProperty_ScrollBarSliderPosition, world.thermal_cycle)
         XPSetWidgetDescriptor(self.CSVTCycle_value, str(world.thermal_cycle))
         y -= 30
-
-        # Seed
-        self.CSVSeed_label1 = XPCreateWidget(
-            x+60,  y-80, x+140, y-102, 1, "Seed Number", 0, self.CSVWidget, xpWidgetClass_Caption)
-        self.CSVSeed_value = XPCreateWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget, xpWidgetClass_Caption)
-        self.CSVSeed_scrollbar = XPCreateWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xpWidgetClass_ScrollBar)
-        XPSetWidgetProperty(self.CSVSeed_scrollbar,
-                            xpProperty_ScrollBarMin, 1234)
-        XPSetWidgetProperty(self.CSVSeed_scrollbar,
-                            xpProperty_ScrollBarMax, 1334)
-        XPSetWidgetProperty(self.CSVSeed_scrollbar,
-                            xpProperty_ScrollBarPageAmount, 1)
-        XPSetWidgetProperty(
-            self.CSVSeed_scrollbar, xpProperty_ScrollBarSliderPosition, world.seed_number)
-        XPSetWidgetDescriptor(self.CSVSeed_value, str(world.seed_number))
-        y -= 75
 
         # define button
         self.CSVTGenerate_button = XPCreateWidget(x+320, y-60, x+440, y-82,

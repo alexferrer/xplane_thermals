@@ -26,7 +26,7 @@ from XPLMDataAccess import *
 from XPLMUtilities import *
 
 import random
-from random import randrange, seed
+from random import randrange
 import math
 
 # for graphics
@@ -387,12 +387,6 @@ class PythonInterface:
             XPSetWidgetDescriptor(self.TCycle_value, str(val))
             world.thermal_cycle = val
 
-            # Seed
-            val = XPGetWidgetProperty(
-                self.TSeed_scrollbar, xpProperty_ScrollBarSliderPosition, None)
-            XPSetWidgetDescriptor(self.TSeed_value, str(val))
-            # alx   not used any more
-
         return 0
 
     # Creates the widget with buttons for test and edit boxes for info
@@ -578,6 +572,7 @@ class PythonInterface:
 
 
 # ----------------------- About Window
+
 
     def CreateAboutWindow(self, x, y, w, h):
         x2 = x + w
@@ -856,11 +851,6 @@ class PythonInterface:
             XPSetWidgetDescriptor(self.CSVTCycle_value, str(val))
             world.thermal_cycle = val
 
-            # Seed
-            val = XPGetWidgetProperty(
-                self.CSVSeed_scrollbar, xpProperty_ScrollBarSliderPosition, None)
-            XPSetWidgetDescriptor(self.CSVSeed_value, str(val))
-            # not used
         return 0
 
     # Creates the widget with buttons for test and edit boxes for info

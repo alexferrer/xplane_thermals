@@ -15,13 +15,16 @@ thermal_column = xp.loadObject(
     'Resources/default scenery/sim objects/dynamic/SailBoat.obj')
 
 # cloudbase_image
-paths = []
-print("paths", paths)
-xp.lookupObjects(HUGE_CLOUD, 0, 0, lambda path,
-                 refCon: paths.append(path), None)
-print("paths", paths)
-huge_cloud = xp.loadObject(paths[0])
-print("huge-cloud", huge_cloud)
+#paths = []
+#print("paths", paths)
+# xp.lookupObjects(HUGE_CLOUD, 0, 0, lambda path,
+#                 refCon: paths.append(path), None)
+#print("paths", paths)
+#huge_cloud = xp.loadObject(paths[0])
+#print("huge-cloud", huge_cloud)
+
+huge_cloud = xp.loadObject(
+    'Resources/default scenery/sim objects/dynamic/balloon1.obj')
 
 
 def draw_thermal(lat, lon):  # min_alt,max_alt

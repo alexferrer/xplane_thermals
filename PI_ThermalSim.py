@@ -17,7 +17,7 @@ from thermal_model import calc_thermal
 from thermal_model import make_random_thermal_map
 from thermal_model import make_csv_thermal_map
 
-from draw_thermals import drawThermalsOnScreen, eraseThermalsOnScreen
+from draw_thermals import draw_thermals_on_screen, erase_thermals_on_screen
 
 from XPLMProcessing import *
 from XPLMDataAccess import *
@@ -245,10 +245,10 @@ class PythonInterface:
 
         # if anything has changed updte the screen drawings
         if world.world_update:
-            eraseThermalsOnScreen()  # clean screen of old thermals
-            drawThermalsOnScreen(xp.getDataf(self.PlaneLat),
-                                 xp.getDataf(self.PlaneLon)
-                                 )
+            erase_thermals_on_screen()  # clean screen of old thermals
+            draw_thermals_on_screen(xp.getDataf(self.PlaneLat),
+                                    xp.getDataf(self.PlaneLon)
+                                    )
 
         # set the next callback time in +n for # of seconds and -n for # of Frames
         return .01  # works good on my (pretty fast) machine..
@@ -577,7 +577,6 @@ class PythonInterface:
 
 
 # ----------------------- About Window
-
 
     def CreateAboutWindow(self, x, y, w, h):
         x2 = x + w

@@ -5,19 +5,19 @@
 """
 import numpy as np
 import matplotlib.pyplot as plt
-from world import DEBUG
+import world
 from thermal_model import make_random_thermal_map
 
-DEBUG = True
+world.DEBUG = True
 
 
 def make_test_random_thermal_map():
     """docstring"""
     lat = 52.52
     lon = 13.37
-    strength = 5
+    strength = 10
     count = 100
-    radius = 90
+    radius = 190
 
     thermals = make_random_thermal_map(1, lat, lon, strength, count, radius)
     return thermals
@@ -47,6 +47,7 @@ def thermal_to_np_array(thermal_map):
         _y.append(int(_t.p_y))
         _s.append(int(_t.radius))  # thermal radius
         _c.append(int(_t.strength))  # thermal strength as a color
+        print(f"T={_t.strength}")
 
     return _x, _y, _s, _c
 

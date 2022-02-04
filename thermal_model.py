@@ -120,14 +120,11 @@ def calc_thermal(lat, lon, alt, heading, roll_angle):
     roll_factor = math.cos(math.radians(roll_angle))
     roll_value = -(_lift_r - _lift_l) * roll_factor
 
-    """ For debug.
+    # print( "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
+    #     ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|",
+    #  '%.1f'%roll_value ,"]**",'%.1f'%alt)
 
-    print( "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
-         ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|",
-      '%.1f'%roll_value ,"]**",'%.1f'%alt)
-    """
-
-    """Todo: thermals have cycles, begin, middle , end.. and reflect in strength.."""
+    # Todo: thermals have cycles, begin, middle , end.. and reflect in strength..
 
     return thermal_value, roll_value
 
@@ -141,11 +138,11 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
     random.seed()  # initialize the random generator using system time
     average_radius = _radius
     thermals = []
-    ''' to position a new thermal:
-        create a 200x200 grid numbered sequentially 1 to 40000
-        pick spots on the grid at random and multiply x,y times thermal-distance
-        add distance to current plane lat/lon
-    '''
+    # Position a new thermal:
+    #   create a 200x200 grid numbered sequentially 1 to 40000
+    #   pick spots on the grid at random and multiply x,y times thermal-distance
+    #   add distance to current plane lat/lon
+
     for _r in sample(range(1, 40000), _count):
         _x = int(_r / 200)      # get a column from 0 - 200
         _y = _r % 200     # get row from 0 - 200

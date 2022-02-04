@@ -35,7 +35,8 @@ A thermal visualization aid (shows markers where the thermals are) exists with a
 
 UPDATE
 -----
-
+- different graphic object for cloudbase thermal (a balloon) & thermal column (a sailboat! for now.. ) 
+- Select thermal column visibility from generate thermal menu
 - (For Dev only) New PlotThermals.py program to plot the thermal map
 - Python 3 now Works! try it, report bugs 
 - https://forums.x-plane.org/index.php?/forums/topic/225976-xppython3-v312-now-available/

@@ -15,9 +15,9 @@ from EasyDref import EasyDref
 
 
 # thermal modeling tools
-from thermal_model import CalcThermal
-from thermal_model import MakeRandomThermalMap
-from thermal_model import MakeCSVThermalMap
+from thermal_model import calc_thermal
+from thermal_model import make_random_thermal_map
+from thermal_model import make_csv_thermal_map
 
 from draw_thermals import drawThermalsOnScreen, eraseThermalsOnScreen
 
@@ -90,7 +90,7 @@ class PythonInterface:
         XPLMAppendMenuItem(self.myMenu, "About", aboutThermal, 1)
         # -------------------------------------------------
 
-        world.thermals_visible = False
+        world.THERMALS_VISIBLE = False
         self.Name = "ThermalSim2"
         self.Sig = "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"
@@ -204,7 +204,7 @@ class PythonInterface:
             #print( "wind changed",wind_speed,world.wind_speed,wind_dir,world.wind_dir)
 
         # Get the lift value of the current position from the world thermal map
-        lift_val, roll_val = CalcThermal(
+        lift_val, roll_val = calc_thermal(
             lat, lon, elevation, heading, roll_angle)
 
         # apply sun elevation as a % factor to thermal power
@@ -237,11 +237,11 @@ class PythonInterface:
         if (self.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60):
             lat = xp.getDataf(self.PlaneLat)
             lon = xp.getDataf(self.PlaneLon)
-            world.thermal_dict = MakeRandomThermalMap(self.sim_time,
-                                                      lat, lon,
-                                                      world.thermal_power,
-                                                      world.thermal_density,
-                                                      world.thermal_size)
+            world.thermal_dict = make_random_thermal_map(self.sim_time,
+                                                         lat, lon,
+                                                         world.thermal_power,
+                                                         world.thermal_density,
+                                                         world.thermal_size)
 
             world.world_update = True
 
@@ -330,17 +330,17 @@ class PythonInterface:
                 lon = xp.getDataf(self.PlaneLon)
                 # world.cloud_streets = XPGetWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
                 # lat,lon,stregth,count
-                world.thermal_dict = MakeRandomThermalMap(self.sim_time,
-                                                          lat, lon,
-                                                          world.thermal_power,
-                                                          world.thermal_density,
-                                                          world.thermal_size)
+                world.thermal_dict = make_random_thermal_map(self.sim_time,
+                                                             lat, lon,
+                                                             world.thermal_power,
+                                                             world.thermal_density,
+                                                             world.thermal_size)
                 world.world_update = True
                 return 1
 
         if (inMessage == xpMsg_ButtonStateChanged):
             #print("********************* toggle thermal column visibility *************")
-            world.thermals_visible = XPGetWidgetProperty(
+            world.THERMALS_VISIBLE = XPGetWidgetProperty(
                 self.enableCheck, xpProperty_ButtonState, None)
             world.world_update = True
 
@@ -562,7 +562,7 @@ class PythonInterface:
         XPSetWidgetProperty(
             self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
         XPSetWidgetProperty(
-            self.enableCheck, xpProperty_ButtonState, world.thermals_visible)
+            self.enableCheck, xpProperty_ButtonState, world.THERMALS_VISIBLE)
         y -= 75
 
         # define button
@@ -577,7 +577,6 @@ class PythonInterface:
 
 
 # ----------------------- About Window
-
 
     def CreateAboutWindow(self, x, y, w, h):
         x2 = x + w
@@ -781,7 +780,7 @@ class PythonInterface:
         XPSetWidgetProperty(
             self.enableCheck1, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
         XPSetWidgetProperty(self.enableCheck1,
-                            xpProperty_ButtonState, world.thermals_visible)
+                            xpProperty_ButtonState, world.THERMALS_VISIBLE)
         y -= 75
 
         # define button
@@ -820,7 +819,7 @@ class PythonInterface:
                 print("Generate")
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
-                world.thermal_dict = MakeCSVThermalMap(
+                world.thermal_dict = make_csv_thermal_map(
                     lat, lon, world.thermal_power, world.thermal_density, world.thermal_size)
                 world.world_update = True
                 return 1

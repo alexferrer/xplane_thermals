@@ -1,6 +1,6 @@
 import world
 import thermal
-from thermal_model import convertLatLon2Meters, calcDist, calcDrift
+from thermal_model import convert_lat_lon2meters, calc_dist, calc_drift
 import xp
 
 HUGE_CLOUD = 'lib/dynamic/balloon.obj'
@@ -33,7 +33,7 @@ def draw_thermal(lat, lon):  # min_alt,max_alt
         lat, lon, 0)  # Dew=E/W,Dud=Up/Down,Dns=N/S
     # from 100 to almost thermal top steps of 200
     for alt in range(base, world.thermal_tops-200, 200):
-        _dx, _dy = calcDrift(alt)
+        _dx, _dy = calc_drift(alt)
         instance = xp.createInstance(thermal_column)
         xp.instanceSetPosition(
             instance, [_dew + _dx, _dud + alt, _dns + _dy, 0, 0, 0])
@@ -47,7 +47,7 @@ def draw_cloud(lat, lon):
     # Dew=E/W,Dud=Up/Down,Dns=N/S
     _dew, _dud, _dns = xp.worldToLocal(lat, lon, 0)
     _alt = world.thermal_tops
-    _dx, _dy = calcDrift(_alt)
+    _dx, _dy = calc_drift(_alt)
     instance = xp.createInstance(huge_cloud)
     xp.instanceSetPosition(
         instance, [_dew + _dx, _dud + _alt, _dns + _dy, 0, 0, 0])
@@ -58,11 +58,11 @@ def draw_thermal_columns(lat, lon):
     ''' return a list of thermal location tuples, if the distance not exceeds max display
         draw the thermal column of rising air
     '''
-    _p1x, _p1y = convertLatLon2Meters(lat, lon)
+    _p1x, _p1y = convert_lat_lon2meters(lat, lon)
 
     for athermal in world.thermal_dict:
-        p2x, p2y = athermal.px, athermal.py
-        if calcDist(_p1x, _p1y, p2x, p2y) < world.max_draw_distance:
+        p2x, p2y = athermal.p_x, athermal.p_y
+        if calc_dist(_p1x, _p1y, p2x, p2y) < world.max_draw_distance:
             draw_thermal(athermal.lat, athermal.lon)
 
 
@@ -70,11 +70,11 @@ def draw_clouds(lat, lon):
     ''' return a list of thermal location tuples, if the distance not exceeds max display
     Just the thermals at cloudbase
     '''
-    p1x, p1y = convertLatLon2Meters(lat, lon)
+    p1x, p1y = convert_lat_lon2meters(lat, lon)
 
     for athermal in world.thermal_dict:
-        p2x, p2y = athermal.px, athermal.py
-        if calcDist(p1x, p1y, p2x, p2y) < world.max_draw_distance:
+        p2x, p2y = athermal.p_x, athermal.p_y
+        if calc_dist(p1x, p1y, p2x, p2y) < world.max_draw_distance:
             draw_cloud(athermal.lat, athermal.lon)
 
 
@@ -95,7 +95,7 @@ def drawThermalsOnScreen(lat, lon):
 
     draw_clouds(lat, lon)
 
-    if world.thermals_visible:
+    if world.THERMALS_VISIBLE:
         draw_thermal_columns(lat, lon)
 
     world.world_update = False

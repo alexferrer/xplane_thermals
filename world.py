@@ -1,17 +1,14 @@
-''' 
-  File: world.py
+''' File: world.py
   Auth: Alex Ferrer @ 2014
   Central file to store all globally used variables.
-  
   It is ugly to have globals but we depend on Xplane for lots of them
   so I rather read them once and store them here for all to use.
- 
   * We store variables in their ready to use units format, (usually metric)
 '''
 # import CSV from https://thermal.kk7.ch/ ,  clean the header and save the converted csv
-from thermal import Thermal
 import csv
 import os
+from thermal import Thermal
 
 # debug mode
 DEBUG = False
@@ -94,7 +91,7 @@ thermal_band = {1000: .8, 2000: .9, 3000: 1, 5000: 1, 5100: .4, 5500: 0}
         raob ?
 '''
 # GUI state variables
-thermals_visible = True  # are thermals visible at all (as balloons)
+THERMALS_VISIBLE = True  # are thermals visible at all (as balloons)
 
 # Thermal auto refersh data
 thermal_map_start_time = 0    # Thermal map age in seconds
@@ -138,8 +135,8 @@ thrust_factor = 5.0  # ask21  1.1
 wing_size = 10  # 10
 
 
-# Function that gets a value indicating whether the terrain at the geo location is water
 def dummy_terrain_is_water(lat, lon):
+    ''' Function that gets a value indicating whether the terrain at the geo location is water'''
     return False
 
 

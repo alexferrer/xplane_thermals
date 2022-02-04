@@ -124,7 +124,7 @@ def calc_thermal(lat, lon, alt, heading, roll_angle):
 
     print( "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
          ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|",
-      '%.1f'%roll_value ,"]**",'%.1f'%alt)   
+      '%.1f'%roll_value ,"]**",'%.1f'%alt)
     """
 
     """Todo: thermals have cycles, begin, middle , end.. and reflect in strength.."""
@@ -143,7 +143,7 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
     thermals = []
     ''' to position a new thermal:
         create a 200x200 grid numbered sequentially 1 to 40000
-        pick spots on the grid at random and multiply x,y times thermal-distance 
+        pick spots on the grid at random and multiply x,y times thermal-distance
         add distance to current plane lat/lon
     '''
     for _r in sample(range(1, 40000), _count):
@@ -184,9 +184,9 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
 
 
 def make_csv_thermal_map(_lat, _lon, _strength, _count, _radius):
-    ''' Create xx random thermals around the hotspot lat/lon point 
+    ''' Create xx random thermals around the hotspot lat/lon point
       us parameters average strength
-      Params: center (lat,lon) , max strength, count , radius 
+      Params: center (lat,lon) , max strength, count , radius
       thermal_list =     { (lat,lon):(radius,strength) }
     '''
     #csv_list = world.hotspots

@@ -1,6 +1,6 @@
 """
 Thermal simulator  Ver .04
-  ** Works on Xplane 10.30 and above only **
+  ** Works on Xplane 12.x and above only **
   The plugin then reads the lift value of the plane current position and
   sets the lift & roll values.
   Author: Alex Ferrer

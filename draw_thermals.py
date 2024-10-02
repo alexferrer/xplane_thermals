@@ -6,34 +6,27 @@ import xp # type: ignore
 LIB_VERSION = "Version ----------------------------   draw_thermals.py v2.0"
 print(LIB_VERSION)
 
-THERMAL_COLUMN = 'Resources/plugins/PythonPlugins/cloudmade.obj'
+THERMAL_COLUMN = 'Resources/plugins/PythonPlugins/easteregg.obj'
 
-# thermal image
+# thermal column and cloud images
 thermal_column = xp.loadObject(THERMAL_COLUMN)
-
-#for debug purposes only
-#huge_cloud = xp.loadObject(
-#    'Custom Scenery/X-Plane Airports - TNCS Juancho E Yrausquin/objects/mt_scenery.obj')
-
 huge_cloud = xp.loadObject('Resources/plugins/PythonPlugins/mt_scenery.obj')
-
 
 def draw_thermal(lat, lon):  # min_alt,max_alt
     ''' Draw thermal images along the raising thermal, accounting
         for wind drift along the climb. end at almost the thermal top
     '''
-    if world.DEBUG > 6: print("draw a thermal column of clouds") 
+    if world.DEBUG == 6 : print("B ", end='') 
     base = 1
     _dew, _dud, _dns = xp.worldToLocal(
         lat, lon, 0)  # Dew=E/W,Dud=Up/Down,Dns=N/S
     # from 100 to almost thermal top steps of 200
-    for alt in range(base, world.thermal_tops-200, 200):
+    for alt in range(base, world.thermal_tops-200, 50):
         _dx, _dy = calc_drift(alt)
-        #AlX disabled for testing 2021-09-26
-        #instance = xp.createInstance(thermal_column)
-        #xp.instanceSetPosition(
-        #    instance, [_dew + _dx, _dud + alt, _dns + _dy, 0, 0, 0])
-        #world.instance_list.append(instance)
+        instance = xp.createInstance(thermal_column)
+        xp.instanceSetPosition(
+            instance, [_dew + _dx, _dud + alt, _dns + _dy, 0, 0, 0])
+        world.instance_list.append(instance)
 
 
 def draw_cloud(lat, lon):
@@ -78,15 +71,15 @@ def draw_clouds(lat, lon):
 
 
 def eraseThermalsOnScreen():
-    if world.DEBUG > 0: print("loop: Delete old instances #", len(world.instance_list))
+    if world.DEBUG > 0: print("Delete old image instances #", len(world.instance_list))
     for i in world.instance_list:
-        if world.DEBUG == 6 : print("loop: delete instance,", i)
+        if world.DEBUG == 6 : print("-i ", end='') 
         if i:
             try:
                 xp.destroyInstance(i)
                 world.instance_list.remove(i)
             except Exception as e:
-                if world.DEBUG > 0: print(f"Exception destroying instance {i}: {e}")
+                print(f"Exception destroying instance {i}: {e}")
 
 def drawThermalsOnScreen(lat, lon):
     # if visibility is off, only draw clouds at cloudbase (no visible columns)

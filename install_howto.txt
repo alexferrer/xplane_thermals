@@ -1,9 +1,7 @@
 Easy installation instructions: 
 
-Step 0 Make sure you have python installed on your computer , if so skip to Step 1
-(If not, google "how to install Python 3." on your computer) 
 
-This is a Python 3 plugin, so the python interface is required. ( https://xppython3.readthedocs.io/en/stable/) 
+This is a Python 3 v4 plugin, so the python interface is required. ( https://xppython3.readthedocs.io/en/stable/) 
 For installation copy the Python files to the X-Plane Resources/PythonScripts folder so that the Python plugin can find them.
 
 Step 2 [Xplane Thermals Plugin ]
@@ -16,9 +14,8 @@ Unzip all the actual files onto your Xplane python plugin directory:
 
 Your directory should end up looking like: 
 
-~/X-Plane 11/Resources/plugins/PythonScripts$ 
+~/X-Plane 12/Resources/plugins/PythonScripts$ 
 total 11
--rw-rw-r-- 1 alex alex  3113 Jun 17 14:35 EasyDref.py
 -rw-rw-r-- 1 alex alex 18026 Jun 17 14:35 LICENSE
 -rw-rw-r-- 1 alex alex 45480 Jun 17 14:35 PI_ThermalSim.py
 -rw-rw-r-- 1 alex alex  4173 Jun 17 14:35 README.md
@@ -32,4 +29,4 @@ total 11
 ** make sure that the files did NOT get created inside a xplane_thermals directory, that won't work. 
 
 Step 3
-Load Xplane 11.5x, you should now have a new menu option with the thermals plugin choices. 
+Load Xplane 12x, you should now have a new menu option with the thermals plugin choices. 

@@ -1,7 +1,7 @@
 import world
 import thermal
 from thermal_model import convert_lat_lon2meters, calc_dist, calc_drift
-import xp
+import xp # type: ignore
 
 LIB_VERSION = "Version ----------------------------   draw_thermals.py v2.0"
 print(LIB_VERSION)

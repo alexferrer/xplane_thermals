@@ -8,48 +8,49 @@ Thermal simulator  Ver .04
 """
 
 import world
-from XPLMDefs import *
-from EasyDref import EasyDref
+#from XPLMDefs import *
+#alxfrom EasyDref import EasyDref
 
 
 # thermal modeling tools
-from thermal_model import calc_thermal
+from thermal_model import calc_thermalx
 from thermal_model import make_random_thermal_map
 from thermal_model import make_csv_thermal_map
 
 from draw_thermals import drawThermalsOnScreen, eraseThermalsOnScreen
 
-from XPLMProcessing import *
-from XPLMDataAccess import *
-from XPLMUtilities import *
+#from XPLMProcessing import *
+#from XPLMDataAccess import *
+#from XPLMUtilities import *
 
 import random
 from random import randrange
 import math
 
 # for graphics
-from XPLMDisplay import *
-from XPLMGraphics import *
+#from XPLMDisplay import *
+#from XPLMGraphics import *
 
 # for yprobe
-from XPLMScenery import *
+#from XPLMScenery import *
 
 # for menus
-from XPLMMenus import *
-from XPLMPlugin import *
-from XPLMMenus import *
-from XPWidgets import *
-from XPWidgetDefs import *
-from XPStandardWidgets import *
-from XPLMPlugin import *
+#from XPLMMenus import *
+#from XPLMPlugin import *
+#from XPLMMenus import *
+#from XPWidgets import *
+#from XPWidgetDefs import *
+#from XPStandardWidgets import *
+#from XPLMPlugin import *
 import xp
+LIB_VERSION = "Version ----------------------------   PI_ThermalSim V2.0"
+print(LIB_VERSION)
 
 toggleThermal = 1
 randomThermal = 2
 csvThermal = 3
 aboutThermal = 4
 configGlider = 5
-
 
 def xplane_terrain_is_water(lat, lon):
     # https://xppython3.readthedocs.io/en/stable/development/changesfromp2.html?highlight=xplmprobeterrainxyz
@@ -59,7 +60,7 @@ def xplane_terrain_is_water(lat, lon):
     #print("xplmWorlprobe info = ",dir(info))
 
     if info.is_wet:
-        #print("------------- we are over water")
+        if world.DEBUG > 3 : print("------------- we are over water")
         return True
     return False
 
@@ -76,25 +77,26 @@ class PythonInterface:
         self.AboutMenuItem = 0
 
         global myMenu
-        mySubMenuItem = XPLMAppendMenuItem(
-            XPLMFindPluginsMenu(), "Thermal Simulator", 0, 1)
+        mySubMenuItem = xp.appendMenuItem(
+            xp.findPluginsMenu(), "Thermal Simulator", 0, 1)
         self.MyMenuHandlerCB = self.MyMenuHandlerCallback
-        self.myMenu = XPLMCreateMenu(
-            "Thermals", XPLMFindPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
-        XPLMAppendMenuItem(
+        self.myMenu = xp.createMenu(
+            "Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
+        xp.appendMenuItem(
             self.myMenu, "Generate Random Thermals", randomThermal, 1)
-        XPLMAppendMenuItem(self.myMenu, "Generate CSV Thermals", csvThermal, 1)
-        XPLMAppendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
-        XPLMAppendMenuItem(self.myMenu, "About", aboutThermal, 1)
+        xp.appendMenuItem(self.myMenu, "Generate CSV Thermals", csvThermal, 1)
+        xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
+        xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
         # -------------------------------------------------
-
-        world.THERMALS_VISIBLE = False
+        if world.DEBUG > 3 : print("setting up global variables")
+        world.THERMAL_COLUMN_VISIBLE = True
         self.Name = "ThermalSim2"
         self.Sig = "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"
 
         """ Data refs we want to record."""
         # airplane current flight info
+        if world.DEBUG > 3 : print(" aircraft position")
         self.PlaneLat = xp.findDataRef("sim/flightmodel/position/latitude")
         self.PlaneLon = xp.findDataRef("sim/flightmodel/position/longitude")
         self.PlaneElev = xp.findDataRef("sim/flightmodel/position/elevation")
@@ -103,11 +105,11 @@ class PythonInterface:
         self.PlaneRol = xp.findDataRef(
             "sim/flightmodel/position/phi")  # plane roll
 
+        if world.DEBUG > 2: print(" Wind data")
         self.WindSpeed = xp.findDataRef(
             "sim/weather/wind_speed_kt[0]")  # wind speed at surface
         self.WindDir = xp.findDataRef(
             "sim/weather/wind_direction_degt[0]")  # wind direction
-
         # is the sim paused?
         self.runningTime = xp.findDataRef("sim/time/total_running_time_sec")
         self.sim_time = 0
@@ -120,43 +122,47 @@ class PythonInterface:
         # dewpoi_sealevel_c
 
         # terrain probe to test for height and water
-        world.probe = xp.createProbe(xplm_ProbeY)
+        world.probe = xp.createProbe()
         world.terrain_is_water = xplane_terrain_is_water
 
         # variables to inject energy to the plane
-        self.lift = EasyDref('sim/flightmodel/forces/fnrml_plug_acf', 'float')
-        self.roll = EasyDref(
-            'sim/flightmodel/forces/L_plug_acf', 'float')  # wing roll
+        if world.DEBUG > 2 : print("Airplane forces ")
+        self.lift_Dref = xp.findDataRef('sim/flightmodel/forces/fnrml_plug_acf')
+        self.roll_Dref = xp.findDataRef('sim/flightmodel/forces/L_plug_acf')
+
+                             
         # although lift should be enough, some energy has to go as thrust, or the plane
         # might float in the air without moving!
-        self.thrust = EasyDref(
-            'sim/flightmodel/forces/faxil_plug_acf', 'float')
+        #self.thrust = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
+        self.thrust_Dref = xp.findDataRef('sim/flightmodel/forces/faxil_plug_acf')
 
         # Drawing update flag
         world.world_update = True
 
         # image to mark thermals
-        self.ObjectPath = "lib/dynamic/balloon.obj"
+        self.ObjectPath = 'Custom Scenery/X-Plane Airports - TNCS Juancho E Yrausquin/objects/mt_scenery.obj'
 
         """
         Register our callback for once a second.  Positive intervals
         are in seconds, negative are the negative of sim frames.  Zero
         registers but does not schedule a callback for time.
         """
+        if world.DEBUG > 2 : print("registering callback")
         xp.registerFlightLoopCallback(self.FlightLoopCallback, 1.0, 0)
 
         return self.Name, self.Sig, self.Desc
 
     def XPluginStop(self):    # Unregister the callbacks
+        if world.DEBUG > 1 : print("XPPluginStop")
         xp.unregisterFlightLoopCallback(self.FlightLoopCallback, 0)
         #XPLMUnregisterDrawCallback(self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
         # deprecated...    https://developer.x-plane.com/sdk/XPLMDrawingPhase/#xplm_Phase_Objects
 
-        XPLMDestroyMenu(self, self.myMenu)
+        xp.destroyMenu(self.myMenu)
         # for probe suff
         xp.destroyProbe(world.probe)
         # debug
-        xp.destroyWindow(self.WindowId)
+        #xp.destroyWindow(self.WindowId)
 
     def XPluginEnable(self):
         return 1
@@ -168,46 +174,81 @@ class PythonInterface:
         pass
 
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
+        #if world.DEBUG: print("start the FlightLoopCallback ")
         # the actual callback, runs once every x period as defined
 
         # is the sim paused? , then skip
         runtime = xp.getDataf(self.runningTime)
         if self.sim_time == runtime:
-            print("Pause - ", end='')
+            print("P ", end='')
             return 1
         self.sim_time = runtime
 
         # instantiate the actual callbacks.
-
+        if world.DEBUG == 3 : print(" Update position,wind,sun")
         lat = xp.getDataf(self.PlaneLat)
         lon = xp.getDataf(self.PlaneLon)
         elevation = xp.getDataf(self.PlaneElev)
         heading = xp.getDataf(self.PlaneHdg)
         roll_angle = xp.getDataf(self.PlaneRol)
-        wind_speed = round(xp.getDataf(self.WindSpeed) *
-                           0.5144, 2)      # Knots to m/s
-        # Degrees to radians
-        wind_dir = round(math.radians(xp.getDataf(self.WindDir)), 4)
 
-        # sun pitch afects thermal power , noon in summer is the best..
-        sun_pitch = xp.getDataf(self.SunPitch)  # Degrees
-        sun_factor = (sun_pitch + 10)/100
-        if sun_pitch < 0:
-            sun_factor = 0
+        # ----------------------------------------------------------
+        # - REDUCE CALLS FOR THIS BLOCK TO REDUCE PERFORMANCE IMPACT
+        
 
-        # keep up with wind changes
-        if [wind_speed, wind_dir] != [world.wind_speed, world.wind_dir]:
-            [world.wind_speed, world.wind_dir] = [wind_speed, wind_dir]
-            world.world_update = True
-            #print( "wind changed",wind_speed,world.wind_speed,wind_dir,world.wind_dir)
+        if world.update_loop > 100 :
+            world.update_loop = 0 
+            if world.DEBUG == 6: print("world update loop")
+
+
+            wind_speed = round(xp.getDataf(self.WindSpeed) *
+                            0.5144, 2)      # Knots to m/s
+            # Degrees to radians
+            wind_dir = round(math.radians(xp.getDataf(self.WindDir)), 4)
+            #if world.DEBUG: print("wind deg/rad :",xp.getDataf(self.WindDir),wind_dir)
+
+            # sun pitch afects thermal power , noon in summer is the best..
+            sun_pitch = xp.getDataf(self.SunPitch)  # Degrees
+            world.sun_factor = (sun_pitch + 10)/100
+            if sun_pitch < 0:
+                world.sun_factor = 0
+
+            # keep up with wind changes
+            if [wind_speed, wind_dir] != [world.wind_speed, world.wind_dir]:
+                if world.DEBUG > 3 : print( "wind changed [kt,deg], update world ",wind_speed,world.wind_speed,wind_dir,world.wind_dir)
+                [world.wind_speed, world.wind_dir] = [wind_speed, wind_dir]
+                world.world_update = True
+
+            # Check if it is time to referesh the thermal map
+            if (self.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60):
+                if world.DEBUG > 1: print("time is up , refreshing thermal map......................")
+                lat = xp.getDataf(self.PlaneLat)
+                lon = xp.getDataf(self.PlaneLon)
+                world.thermal_dict = make_random_thermal_map(self.sim_time,
+                                                            lat, lon,
+                                                            world.thermal_power,
+                                                            world.thermal_density,
+                                                            world.thermal_size)
+
+                if world.DEBUG == 4 : print("request Update the world map") 
+                world.world_update = True
+
+            # if anything has changed updte the screen drawings
+            if world.world_update:
+                if world.DEBUG == 6: print("drawing thermals on screen")
+                drawThermalsOnScreen(xp.getDataf(self.PlaneLat),
+                                    xp.getDataf(self.PlaneLon)
+                                    )
+        #--------------------------------------------------        
 
         # Get the lift value of the current position from the world thermal map
-        lift_val, roll_val = calc_thermal(
+        lift_val, roll_val = calc_thermalx(
             lat, lon, elevation, heading, roll_angle)
+        if world.DEBUG == 1: print("calc_thermal lift/roll",lift_val, roll_val)
 
         # apply sun elevation as a % factor to thermal power
         # average lift depends on sun angle over the earth.
-        lift_val = lift_val * sun_factor
+        lift_val = lift_val * world.sun_factor
 
         # ----------------------------- for fine tuning!!! -----------------------
         # lift_val = 500
@@ -215,43 +256,55 @@ class PythonInterface:
         # ------------------------------------------------------------------------
 
         # apply the force to the airplanes lift.value dataref
-        lval = lift_val * world.lift_factor + self.lift.value
-        self.lift.value = lval
+        '''
+        Calibrate feature
+        set desired lift power in kts 
+          trim the glider for flight straight and level at best glide speed. (100)
+          measure the climb rate with the variometer 
+          adjust +/- lift factor in newtons to match the desired lift power.
+        '''
+        # values for CALLBACKTIME = .01
+        #           kts @ kmh
+        #   13 k  = 5 @ 95
+        #   12.5k = 4 @ 90
+        #   11k   = 2 @ 90
+        #   10k   = 1 @ 90
+        if world.CALIBRATE_MODE:
+           amount = float(1000) *  world.lift_factor
+           xp.setDataf(self.lift_Dref, amount)
+           #print("apply lift to the plane [lift factor/tot]",world.lift_factor ,amount)         
+        else:
+           lval = lift_val * world.lift_factor + xp.getDataf(self.lift_Dref)
+           xp.setDataf(self.lift_Dref, lval)
 
         # although extra lift is what should be happening...
         # adding a bit of thrust works much better! -150 = 1m/s
         # apply a max thurst to a factor of 500fpm
-        if lift_val > 500:
-            lift_val = 500
+        #ALX maybe i should use pitch down instead of thrust ?
+        tval = xp.getDataf(self.thrust_Dref)
+        new_tvalue = (- world.thrust_factor) * lift_val + tval 
+        #ALX xp.setDataf(self.thrust_Dref, new_tvalue) 
 
-        tval = self.thrust.value
-        self.thrust.value = (- world.thrust_factor) * lift_val + tval
 
         # apply a roll to the plane
-        rval = roll_val * world.roll_factor + self.roll.value
-        self.roll.value = rval
+        if world.CALIBRATE_MODE:
+            roll_amount = float(-100.0) * world.roll_factor
+            if world.roll_test_pulse > 0:
+               world.roll_test_pulse -= 1
+               xp.setDataf(self.roll_Dref, roll_amount)
+               if world.DEBUG > 3: print("apply roll to the plane [roll factor/tot]",world.roll_factor ,roll_amount,world.roll_test_pulse)
+        else:
+           rval = roll_val * world.roll_factor + xp.getDataf(self.roll_Dref)
+           xp.setDataf(self.roll_Dref, rval) 
 
-        # Check if it is time to referesh the thermal map
-        if (self.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60):
-            lat = xp.getDataf(self.PlaneLat)
-            lon = xp.getDataf(self.PlaneLon)
-            world.thermal_dict = make_random_thermal_map(self.sim_time,
-                                                         lat, lon,
-                                                         world.thermal_power,
-                                                         world.thermal_density,
-                                                         world.thermal_size)
-
-            world.world_update = True
-
-        # if anything has changed updte the screen drawings
-        if world.world_update:
-            eraseThermalsOnScreen()  # clean screen of old thermals
-            drawThermalsOnScreen(xp.getDataf(self.PlaneLat),
-                                 xp.getDataf(self.PlaneLon)
-                                 )
 
         # set the next callback time in +n for # of seconds and -n for # of Frames
-        return .01  # works good on my (pretty fast) machine..
+        CALLBACKTIME = .01
+        #if world.DEBUG > 0: CALLBACKTIME = 5
+        if world.DEBUG == 3: print("next callback in second", CALLBACKTIME)
+        world.update_loop += 1
+        #return .01  # works good on my (pretty fast) machine..
+        return CALLBACKTIME
 
     # --------------------------------------------------------------------------------------------------
 
@@ -285,6 +338,10 @@ class PythonInterface:
 
         if (inItemRef == configGlider):
             print("show thermal config box ")
+            '''
+            Set constant lift calibration mode = 1m/s lift
+            '''
+            world.CALIBRATE_MODE = True
             if (self.CGMenuItem == 0):
                 print(" create the thermal config box ")
                 self.CreateCGWindow(100, 550, 550, 330)
@@ -308,7 +365,7 @@ class PythonInterface:
 
     def TCHandler(self, inMessage, inWidget,       inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
-        if (inMessage == xpMessage_CloseButtonPushed):
+        if (inMessage == xp.Message_CloseButtonPushed):
             print("close button pushed")
             if (self.TCMenuItem == 1):
                 print("hide the widget")
@@ -316,17 +373,17 @@ class PythonInterface:
                 return 1
 
         # Process when a button on the widget is pressed
-        if (inMessage == xpMsg_PushButtonPressed):
+        if (inMessage == xp.Msg_PushButtonPressed):
             print("[button was pressed", inParam1, "]")
 
             # Tests the Command API, will find command
             if (inParam1 == self.TGenerate_button):
-                print("Generate")
-                print("minimum separation between thermals ")
-                print(world.thermal_distance)
+                print("Menu: Generate Thermas")
+                print("minimum separation between thermals :", world.thermal_distance)
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
-                # world.cloud_streets = xp.getWidgetProperty(self.enableCheck, xpProperty_ButtonState, None)
+                #world.cloud_streets = xp.getWidgetProperty(self.enableCheck, xp.Property_ButtonState, None)
+                #print("enable cloud streets", world.cloud_streets)
                 # lat,lon,stregth,count
                 world.thermal_dict = make_random_thermal_map(self.sim_time,
                                                              lat, lon,
@@ -334,54 +391,55 @@ class PythonInterface:
                                                              world.thermal_density,
                                                              world.thermal_size)
                 world.world_update = True
+                world.update_loop = 101
                 return 1
 
-        if (inMessage == xpMsg_ButtonStateChanged):
-            #print("********************* toggle thermal column visibility *************")
-            world.THERMALS_VISIBLE = xp.getWidgetProperty(
-                self.enableCheck, xpProperty_ButtonState, None)
+        if (inMessage == xp.Msg_ButtonStateChanged):
+            world.THERMAL_COLUMN_VISIBLE = xp.getWidgetProperty(
+                self.enableCheck, xp.Property_ButtonState, None)
             world.world_update = True
+            print(" Toggle thermal column visibility ",world.THERMAL_COLUMN_VISIBLE)
 
-        if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
+        if (inMessage == xp.Msg_ScrollBarSliderPositionChanged):
             # Thermal Tops
             val = xp.getWidgetProperty(
-                self.TTops_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.TTops_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.TTops_value, str(val))
             world.thermal_tops = int(val * world.f2m)
 
             # Thermal Density
             val = xp.getWidgetProperty(
-                self.TDensity_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.TDensity_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.TDensity_value, str(val))
             world.thermal_density = val
 
             # Minimum Distance Between  Thermals
             val = xp.getWidgetProperty(
-                self.TDistance_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.TDistance_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.TDistance_value, str(val))
             world.thermal_distance = val
 
             # Thermals refresh time
             val = xp.getWidgetProperty(
-                self.TRefresh_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.TRefresh_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.TRefresh_value, str(val))
             world.thermal_refresh_time = val
 
             # Thermal Size
             val = xp.getWidgetProperty(
-                self.TSize_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.TSize_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.TSize_value, str(val))
             world.thermal_size = val
 
             # Thermal Power
             val = xp.getWidgetProperty(
-                self.TPower_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.TPower_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.TPower_value, str(val))
             world.thermal_power = val
 
             # Thermal Cycle
             val = xp.getWidgetProperty(
-                self.TCycle_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.TCycle_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.TCycle_value, str(val))
             world.thermal_cycle = val
 
@@ -396,32 +454,32 @@ class PythonInterface:
 
         # create the window
         self.TCWidget = xp.createWidget(
-            x, y, x2, y2, 1, Title, 1,     0, xpWidgetClass_MainWindow)
+            x, y, x2, y2, 1, Title, 1,     0, xp.WidgetClass_MainWindow)
         xp.setWidgetProperty(
-            self.TCWidget, xpProperty_MainWindowHasCloseBoxes, 1)
+            self.TCWidget, xp.Property_MainWindowHasCloseBoxes, 1)
         TCWindow = xp.createWidget(
-            x+50, y-50, x2-50, y2+50, 1, "",     0, self.TCWidget, xpWidgetClass_SubWindow)
-        xp.setWidgetProperty(TCWindow, xpProperty_SubWindowType,
-                             xpSubWindowStyle_SubWindow)
+            x+50, y-50, x2-50, y2+50, 1, "",     0, self.TCWidget, xp.WidgetClass_SubWindow)
+        xp.setWidgetProperty(TCWindow, xp.Property_SubWindowType,
+                             xp.SubWindowStyle_SubWindow)
 
         # -----------------------------
         # Thermal Tops
         self.TTops_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermals Tops", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermals Tops", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TTops_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Feet", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Feet", 0, self.TCWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.TTops_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TTops_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.TTops_scrollbar,
-                             xpProperty_ScrollBarMin, 100)
+                             xp.Property_ScrollBarMin, 100)
         xp.setWidgetProperty(self.TTops_scrollbar,
-                             xpProperty_ScrollBarMax, 20000)
+                             xp.Property_ScrollBarMax, 20000)
         xp.setWidgetProperty(self.TTops_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 500)
-        xp.setWidgetProperty(self.TTops_scrollbar, xpProperty_ScrollBarSliderPosition, int(
+                             xp.Property_ScrollBarPageAmount, 500)
+        xp.setWidgetProperty(self.TTops_scrollbar, xp.Property_ScrollBarSliderPosition, int(
             world.thermal_tops*world.m2f))
         xp.setWidgetDescriptor(self.TTops_value, str(
             int(world.thermal_tops*world.m2f)))
@@ -429,21 +487,21 @@ class PythonInterface:
 
         # Thermal Distance
         self.TDistance_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermals Separation", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermals Separation", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TDistance_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Meters", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Meters", 0, self.TCWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.TDistance_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TDistance_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.TDistance_scrollbar,
-                             xpProperty_ScrollBarMin, 100)
+                             xp.Property_ScrollBarMin, 100)
         xp.setWidgetProperty(self.TDistance_scrollbar,
-                             xpProperty_ScrollBarMax, 2000)
+                             xp.Property_ScrollBarMax, 2000)
         xp.setWidgetProperty(self.TDistance_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 100)
-        xp.setWidgetProperty(self.TDistance_scrollbar, xpProperty_ScrollBarSliderPosition, int(
+                             xp.Property_ScrollBarPageAmount, 100)
+        xp.setWidgetProperty(self.TDistance_scrollbar, xp.Property_ScrollBarSliderPosition, int(
             world.thermal_distance))
         xp.setWidgetDescriptor(self.TDistance_value,
                                str(int(world.thermal_distance)))
@@ -451,21 +509,21 @@ class PythonInterface:
 
         # Thermal map Refresh time
         self.TRefresh_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermals Refresh", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermals Refresh", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TRefresh_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Minutes", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Minutes", 0, self.TCWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.TRefresh_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TRefresh_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.TRefresh_scrollbar,
-                             xpProperty_ScrollBarMin, 10)
+                             xp.Property_ScrollBarMin, 10)
         xp.setWidgetProperty(self.TRefresh_scrollbar,
-                             xpProperty_ScrollBarMax, 200)
+                             xp.Property_ScrollBarMax, 200)
         xp.setWidgetProperty(self.TRefresh_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 20)
-        xp.setWidgetProperty(self.TRefresh_scrollbar, xpProperty_ScrollBarSliderPosition, int(
+                             xp.Property_ScrollBarPageAmount, 20)
+        xp.setWidgetProperty(self.TRefresh_scrollbar, xp.Property_ScrollBarSliderPosition, int(
             world.thermal_refresh_time))
         xp.setWidgetDescriptor(self.TRefresh_value, str(
             int(world.thermal_refresh_time)))
@@ -473,103 +531,103 @@ class PythonInterface:
 
         # Thermal Density
         self.TDensity_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Density", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermal Density", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TDensity_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "# of Thermals", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "# of Thermals", 0, self.TCWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.TDensity_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TDensity_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.TDensity_scrollbar,
-                             xpProperty_ScrollBarMin, 10)
+                             xp.Property_ScrollBarMin, 10)
         xp.setWidgetProperty(self.TDensity_scrollbar,
-                             xpProperty_ScrollBarMax, 500)
+                             xp.Property_ScrollBarMax, 500)
         xp.setWidgetProperty(self.TDensity_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 10)
+                             xp.Property_ScrollBarPageAmount, 10)
         xp.setWidgetProperty(self.TDensity_scrollbar,
-                             xpProperty_ScrollBarSliderPosition, world.thermal_density)
+                             xp.Property_ScrollBarSliderPosition, world.thermal_density)
         xp.setWidgetDescriptor(self.TDensity_value, str(world.thermal_density))
         y -= 32
 
         # Thermal Size
         self.TSize_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Size", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermal Size", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TSize_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max Diameter m", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Max Diameter m", 0, self.TCWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.TSize_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TSize_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xpWidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.TSize_scrollbar, xpProperty_ScrollBarMin, 50)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.TSize_scrollbar, xp.Property_ScrollBarMin, 50)
         xp.setWidgetProperty(self.TSize_scrollbar,
-                             xpProperty_ScrollBarMax, 1500)
+                             xp.Property_ScrollBarMax, 1500)
         xp.setWidgetProperty(self.TSize_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 20)
+                             xp.Property_ScrollBarPageAmount, 20)
         xp.setWidgetProperty(
-            self.TSize_scrollbar, xpProperty_ScrollBarSliderPosition, world.thermal_size)
+            self.TSize_scrollbar, xp.Property_ScrollBarSliderPosition, world.thermal_size)
         xp.setWidgetDescriptor(self.TSize_value, str(world.thermal_size))
         y -= 32
 
         # Thermal Strength
         self.TPower_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Power", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermal Power", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TPower_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max fpm", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Max fpm", 0, self.TCWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.TPower_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TPower_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.TPower_scrollbar,
-                             xpProperty_ScrollBarMin, 250)
+                             xp.Property_ScrollBarMin, 250)
         xp.setWidgetProperty(self.TPower_scrollbar,
-                             xpProperty_ScrollBarMax, 3500)
+                             xp.Property_ScrollBarMax, 3500)
         xp.setWidgetProperty(self.TPower_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 10)
+                             xp.Property_ScrollBarPageAmount, 10)
         xp.setWidgetProperty(
-            self.TPower_scrollbar, xpProperty_ScrollBarSliderPosition, world.thermal_power)
+            self.TPower_scrollbar, xp.Property_ScrollBarSliderPosition, world.thermal_power)
         xp.setWidgetDescriptor(self.TPower_value, str(world.thermal_power))
         y -= 32
 
         # Thermal Cycle time
         self.TCycle_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Cycle Time", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Cycle Time", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TCycle_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Minutes", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Minutes", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TCycle_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TCycle_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xpWidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.TCycle_scrollbar, xpProperty_ScrollBarMin, 5)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.TCycle_scrollbar, xp.Property_ScrollBarMin, 5)
         xp.setWidgetProperty(self.TCycle_scrollbar,
-                             xpProperty_ScrollBarMax, 90)
+                             xp.Property_ScrollBarMax, 90)
         xp.setWidgetProperty(self.TCycle_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 1)
+                             xp.Property_ScrollBarPageAmount, 1)
         xp.setWidgetProperty(
-            self.TCycle_scrollbar, xpProperty_ScrollBarSliderPosition, world.thermal_cycle)
+            self.TCycle_scrollbar, xp.Property_ScrollBarSliderPosition, world.thermal_cycle)
         xp.setWidgetDescriptor(self.TCycle_value, str(world.thermal_cycle))
         y -= 30
 
         # Define checkbox for thermal column visibility
-        xp.createWidget(x+60, y-80, x+140, y-102, 1, 'Thermals visible (cheat)',
-                        0, self.TCWidget, xpWidgetClass_Caption)
+        xp.createWidget(x+60, y-80, x+140, y-102, 1, 'Thermal Column Visible',
+                        0, self.TCWidget,  xp.WidgetClass_Caption)
         self.enableCheck = xp.createWidget(
-            x+220, y-80, x+260, y-102, 1, '', 0, self.TCWidget, xpWidgetClass_Button)
+            x+220, y-80, x+260, y-102, 1, '', 0, self.TCWidget, xp.WidgetClass_Button)
         xp.setWidgetProperty(
-            self.enableCheck, xpProperty_ButtonType, xpRadioButton)
+            self.enableCheck, xp.Property_ButtonType, xp.RadioButton)
         xp.setWidgetProperty(
-            self.enableCheck, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
+            self.enableCheck, xp.Property_ButtonBehavior, xp.ButtonBehaviorCheckBox)
         xp.setWidgetProperty(
-            self.enableCheck, xpProperty_ButtonState, world.THERMALS_VISIBLE)
+            self.enableCheck, xp.Property_ButtonState, world.THERMAL_COLUMN_VISIBLE)
         y -= 75
 
         # define button
         self.TGenerate_button = xp.createWidget(x+320, y-60, x+440, y-82,
-                                                1, "Generate Thermals", 0, self.TCWidget, xpWidgetClass_Button)
+                                                1, "Generate Thermals", 0, self.TCWidget, xp.WidgetClass_Button)
         xp.setWidgetProperty(self.TGenerate_button,
-                             xpProperty_ButtonType, xpPushButton)
+                             xp.Property_ButtonType, xp.PushButton)
 
         # --------------------------
         self.TCHandlerCB = self.TCHandler
@@ -586,54 +644,91 @@ class PythonInterface:
 
         # create the window
         self.AboutWidget = xp.createWidget(
-            x, y, x2, y2, 1, Title, 1,     0, xpWidgetClass_MainWindow)
+            x, y, x2, y2, 1, Title, 1,     0, xp.WidgetClass_MainWindow)
         xp.setWidgetProperty(
-            self.AboutWidget, xpProperty_MainWindowHasCloseBoxes, 1)
+            self.AboutWidget, xp.Property_MainWindowHasCloseBoxes, 1)
         AboutWindow = xp.createWidget(
-            x+50, y-50, x2-50, y2+50, 1, "",     0, self.AboutWidget, xpWidgetClass_SubWindow)
+            x+50, y-50, x2-50, y2+50, 1, "",     0, self.AboutWidget, xp.WidgetClass_SubWindow)
         xp.setWidgetProperty(
-            AboutWindow, xpProperty_SubWindowType, xpSubWindowStyle_SubWindow)
+            AboutWindow, xp.Property_SubWindowType, xp.SubWindowStyle_SubWindow)
 
         text1 = "Thermal Simulator for Python 3"
         self.About_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, text1, 0, self.AboutWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, text1, 0, self.AboutWidget, xp.WidgetClass_Caption)
         y -= 35
 
         text2 = "Author: Alex Ferrer  @ 2014, 2022"
         self.About_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, text2, 0, self.AboutWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, text2, 0, self.AboutWidget, xp.WidgetClass_Caption)
         y -= 35
 
         text3 = " https://github.com/alexferrer/xplane_thermals/wiki"
         self.About_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, text3, 0, self.AboutWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, text3, 0, self.AboutWidget,  xp.WidgetClass_Caption)
+        y -= 45
 
+        #------
+        # Set debug level 
+        self.DBug_label1 = xp.createWidget(
+            x+50,  y-80, x+140, y-102, 1, "Debug Setting    Min", 0, self.AboutWidget,  xp.WidgetClass_Caption)
+        self.DBug_label2 = xp.createWidget(
+            x+375, y-80, x+410, y-102, 1, "Max", 0, self.AboutWidget,  xp.WidgetClass_Caption)
+        # define scrollbar
+        self.DBug_value = xp.createWidget(
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.AboutWidget,  xp.WidgetClass_Caption)
+        self.DBug_scrollbar = xp.createWidget(
+            x+170, y-80, x+370, y-102, 1, "", 0, self.AboutWidget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.DBug_scrollbar,
+                             xp.Property_ScrollBarMin, 0)
+        xp.setWidgetProperty(self.DBug_scrollbar,
+                             xp.Property_ScrollBarMax, 10)
+        xp.setWidgetProperty(self.DBug_scrollbar,
+                             xp.Property_ScrollBarPageAmount, 1)
+        xp.setWidgetProperty(self.DBug_scrollbar, xp.Property_ScrollBarSliderPosition, int(
+            world.DEBUG))
+        xp.setWidgetDescriptor(self.DBug_value, str(
+            int(world.DEBUG)))
+        y -= 32
+        #------
         self.AboutHandlerCB = self.AboutHandler
         xp.addWidgetCallback(self.AboutWidget, self.AboutHandlerCB)
      # ----
 
     def AboutHandler(self, inMessage, inWidget,       inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
-        if (inMessage == xpMessage_CloseButtonPushed):
+        if (inMessage == xp.Message_CloseButtonPushed ):
             print("about close button pushed")
             if (self.AboutMenuItem == 1):
                 print("hide the widget")
                 xp.hideWidget(self.AboutWidget)
                 return 1
+        if (inMessage == xp.Msg_ScrollBarSliderPositionChanged):
+            # Thermal Tops
+            val = xp.getWidgetProperty(
+                self.DBug_scrollbar, xp.Property_ScrollBarSliderPosition, None)
+            xp.setWidgetDescriptor(self.DBug_value, str(val))
+            world.DEBUG = int(val * world.f2m)
+
         return 0
 # ----------------------------------------- new...
 
     def CGHandler(self, inMessage, inWidget,       inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
-        if (inMessage == xpMessage_CloseButtonPushed):
-            print("close button pushed")
+        if (inMessage == xp.Message_CloseButtonPushed):
+            print("config glider window close button pushed")
+            world.CALIBRATE_MODE = False
             if (self.CGMenuItem == 1):
                 print("hide the widget")
                 xp.hideWidget(self.CGWidget)
                 return 1
+        # Process when a radiobutton on the widget is pressed
+        if (inMessage == xp.Msg_ButtonStateChanged):
+            world.CALIBRATE_MODE = xp.getWidgetProperty(
+                self.enableCheck1, xp.Property_ButtonState, None)
+            print(" CALIBRATE_MODE ", world.CALIBRATE_MODE)
 
-        # Process when a button on the widget is pressed
-        if (inMessage == xpMsg_PushButtonPressed):
+        # Process button on the widget is pressed
+        if (inMessage ==  xp.Msg_PushButtonPressed):
             print("[button was pressed", inParam1, "]")
 
             # Tests the Command API, will find command
@@ -642,31 +737,33 @@ class PythonInterface:
                 return 1
 
             if (inParam1 == self.CGRandom_button):
-                print("Set thermal config randomly")
+                print("Glider Config: roll wing left")
+                # roll for 100 units
+                world.roll_test_pulse = 50
                 return 1
-
-        if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
+        # Process when a scrollbar on the widget is changed
+        if (inMessage == xp.Msg_ScrollBarSliderPositionChanged):
             # Lift Factor
             val = xp.getWidgetProperty(
-                self.CGLift_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.CGLift_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CGLift_value, str(val))
             world.lift_factor = val * .1
 
             # Thrust Factor
             val = xp.getWidgetProperty(
-                self.CGThrust_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.CGThrust_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CGThrust_value, str(val))
             world.thrust_factor = val * .1
 
             # Roll factor
             val = xp.getWidgetProperty(
-                self.CGRoll_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.CGRoll_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CGRoll_value, str(val))
-            world.roll_factor = val * .1
+            world.roll_factor = val
 
             # Wing Size
             val = xp.getWidgetProperty(
-                self.CGWing_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.CGWing_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CGWing_value, str(val))
             world.wing_size = val
 
@@ -681,53 +778,59 @@ class PythonInterface:
 
         # create the window
         self.CGWidget = xp.createWidget(
-            x, y, x2, y2, 1, Title, 1,     0, xpWidgetClass_MainWindow)
+            x, y, x2, y2, 1, Title, 1,     0, xp.WidgetClass_MainWindow)
         xp.setWidgetProperty(
-            self.CGWidget, xpProperty_MainWindowHasCloseBoxes, 1)
+            self.CGWidget, xp.Property_MainWindowHasCloseBoxes, 1)
         CGWindow = xp.createWidget(
-            x+50, y-50, x2-50, y2+50, 1, "",     0, self.CGWidget, xpWidgetClass_SubWindow)
-        xp.setWidgetProperty(CGWindow, xpProperty_SubWindowType,
-                             xpSubWindowStyle_SubWindow)
+            x+50, y-50, x2-50, y2+50, 1, "",     0, self.CGWidget, xp.WidgetClass_SubWindow)
+        xp.setWidgetProperty(CGWindow, xp.Property_SubWindowType,
+                             xp.SubWindowStyle_SubWindow)
 
         # -----------------------------
         # Lift Component
+        CGLift_message0 = "Trim the glider for flight straight and level at best glide speed."
+        CGLift_message1 = "Adjust the lift factor until vario shows 1m/s Vs"
+        self.CGLift_label_a = xp.createWidget(
+            x+80,  y-20, x+140, y-35, 1, CGLift_message0, 0, self.CGWidget,  xp.WidgetClass_Caption)
+        self.CGLift_label_b = xp.createWidget(
+            x+110,  y-30, x+140, y-60, 1, CGLift_message1, 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGLift_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Lift Factor", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Lift Factor", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGLift_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CGLift_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGLift_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xpWidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.CGLift_scrollbar, xpProperty_ScrollBarMin, 0)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.CGLift_scrollbar, xp.Property_ScrollBarMin, 0)
         xp.setWidgetProperty(self.CGLift_scrollbar,
-                             xpProperty_ScrollBarMax, 100)
+                             xp.Property_ScrollBarMax, 100)
         xp.setWidgetProperty(self.CGLift_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 1)
+                             xp.Property_ScrollBarPageAmount, 1)
         xp.setWidgetProperty(
-            self.CGLift_scrollbar, xpProperty_ScrollBarSliderPosition, int(world.lift_factor*10))
+            self.CGLift_scrollbar, xp.Property_ScrollBarSliderPosition, int(world.lift_factor*10))
         xp.setWidgetDescriptor(
             self.CGLift_value, str(int(world.lift_factor*10)))
         y -= 32
 
         # Thrust Component
         self.CGThrust_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thrust Factor", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thrust Factor", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGThrust_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CGThrust_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGThrust_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.CGThrust_scrollbar,
-                             xpProperty_ScrollBarMin, 0)
+                             xp.Property_ScrollBarMin, 0)
         xp.setWidgetProperty(self.CGThrust_scrollbar,
-                             xpProperty_ScrollBarMax, 100)
+                             xp.Property_ScrollBarMax, 100)
         xp.setWidgetProperty(self.CGThrust_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 1)
-        xp.setWidgetProperty(self.CGThrust_scrollbar, xpProperty_ScrollBarSliderPosition, int(
+                             xp.Property_ScrollBarPageAmount, 1)
+        xp.setWidgetProperty(self.CGThrust_scrollbar, xp.Property_ScrollBarSliderPosition, int(
             world.thrust_factor*10))
         xp.setWidgetDescriptor(self.CGThrust_value,
                                str(world.thrust_factor*10))
@@ -735,68 +838,68 @@ class PythonInterface:
 
         # Roll Component
         self.CGRoll_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Roll Factor", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Roll Factor", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGRoll_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CGRoll_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGRoll_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xpWidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.CGRoll_scrollbar, xpProperty_ScrollBarMin, 0)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.CGRoll_scrollbar, xp.Property_ScrollBarMin, 0)
         xp.setWidgetProperty(self.CGRoll_scrollbar,
-                             xpProperty_ScrollBarMax, 800)
+                             xp.Property_ScrollBarMax, 100)
         xp.setWidgetProperty(self.CGRoll_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 10)
+                             xp.Property_ScrollBarPageAmount, 10)
         xp.setWidgetProperty(
-            self.CGRoll_scrollbar, xpProperty_ScrollBarSliderPosition, world.roll_factor)
+            self.CGRoll_scrollbar, xp.Property_ScrollBarSliderPosition, world.roll_factor)
         xp.setWidgetDescriptor(self.CGRoll_value, str(world.roll_factor))
         y -= 32
 
         # Wing Size
         self.CGWing_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Wing Size", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Wing Size", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGWing_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "meters", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "meters", 0, self.CGWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CGWing_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGWing_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xpWidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.CGWing_scrollbar, xpProperty_ScrollBarMin, 1)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.CGWing_scrollbar, xp.Property_ScrollBarMin, 1)
         xp.setWidgetProperty(self.CGWing_scrollbar,
-                             xpProperty_ScrollBarMax, 30)
+                             xp.Property_ScrollBarMax, 30)
         xp.setWidgetProperty(self.CGWing_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 1)
+                             xp.Property_ScrollBarPageAmount, 1)
         xp.setWidgetProperty(self.CGWing_scrollbar,
-                             xpProperty_ScrollBarSliderPosition, world.wing_size)
+                             xp.Property_ScrollBarSliderPosition, world.wing_size)
         xp.setWidgetDescriptor(self.CGWing_value, str(world.wing_size))
         y -= 32
 
         # Define checkbox for thermal visibility
-        xp.createWidget(x+60, y-80, x+140, y-102, 1, 'xx3', 0,
-                        self.CGWidget, xpWidgetClass_Caption)
+        xp.createWidget(x+60, y-80, x+140, y-102, 1, 'Toggle Calibrate Mode ', 0,
+                        self.CGWidget,  xp.WidgetClass_Caption)
         self.enableCheck1 = xp.createWidget(
-            x+180, y-80, x+220, y-102, 1, '', 0, self.CGWidget, xpWidgetClass_Button)
+            x+180, y-80, x+220, y-102, 1, '', 0, self.CGWidget, xp.WidgetClass_Button)
         xp.setWidgetProperty(self.enableCheck1,
-                             xpProperty_ButtonType, xpRadioButton)
+                             xp.Property_ButtonType, xp.RadioButton)
         xp.setWidgetProperty(
-            self.enableCheck1, xpProperty_ButtonBehavior, xpButtonBehaviorCheckBox)
+            self.enableCheck1, xp.Property_ButtonBehavior, xp.ButtonBehaviorCheckBox)
         xp.setWidgetProperty(self.enableCheck1,
-                             xpProperty_ButtonState, world.THERMALS_VISIBLE)
+                             xp.Property_ButtonState,  world.CALIBRATE_MODE)
         y -= 75
 
         # define button
         self.CGRandom_button = xp.createWidget(x+60, y-60, x+200, y-82,
-                                               1, "xx2", 0, self.CGWidget, xpWidgetClass_Button)
+                                               1, "Roll Left", 0, self.CGWidget, xp.WidgetClass_Button)
         xp.setWidgetProperty(self.CGRandom_button,
-                             xpProperty_ButtonType, xpPushButton)
+                             xp.Property_ButtonType, xp.PushButton)
 
         # define button
         self.CGGenerate_button = xp.createWidget(x+320, y-60, x+440, y-82,
-                                                 1, "xxx1", 0, self.CGWidget, xpWidgetClass_Button)
+                                                 1, "ToBeDone", 0, self.CGWidget, xp.WidgetClass_Button)
         xp.setWidgetProperty(self.CGGenerate_button,
-                             xpProperty_ButtonType, xpPushButton)
+                             xp.Property_ButtonType, xp.PushButton)
 
         # --------------------------
         self.CGHandlerCB = self.CGHandler
@@ -806,7 +909,7 @@ class PythonInterface:
 
     def CSVHandler(self, inMessage, inWidget, inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
-        if (inMessage == xpMessage_CloseButtonPushed):
+        if (inMessage == xp.Message_CloseButtonPushed):
             print("close button pushed")
             if (self.CSVMenuItem == 1):
                 print("hide the widget")
@@ -814,12 +917,12 @@ class PythonInterface:
                 return 1
 
         # Process when a button on the widget is pressed
-        if (inMessage == xpMsg_PushButtonPressed):
+        if (inMessage == xp.Msg_PushButtonPressed):
             print("[button was pressed", inParam1, "]")
 
             # Tests the Command API, will find command
             if (inParam1 == self.CSVTGenerate_button):
-                print("Generate")
+                print("Generate Thermals")
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
                 world.thermal_dict = make_csv_thermal_map(
@@ -827,34 +930,34 @@ class PythonInterface:
                 world.world_update = True
                 return 1
 
-        if (inMessage == xpMsg_ScrollBarSliderPositionChanged):
+        if (inMessage == xp.Msg_ScrollBarSliderPositionChanged):
             # Thermal Tops
             val = xp.getWidgetProperty(
-                self.CSVTTops_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.CSVTTops_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CSVTTops_value, str(val))
             world.thermal_tops = int(val * world.f2m)
 
             # Thermal Density
             val = xp.getWidgetProperty(
-                self.CSVTDensity_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.CSVTDensity_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CSVTDensity_value, str(val))
             world.thermal_density = val
 
             # Thermal Size
             val = xp.getWidgetProperty(
-                self.CSVTSize_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.CSVTSize_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CSVTSize_value, str(val))
             world.thermal_size = val
 
             # Thermal Power
             val = xp.getWidgetProperty(
-                self.CSVTPower_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.CSVTPower_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CSVTPower_value, str(val))
             world.thermal_power = val
 
             # Thermal Cycle
             val = xp.getWidgetProperty(
-                self.CSVTCycle_scrollbar, xpProperty_ScrollBarSliderPosition, None)
+                self.CSVTCycle_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CSVTCycle_value, str(val))
             world.thermal_cycle = val
 
@@ -869,32 +972,32 @@ class PythonInterface:
 
         # create the window
         self.CSVWidget = xp.createWidget(
-            x, y, x2, y2, 1, Title, 1,     0, xpWidgetClass_MainWindow)
+            x, y, x2, y2, 1, Title, 1,     0, xp.WidgetClass_MainWindow)
         xp.setWidgetProperty(
-            self.CSVWidget, xpProperty_MainWindowHasCloseBoxes, 1)
+            self.CSVWidget, xp.Property_MainWindowHasCloseBoxes, 1)
         CSVWindow = xp.createWidget(
-            x+50, y-50, x2-50, y2+50, 1, "",     0, self.CSVWidget, xpWidgetClass_SubWindow)
+            x+50, y-50, x2-50, y2+50, 1, "",     0, self.CSVWidget, xp.WidgetClass_SubWindow)
         xp.setWidgetProperty(
-            CSVWindow, xpProperty_SubWindowType, xpSubWindowStyle_SubWindow)
+            CSVWindow, xp.Property_SubWindowType, xp.SubWindowStyle_SubWindow)
 
         # -----------------------------
         # Thermal Tops
         self.CSVTTops_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermals Tops", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermals Tops", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTTops_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Feet", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Feet", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CSVTTops_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTTops_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.CSVTTops_scrollbar,
-                             xpProperty_ScrollBarMin, 100)
+                             xp.Property_ScrollBarMin, 100)
         xp.setWidgetProperty(self.CSVTTops_scrollbar,
-                             xpProperty_ScrollBarMax, 20000)
+                             xp.Property_ScrollBarMax, 20000)
         xp.setWidgetProperty(self.CSVTTops_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 500)
-        xp.setWidgetProperty(self.CSVTTops_scrollbar, xpProperty_ScrollBarSliderPosition, int(
+                             xp.Property_ScrollBarPageAmount, 500)
+        xp.setWidgetProperty(self.CSVTTops_scrollbar, xp.Property_ScrollBarSliderPosition, int(
             world.thermal_tops*world.m2f))
         xp.setWidgetDescriptor(self.CSVTTops_value, str(
             int(world.thermal_tops*world.m2f)))
@@ -902,93 +1005,93 @@ class PythonInterface:
 
         # Thermal Density
         self.CSVTDensity_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Density", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermal Density", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTDensity_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max # of Thermals", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Max # of Thermals", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CSVTDensity_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTDensity_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.CSVTDensity_scrollbar,
-                             xpProperty_ScrollBarMin, 1)
+                             xp.Property_ScrollBarMin, 1)
         xp.setWidgetProperty(self.CSVTDensity_scrollbar,
-                             xpProperty_ScrollBarMax, 500)
+                             xp.Property_ScrollBarMax, 500)
         xp.setWidgetProperty(self.CSVTDensity_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 10)
+                             xp.Property_ScrollBarPageAmount, 10)
         xp.setWidgetProperty(self.CSVTDensity_scrollbar,
-                             xpProperty_ScrollBarSliderPosition, world.thermal_density)
+                             xp.Property_ScrollBarSliderPosition, world.thermal_density)
         xp.setWidgetDescriptor(self.CSVTDensity_value,
                                str(world.thermal_density))
         y -= 32
 
         # Thermal Size
         self.CSVTSize_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Size", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermal Size", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTSize_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max Diameter m", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Max Diameter m", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CSVTSize_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTSize_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.CSVTSize_scrollbar,
-                             xpProperty_ScrollBarMin, 50)
+                             xp.Property_ScrollBarMin, 50)
         xp.setWidgetProperty(self.CSVTSize_scrollbar,
-                             xpProperty_ScrollBarMax, 1500)
+                             xp.Property_ScrollBarMax, 1500)
         xp.setWidgetProperty(self.CSVTSize_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 20)
+                             xp.Property_ScrollBarPageAmount, 20)
         xp.setWidgetProperty(self.CSVTSize_scrollbar,
-                             xpProperty_ScrollBarSliderPosition, world.thermal_size)
+                             xp.Property_ScrollBarSliderPosition, world.thermal_size)
         xp.setWidgetDescriptor(self.CSVTSize_value, str(world.thermal_size))
         y -= 32
 
         # Thermal Strength
         self.CSVTPower_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Power", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermal Power", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTPower_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max fpm", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Max fpm", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CSVTPower_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTPower_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.CSVTPower_scrollbar,
-                             xpProperty_ScrollBarMin, 250)
+                             xp.Property_ScrollBarMin, 250)
         xp.setWidgetProperty(self.CSVTPower_scrollbar,
-                             xpProperty_ScrollBarMax, 3500)
+                             xp.Property_ScrollBarMax, 3500)
         xp.setWidgetProperty(self.CSVTPower_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 10)
+                             xp.Property_ScrollBarPageAmount, 10)
         xp.setWidgetProperty(self.CSVTPower_scrollbar,
-                             xpProperty_ScrollBarSliderPosition, world.thermal_power)
+                             xp.Property_ScrollBarSliderPosition, world.thermal_power)
         xp.setWidgetDescriptor(self.CSVTPower_value, str(world.thermal_power))
         y -= 32
 
         # Thermal Cycle time
         self.CSVTCycle_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Cycle Time", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Cycle Time", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTCycle_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Minutes", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Minutes", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTCycle_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget, xpWidgetClass_Caption)
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTCycle_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xpWidgetClass_ScrollBar)
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.CSVTCycle_scrollbar,
-                             xpProperty_ScrollBarMin, 5)
+                             xp.Property_ScrollBarMin, 5)
         xp.setWidgetProperty(self.CSVTCycle_scrollbar,
-                             xpProperty_ScrollBarMax, 90)
+                             xp.Property_ScrollBarMax, 90)
         xp.setWidgetProperty(self.CSVTCycle_scrollbar,
-                             xpProperty_ScrollBarPageAmount, 1)
+                             xp.Property_ScrollBarPageAmount, 1)
         xp.setWidgetProperty(self.CSVTCycle_scrollbar,
-                             xpProperty_ScrollBarSliderPosition, world.thermal_cycle)
+                             xp.Property_ScrollBarSliderPosition, world.thermal_cycle)
         xp.setWidgetDescriptor(self.CSVTCycle_value, str(world.thermal_cycle))
         y -= 30
 
-        # define button
+        # define "Generate Thermals button
         self.CSVTGenerate_button = xp.createWidget(x+320, y-60, x+440, y-82,
-                                                   1, "Generate Thermals", 0, self.CSVWidget, xpWidgetClass_Button)
+                                                   1, "Generate Thermals", 0, self.CSVWidget, xp.WidgetClass_Button)
         xp.setWidgetProperty(self.CSVTGenerate_button,
-                             xpProperty_ButtonType, xpPushButton)
+                             xp.Property_ButtonType, xp.PushButton)
 
         # --------------------------
         self.CSVHandlerCB = self.CSVHandler

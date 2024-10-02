@@ -1,0 +1,26 @@
+A
+800
+OBJ
+
+TEXTURE
+PARTICLE_SYSTEM mt_scenery.pss
+
+POINT_COUNTS  0 4 0  10
+VLINE -10.0 5.0 -10.0   1 0 0
+VLINE  10.0 5.0 -10.0   1 0 0
+VLINE  10.0 5.0  10.0   1 0 0
+VLINE -10.0 5.0  10.0   1 0 0
+
+IDX10  0 1  1 2  2 3  3 0  0 0
+
+ATTR_LOD 0 8000
+#LINES 0 8
+
+ANIM_begin
+	ANIM_hide 65 99 sim/weather/view/wind_base_speed_kts
+	EMITTER summit_cloud 0.0 0.0 0.0  0.0 0.0 0.0  0
+ANIM_end
+
+#eof
+
+

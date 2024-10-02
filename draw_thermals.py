@@ -3,50 +3,45 @@ import thermal
 from thermal_model import convert_lat_lon2meters, calc_dist, calc_drift
 import xp
 
-HUGE_CLOUD = 'lib/dynamic/balloon.obj'
-LARGE_CLOUD = 'lib/airport/Common_Elements/Fuel_Storage/Sing_Tank_Large.obj'
-# 'lib/street/various/porta_potty.obj'
-SMALL_CLOUD = 'lib/airport/landscape/windsock.obj'
-# 'lib/airport/Common_Elements/Markers/Poles/Large_Red_White.obj'
-THERMAL_COLUMN = 'lib/dynamic/seagull_glide.obj'
+LIB_VERSION = "Version ----------------------------   draw_thermals.py v2.0"
+print(LIB_VERSION)
+
+THERMAL_COLUMN = 'Resources/plugins/PythonPlugins/cloudmade.obj'
 
 # thermal image
-thermal_column = xp.loadObject(
-    'Resources/default scenery/sim objects/dynamic/SailBoat.obj')
+thermal_column = xp.loadObject(THERMAL_COLUMN)
 
-# cloudbase_image
-#paths = []
-#print("paths", paths)
-# xp.lookupObjects(HUGE_CLOUD, 0, 0, lambda path,
-#                 refCon: paths.append(path), None)
-#print("paths", paths)
-#huge_cloud = xp.loadObject(paths[0])
-#print("huge-cloud", huge_cloud)
+#for debug purposes only
+#huge_cloud = xp.loadObject(
+#    'Custom Scenery/X-Plane Airports - TNCS Juancho E Yrausquin/objects/mt_scenery.obj')
 
-huge_cloud = xp.loadObject(
-    'Resources/default scenery/sim objects/dynamic/balloon1.obj')
+huge_cloud = xp.loadObject('Resources/plugins/PythonPlugins/mt_scenery.obj')
 
 
 def draw_thermal(lat, lon):  # min_alt,max_alt
     ''' Draw thermal images along the raising thermal, accounting
         for wind drift along the climb. end at almost the thermal top
     '''
+    if world.DEBUG > 6: print("draw a thermal column of clouds") 
     base = 1
     _dew, _dud, _dns = xp.worldToLocal(
         lat, lon, 0)  # Dew=E/W,Dud=Up/Down,Dns=N/S
     # from 100 to almost thermal top steps of 200
     for alt in range(base, world.thermal_tops-200, 200):
         _dx, _dy = calc_drift(alt)
-        instance = xp.createInstance(thermal_column)
-        xp.instanceSetPosition(
-            instance, [_dew + _dx, _dud + alt, _dns + _dy, 0, 0, 0])
-        world.instance_list.append(instance)
+        #AlX disabled for testing 2021-09-26
+        #instance = xp.createInstance(thermal_column)
+        #xp.instanceSetPosition(
+        #    instance, [_dew + _dx, _dud + alt, _dns + _dy, 0, 0, 0])
+        #world.instance_list.append(instance)
 
 
 def draw_cloud(lat, lon):
     ''' Return the location for a cloud at the top of the raising thermal, accounting
         for wind drift along the climb.
     '''
+    if world.DEBUG == 6 : print("Cloud-", end='') 
+
     # Dew=E/W,Dud=Up/Down,Dns=N/S
     _dew, _dud, _dns = xp.worldToLocal(lat, lon, 0)
     _alt = world.thermal_tops
@@ -73,6 +68,7 @@ def draw_clouds(lat, lon):
     ''' return a list of thermal location tuples, if the distance not exceeds max display
     Just the thermals at cloudbase
     '''
+    if world.DEBUG == 6: print("draw_clouds") 
     p1x, p1y = convert_lat_lon2meters(lat, lon)
 
     for athermal in world.thermal_dict:
@@ -82,24 +78,27 @@ def draw_clouds(lat, lon):
 
 
 def eraseThermalsOnScreen():
-    if world.DEBUG:
-        print("loop: Delete old instances")
+    if world.DEBUG > 0: print("loop: Delete old instances #", len(world.instance_list))
     for i in world.instance_list:
-        if world.DEBUG:
-            print("loop: delete instance,", i)
+        if world.DEBUG == 6 : print("loop: delete instance,", i)
         if i:
-            xp.destroyInstance(i)
-
+            try:
+                xp.destroyInstance(i)
+                world.instance_list.remove(i)
+            except Exception as e:
+                if world.DEBUG > 0: print(f"Exception destroying instance {i}: {e}")
 
 def drawThermalsOnScreen(lat, lon):
     # if visibility is off, only draw clouds at cloudbase (no visible columns)
 
+    if world.DEBUG == 6: print(" eraseThermalsOnScreen")
     eraseThermalsOnScreen()
 
     draw_clouds(lat, lon)
 
-    if world.THERMALS_VISIBLE:
+    if world.THERMAL_COLUMN_VISIBLE:
         draw_thermal_columns(lat, lon)
 
+    if world.DEBUG == 6: print("set world_update = False")
     world.world_update = False
     return 1

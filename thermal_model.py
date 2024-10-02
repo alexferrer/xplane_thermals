@@ -12,8 +12,9 @@ import world
 import thermal
 
 # comment out before testing with PlotThermals!!
-#import xp
-
+import xp
+LIB_VERSION = "Version ----------------------------   thermal_model V2.0"
+print(LIB_VERSION)
 
 def calc_dist_square(p1x, p1y, p2x, p2y):
     ''' Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2 '''
@@ -53,26 +54,25 @@ def calc_lift(p1x, p1y):
     for _thermal in world.thermal_dict:
         p2x, p2y = _thermal.p_x, _thermal.p_y
         distance_square = calc_dist_square(p1x, p1y, p2x, p2y)
-        # print( "calclift:",int(p1x), int(p1y), int(p2x), int(p2y),
-        #       "dist >",int(distance_square),thermal.radius )
+        if world.DEBUG == 1 : print( "calclift x:",int(p1x), int(p1y), int(p2x), int(p2y), "dist >",int(math.sqrt(distance_square))/1000,_thermal.radius )
 
         if distance_square < _thermal.radius_square:
             distance = math.sqrt(distance_square)
             lift += _thermal.strength * \
                 round((_thermal.radius - distance) / _thermal.radius, 2)
-            # print( "Dist ",lat1,lon1,radius, distance ,lift)
+            if world.DEBUG == 1 : print("inside a thermal: Dist:", distance ," Lift: ",lift)
     return lift
 
 
 def calc_thermal_band(alt):
     '''Calculate the lift per altitude band'''
     top_factor = 1
-    if (world.thermal_tops - alt) < 100:
-        top_factor = (world.thermal_tops - alt) / 100
+    #if (world.thermal_tops - alt) < 100:
+    #    top_factor = (world.thermal_tops - alt) / 100
     return top_factor
 
 
-def calc_thermal(lat, lon, alt, heading, roll_angle):
+def calc_thermalx(lat, lon, alt, heading, roll_angle):
     """
      Calculate the strength of the thermal at this particular point
      in space by computing the distance from center of all thermals
@@ -80,6 +80,8 @@ def calc_thermal(lat, lon, alt, heading, roll_angle):
      the value representing lift is the maxpower times a  % of distance away from center
      Return the total lift and roll value.
     """
+    #alx print("inside calc_thermal [lat,lon,alt,head,roll]", lat, lon, alt, heading, roll_angle)
+
     # current plane position
     _plane_x, _plane_y = convert_lat_lon2meters(lat, lon)
 
@@ -116,16 +118,18 @@ def calc_thermal(lat, lon, alt, heading, roll_angle):
     # total roll component
     #         the more airplane is rolled, the less thermal roll effect
     #         if the plane is flying inverted the roll effect should be reversed
+    #         the roll effect is proportional to the difference in lift between wings
+    #         should add some pitch change to the roll effect.
 
     roll_factor = math.cos(math.radians(roll_angle))
     roll_value = -(_lift_r - _lift_l) * roll_factor
 
-    """ For debug.
-
-    print( "pos[",'%.4f'%planeX,",",'%.4f'%planeY,"] @",'%.0f'%(heading), \
-         ">",'%.1f'%(roll_angle), "T **[",'%.1f'%thermal_value,"|",
-      '%.1f'%roll_value ,"]**",'%.1f'%alt)
-    """
+    #need to calculate pitch
+    #ALX DEBUG
+    if world.DEBUG == 1 : print( "pos[",'%.4f'%_plane_x,",",'%.4f'%_plane_y,"] head",'%.0f'%(heading), \
+         "roll ",'%.1f'%(roll_angle), "   Lift [",'%.1f'%thermal_value,"| Roll:",
+      '%.1f'%roll_value ,"]   ",'%.1f'%alt)
+    
 
     """Todo: thermals have cycles, begin, middle , end.. and reflect in strength.."""
 
@@ -138,6 +142,14 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
       Params: center (lat,lon) , max strength, count , radius
       thermal_list =     { (lat,lon):(radius,strength) }
     '''
+    
+    # on debug return defult thermals
+    if world.DEBUG == 1 : return world.thermal_dict
+
+    if world.DEBUG > 0:
+        print("makeRandomThermalMap lat lon strength count radius", _lat, _lon, _strength, _count, _radius)
+    
+
     random.seed()  # initialize the random generator using system time
     average_radius = _radius
     thermals = []
@@ -169,13 +181,13 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
 
         # create the thermal
         thermals.append(thermal.Thermal(lat, lon, radius, strength))
-        if world.DEBUG:
+        if world.DEBUG > 1:
             print("makeRandomThermal", lat, lon, radius, strength)
 
     # for debug make a large thermal arount current _lat,_lon position
-    if world.DEBUG:
-        thermals.append(thermal.Thermal(
-            _lat, _lon, average_radius*10, _strength*10))
+    #if world.DEBUG > 1:
+    #    thermals.append(thermal.Thermal(
+    #        _lat, _lon, average_radius*10, _strength*10))
 
     # reset the thermal start time to now
     world.thermal_map_start_time = time

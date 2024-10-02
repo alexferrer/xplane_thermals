@@ -92,3 +92,4 @@ samples/ExampleGauge/Gauge.bmp
 samples/ExampleGauge/Needle.bmp
 samples/ExampleGauge/NeedleMask.bmp
 samples/ExampleGauge/Panel.bmp
+.vscode/tasks.json

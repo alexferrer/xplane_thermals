@@ -2,7 +2,7 @@ xplane_thermals - (Updated for Python 3)
 ===============
 
 Author: Alex Ferrer
-License: GPL 2014 / Updated Jan 2022
+License: GPL 2014 / Updated Oct 2024
 
 
 X-Plane plugin to generate more realistic thermals 
@@ -35,8 +35,8 @@ A thermal visualization aid (shows markers where the thermals are) exists with a
 
 UPDATE
 -----
-- different graphic object for cloudbase thermal (a balloon) & thermal column (a sailboat! for now.. ) 
-- Select thermal column visibility from generate thermal menu
+- Real clouds!!!
+- Select thermal column visibility from generate thermal menu (broken)
 - (For Dev only) New PlotThermals.py program to plot the thermal map
 - Python 3 now Works! try it, report bugs 
 - https://forums.x-plane.org/index.php?/forums/topic/225976-xppython3-v312-now-available/
@@ -61,23 +61,33 @@ End: once the whole bubble has reached cloudbase, the air inside and outside the
 The lengths of this cycles varies depending on temperature, humidity, altitude etc. Glider pilots learn to recognize this patterns and use them to know when to leave a thermal. 
 
 - Thermal streets
-- Clouds at the top of the thermal (* this is a big one, but I don't know how to do it yet) 
-
 
 Installation
 ------------
 
-This is a Python 3 plugin, so the python interface is required. ( https://xppython3.readthedocs.io/en/stable/) For installation copy the Python files to the X-Plane Resources/PythonScripts folder so that the Python plugin can find them.
+( https://xppython3.readthedocs.io/en/latest/index.html )
+This is XPPython3 version 4 and includes both the X-Plane plugin as well as a private version of Python3. Unlike previous versions of XPPython3, you no longer need to install your own copy of Python.
 
-As a helper, I am using Easy Dataref access class from Joan Perez i Cauhe, and I am including the class on the sources. (with changes for Python 3)
+For installation copy the XPLANE THERMALS Python files to the X-Plane Resources/PythonScripts folder so that the Python plugin can find them.
+
 Other than that, all is needed is PI_ThermalSym, thermal_model.py and world.py anything else is test stuff or helpers. 
 
-V 0.3 has a nice menu to define thermal parameters, better thermal simulation, better performance and reduced memory space. 
+V.04 Changes: 
+
+Real clouds at cloudbase on top of thermals! (Thx to forums.x-plane.org @troopie for pointing me on the right direction!)
+
+Menu options to :
+Set the debug level 1 to 6 dumps info to XPPython3Log.txt
+Configure the glider lift/roll response against a static lift while on the config menu
+
+
 
 
 
 Older versions
 --------------
+V 0.3 has a nice menu to define thermal parameters, better thermal simulation, better performance and reduced memory space. 
+
 All previous versions where Python 2.6 
 
 V 0.2 (current) Is already quite usable. It has a matrix of 10000x10000 ~70nm^2 , implements all the concepts listed above. At this point there are several variables (wind, thermal tops, thermal generation) that are hardcoded and require changes of code if you wish to modify.

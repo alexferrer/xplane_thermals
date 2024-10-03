@@ -99,7 +99,7 @@ thermal_band = {1000: .8, 2000: .9, 3000: 1, 5000: 1, 5100: .4, 5500: 0}
         raob ?
 '''
 # GUI state variables
-THERMAL_COLUMN_VISIBLE = True  # are thermals visible as clouds
+THERMAL_COLUMN_VISIBLE = False  # are thermals visible as clouds, start false
 CALIBRATE_MODE = False  # set calibration mode on/off for lift factor
 
 # Thermal auto refersh data

@@ -89,7 +89,7 @@ class PythonInterface:
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
         # -------------------------------------------------
         if world.DEBUG > 3 : print("setting up global variables")
-        world.THERMAL_COLUMN_VISIBLE = True
+        world.THERMAL_COLUMN_VISIBLE = False
         self.Name = "ThermalSim2"
         self.Sig = "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"

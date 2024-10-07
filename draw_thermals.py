@@ -6,7 +6,7 @@ import xp # type: ignore
 LIB_VERSION = "Version ----------------------------   draw_thermals.py v2.0"
 print(LIB_VERSION)
 
-THERMAL_COLUMN = 'Resources/plugins/PythonPlugins/easteregg.obj'
+THERMAL_COLUMN = 'Resources/plugins/PythonPlugins/t_ring_50.obj'
 
 # thermal column and cloud images
 thermal_column = xp.loadObject(THERMAL_COLUMN)
@@ -51,7 +51,7 @@ def draw_thermal_columns(lat, lon):
     '''
     _p1x, _p1y = convert_lat_lon2meters(lat, lon)
 
-    for athermal in world.thermal_dict:
+    for athermal in world.thermal_list:
         p2x, p2y = athermal.p_x, athermal.p_y
         if calc_dist(_p1x, _p1y, p2x, p2y) < world.max_draw_distance:
             draw_thermal(athermal.lat, athermal.lon)
@@ -64,7 +64,7 @@ def draw_clouds(lat, lon):
     if world.DEBUG == 6: print("draw_clouds") 
     p1x, p1y = convert_lat_lon2meters(lat, lon)
 
-    for athermal in world.thermal_dict:
+    for athermal in world.thermal_list:
         p2x, p2y = athermal.p_x, athermal.p_y
         if calc_dist(p1x, p1y, p2x, p2y) < world.max_draw_distance:
             draw_cloud(athermal.lat, athermal.lon)

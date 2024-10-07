@@ -12,12 +12,14 @@ import world
 import thermal
 
 # comment out before testing with PlotThermals!!
-import xp
+#import xp
 LIB_VERSION = "Version ----------------------------   thermal_model V2.0"
 print(LIB_VERSION)
 
 def calc_dist_square(p1x, p1y, p2x, p2y):
     ''' Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2 '''
+    #print( "p = (" , p1x, p1y, ")(", p2x, p2y,")" )
+    #print("dist p2-p1 = ", p2x-p1x, p2y-p1y)
     return (p2x - p1x)**2 + (p2y - p1y)**2
 
 
@@ -48,19 +50,37 @@ def calc_drift(alt):
 
 
 def calc_lift(p1x, p1y):
-    '''Claculate the lift component at this exact point'''
+    '''Calculate the lift component at this exact point'''
     lift = 0
-    # test if we are inside any listed thermal
-    for _thermal in world.thermal_dict:
+
+    #Find closest thermal in the Thermal array
+    closest_thermal = world.thermal_list[0]  # first entry of the thermal array
+    min_distance2 = 1000000000000
+
+    #print ("-------------  thermal dict size=", len(world.thermal_list))
+    for _thermal in world.thermal_list:
+        #print("thermal:", _thermal)
         p2x, p2y = _thermal.p_x, _thermal.p_y
         distance_square = calc_dist_square(p1x, p1y, p2x, p2y)
-        if world.DEBUG == 1 : print( "calclift x:",int(p1x), int(p1y), int(p2x), int(p2y), "dist >",int(math.sqrt(distance_square))/1000,_thermal.radius )
+        #print("distance  :", math.sqrt(distance_square), math.sqrt(min_distance2))
+        if distance_square < min_distance2:
+            min_distance2 = distance_square
+            closest_thermal = _thermal
+            #print("*********new min thermal*********", math.sqrt(min_distance2))
 
-        if distance_square < _thermal.radius_square:
-            distance = math.sqrt(distance_square)
-            lift += _thermal.strength * \
-                round((_thermal.radius - distance) / _thermal.radius, 2)
-            if world.DEBUG == 1 : print("inside a thermal: Dist:", distance ," Lift: ",lift)
+    distance = math.sqrt(min_distance2)
+    #if inside the thermal compute forces
+    #print("min thermal:", closest_thermal)
+    if closest_thermal is not None and distance < closest_thermal.radius:
+        # lift is the thermal strength times % of distance away from center
+        lift += closest_thermal.strength *                                  \
+            round((closest_thermal.radius - distance) / closest_thermal.radius, 2)
+        world.tot_lift_force = lift
+
+    world.thermal_strength = closest_thermal.strength
+    world.thermal_radius = closest_thermal.radius
+    world.distance_from_center = distance
+     
     return lift
 
 
@@ -84,6 +104,7 @@ def calc_thermalx(lat, lon, alt, heading, roll_angle):
 
     # current plane position
     _plane_x, _plane_y = convert_lat_lon2meters(lat, lon)
+    #print("plane pos:", _plane_x, _plane_y)
 
     _dx, _dy = calc_drift(alt)     # total wind drift
     # instead off aplying it to the thermal list, reverse apply to the current plane position
@@ -114,7 +135,7 @@ def calc_thermalx(lat, lon, alt, heading, roll_angle):
 
     # total lift component
     thermal_value = (_lift_l + _lift_r + _lift_m) / 3
-
+    #world.cal_lift_force = thermal_value
     # total roll component
     #         the more airplane is rolled, the less thermal roll effect
     #         if the plane is flying inverted the roll effect should be reversed
@@ -123,6 +144,7 @@ def calc_thermalx(lat, lon, alt, heading, roll_angle):
 
     roll_factor = math.cos(math.radians(roll_angle))
     roll_value = -(_lift_r - _lift_l) * roll_factor
+    world.tot_roll_force = roll_value
 
     #need to calculate pitch
     #ALX DEBUG
@@ -144,7 +166,7 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
     '''
     
     # on debug return defult thermals
-    if world.DEBUG == 1 : return world.thermal_dict
+    if world.DEBUG == 1 : return world.thermal_list
 
     if world.DEBUG > 0:
         print("makeRandomThermalMap lat lon strength count radius", _lat, _lon, _strength, _count, _radius)
@@ -165,7 +187,8 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
 
         # random diameter for the thermal
         radius = randrange(int(average_radius / 5), average_radius)
-        # randomize thermal strength weighted towards stronger
+        # randomize thermal strength weighted towards stronger 
+        # from 30% to 100% _strength
         strength = choice((3, 4, 5, 6, 6, 7, 7, 7, 8,
                           8, 9, 9, 10)) * _strength * .1
 

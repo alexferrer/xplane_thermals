@@ -92,7 +92,7 @@ class ThermalModelTest(unittest.TestCase):
 
     def test_calc_lift(self):
         """docstring"""
-        world.thermal_dict = [Thermal(52.52, 13.37, 2000, 30)]
+        world.thermal_list = [Thermal(52.52, 13.37, 2000, 30)]
         self._calc_lift((52.52, 13.37), 30)
         self._calc_lift((52.515, 13.37), 21.6)
         self._calc_lift((52.51, 13.37), 12.9)
@@ -108,7 +108,7 @@ def test_performance():
     radius = 500
 
     tstart = timeit.default_timer()
-    world.thermal_dict = make_random_thermal_map(
+    world.thermal_list = make_random_thermal_map(
         1, lat, lon, strength, count, radius)
     tend = timeit.default_timer()
     print(f"MakeRandomThermalMap took {(tend - tstart)} s.")

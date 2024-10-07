@@ -8,10 +8,6 @@ Thermal simulator  Ver .04
 """
 
 import world
-#from XPLMDefs import *
-#alxfrom EasyDref import EasyDref
-
-
 # thermal modeling tools
 from thermal_model import calc_thermalx
 from thermal_model import make_random_thermal_map
@@ -19,30 +15,16 @@ from thermal_model import make_csv_thermal_map
 
 from draw_thermals import drawThermalsOnScreen, eraseThermalsOnScreen
 
-#from XPLMProcessing import *
-#from XPLMDataAccess import *
-#from XPLMUtilities import *
-
 import random
 from random import randrange
 import math
 
-# for graphics
-#from XPLMDisplay import *
-#from XPLMGraphics import *
-
-# for yprobe
-#from XPLMScenery import *
-
-# for menus
-#from XPLMMenus import *
-#from XPLMPlugin import *
-#from XPLMMenus import *
-#from XPWidgets import *
-#from XPWidgetDefs import *
-#from XPStandardWidgets import *
-#from XPLMPlugin import *
 import xp
+from XPPython3.xp_typing import *
+
+#########################################################
+
+# ------------------  T H E R M A L   S I M U L A T O R  ----------------------------
 LIB_VERSION = "Version ----------------------------   PI_ThermalSim V2.0"
 print(LIB_VERSION)
 
@@ -150,6 +132,19 @@ class PythonInterface:
         if world.DEBUG > 2 : print("registering callback")
         xp.registerFlightLoopCallback(self.FlightLoopCallback, 1.0, 0)
 
+        #------------------------------
+        self.WindowId = xp.createWindowEx(50, 600, 300, 400, 1,
+                                          self.DrawWindowCallback,
+                                          None,
+                                          None,
+                                          None,
+                                          None,
+                                          0,
+                                          xp.WindowDecorationRoundRectangle,
+                                          xp.WindowLayerFloatingWindows,
+                                          None)
+        #--------------
+
         return self.Name, self.Sig, self.Desc
 
     def XPluginStop(self):    # Unregister the callbacks
@@ -224,7 +219,7 @@ class PythonInterface:
                 if world.DEBUG > 1: print("time is up , refreshing thermal map......................")
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
-                world.thermal_dict = make_random_thermal_map(self.sim_time,
+                world.thermal_list = make_random_thermal_map(self.sim_time,
                                                             lat, lon,
                                                             world.thermal_power,
                                                             world.thermal_density,
@@ -249,12 +244,12 @@ class PythonInterface:
         # apply sun elevation as a % factor to thermal power
         # average lift depends on sun angle over the earth.
         lift_val = lift_val * world.sun_factor
-
         # ----------------------------- for fine tuning!!! -----------------------
         # lift_val = 500
         # roll_val = 0
         # ------------------------------------------------------------------------
 
+        world.cal_lift_force = lift_val
         # apply the force to the airplanes lift.value dataref
         '''
         Calibrate feature
@@ -264,18 +259,22 @@ class PythonInterface:
           adjust +/- lift factor in newtons to match the desired lift power.
         '''
         # values for CALLBACKTIME = .01
-        #           kts @ kmh
+        #     m/s @ kmh
         #   13 k  = 5 @ 95
         #   12.5k = 4 @ 90
         #   11k   = 2 @ 90
         #   10k   = 1 @ 90
+
+        METERS_PER_SECOND_TO_NEWTON = 5000 # 1m/s = 1000N
         if world.CALIBRATE_MODE:
-           amount = float(1000) *  world.lift_factor
+           amount =  METERS_PER_SECOND_TO_NEWTON *  world.lift_factor + xp.getDataf(self.lift_Dref)
            xp.setDataf(self.lift_Dref, amount)
-           #print("apply lift to the plane [lift factor/tot]",world.lift_factor ,amount)         
+           world.applied_lift_force = amount
+
         else:
-           lval = lift_val * world.lift_factor + xp.getDataf(self.lift_Dref)
+           lval = lift_val * world.lift_factor * METERS_PER_SECOND_TO_NEWTON + xp.getDataf(self.lift_Dref)
            xp.setDataf(self.lift_Dref, lval)
+           world.applied_lift_force = lval
 
         # although extra lift is what should be happening...
         # adding a bit of thrust works much better! -150 = 1m/s
@@ -385,7 +384,7 @@ class PythonInterface:
                 #world.cloud_streets = xp.getWidgetProperty(self.enableCheck, xp.Property_ButtonState, None)
                 #print("enable cloud streets", world.cloud_streets)
                 # lat,lon,stregth,count
-                world.thermal_dict = make_random_thermal_map(self.sim_time,
+                world.thermal_list = make_random_thermal_map(self.sim_time,
                                                              lat, lon,
                                                              world.thermal_power,
                                                              world.thermal_density,
@@ -487,7 +486,7 @@ class PythonInterface:
 
         # Thermal Distance
         self.TDistance_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermals Separation", 0, self.TCWidget,  xp.WidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "T. Separation", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TDistance_label2 = xp.createWidget(
             x+375, y-80, x+410, y-102, 1, "Meters", 0, self.TCWidget,  xp.WidgetClass_Caption)
         # define scrollbar
@@ -496,9 +495,9 @@ class PythonInterface:
         self.TDistance_scrollbar = xp.createWidget(
             x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.TDistance_scrollbar,
-                             xp.Property_ScrollBarMin, 100)
+                             xp.Property_ScrollBarMin, 200)
         xp.setWidgetProperty(self.TDistance_scrollbar,
-                             xp.Property_ScrollBarMax, 2000)
+                             xp.Property_ScrollBarMax, 10000)
         xp.setWidgetProperty(self.TDistance_scrollbar,
                              xp.Property_ScrollBarPageAmount, 100)
         xp.setWidgetProperty(self.TDistance_scrollbar, xp.Property_ScrollBarSliderPosition, int(
@@ -572,20 +571,20 @@ class PythonInterface:
 
         # Thermal Strength
         self.TPower_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Power", 0, self.TCWidget,  xp.WidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermal m/s", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TPower_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max fpm", 0, self.TCWidget,  xp.WidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "m/s average", 0, self.TCWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.TPower_value = xp.createWidget(
             x+260, y-68, x+330, y-82, 1, "  0", 0, self.TCWidget,  xp.WidgetClass_Caption)
         self.TPower_scrollbar = xp.createWidget(
             x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.TPower_scrollbar,
-                             xp.Property_ScrollBarMin, 250)
+                             xp.Property_ScrollBarMin, 1)
         xp.setWidgetProperty(self.TPower_scrollbar,
-                             xp.Property_ScrollBarMax, 3500)
+                             xp.Property_ScrollBarMax, 15)
         xp.setWidgetProperty(self.TPower_scrollbar,
-                             xp.Property_ScrollBarPageAmount, 10)
+                             xp.Property_ScrollBarPageAmount, 1)
         xp.setWidgetProperty(
             self.TPower_scrollbar, xp.Property_ScrollBarSliderPosition, world.thermal_power)
         xp.setWidgetDescriptor(self.TPower_value, str(world.thermal_power))
@@ -925,7 +924,7 @@ class PythonInterface:
                 print("Generate Thermals")
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
-                world.thermal_dict = make_csv_thermal_map(
+                world.thermal_list = make_csv_thermal_map(
                     lat, lon, world.thermal_power, world.thermal_density, world.thermal_size)
                 world.world_update = True
                 return 1
@@ -1048,20 +1047,20 @@ class PythonInterface:
 
         # Thermal Strength
         self.CSVTPower_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Power", 0, self.CSVWidget,  xp.WidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Thermal Vs", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTPower_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max fpm", 0, self.CSVWidget,  xp.WidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Max m/s", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CSVTPower_value = xp.createWidget(
             x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
         self.CSVTPower_scrollbar = xp.createWidget(
             x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.CSVTPower_scrollbar,
-                             xp.Property_ScrollBarMin, 250)
+                             xp.Property_ScrollBarMin, 1)
         xp.setWidgetProperty(self.CSVTPower_scrollbar,
-                             xp.Property_ScrollBarMax, 3500)
+                             xp.Property_ScrollBarMax, 15)
         xp.setWidgetProperty(self.CSVTPower_scrollbar,
-                             xp.Property_ScrollBarPageAmount, 10)
+                             xp.Property_ScrollBarPageAmount, 1)
         xp.setWidgetProperty(self.CSVTPower_scrollbar,
                              xp.Property_ScrollBarSliderPosition, world.thermal_power)
         xp.setWidgetDescriptor(self.CSVTPower_value, str(world.thermal_power))
@@ -1098,3 +1097,42 @@ class PythonInterface:
         xp.addWidgetCallback(self.CSVWidget, self.CSVHandlerCB)
 
     # ------- after this debug
+
+    """
+    MyDrawingWindowCallback
+
+    This callback does the work of drawing our window once per sim cycle each time
+    it is needed.  It dynamically changes the text depending on the saved mouse
+    status.  Note that we don't have to tell X-Plane to redraw us when our text
+    changes; we are redrawn by the sim continuously.
+    """
+    def DrawWindowCallback(self, inWindowID, inRefcon):
+        # First we get the location of the window passed in to us.
+        (left, top, right, bottom) = xp.getWindowGeometry(inWindowID)
+        """
+        We now use an XPLMGraphics routine to draw a translucent dark
+        rectangle that is our window's shape.
+        """
+        xp.drawTranslucentDarkBox(left, top, right, bottom)
+        color = 1.0, 1.0, 1.0
+        RED = 1.0, 0.0, 0.0
+        GREEN = 0.0, 1.0, 0.0
+        """
+        Finally we draw the text into the window, also using XPLMGraphics
+        routines.  The NULL indicates no word wrapping.
+        """
+        if world.thermal_radius > world.distance_from_center:
+           xp.drawString(GREEN, left + 90, top - 20, "IN THERMAL", 0, xp.Font_Basic)
+           xp.drawString(color, left + 5, top - 125, "T Lift :"+ str(round(world.tot_lift_force, 2)) +"m/s", 0, xp.Font_Basic)
+           xp.drawString(GREEN, left + 99, top - 125, "% "+ str(round(world.cal_lift_force, 2)) +"m/s", 0, xp.Font_Basic)
+           xp.drawString(color, left + 5, top - 145, "T Roll :"+ str(round(world.tot_roll_force, 2) )+"N", 0, xp.Font_Basic)
+        else:
+            xp.drawString(RED, left + 90, top - 20, "OFF THERMAL", 0, xp.Font_Basic)
+
+        dfc = str(round(world.distance_from_center, 2))
+        xp.drawString(color, left + 80, top - 35, "Distance :"+ dfc +"m", 0, xp.Font_Basic)
+        xp.drawString(color, left + 80, top - 50, "Lift: "+ str(round(world.applied_lift_force, 2)) +"N", 0, xp.Font_Basic)
+        xp.drawString(color, left + 80, top - 66, "Lfactor: "+ str(round(world.lift_factor, 2)) +"X", 0, xp.Font_Basic)
+
+        xp.drawString(color, left + 5, top - 90,  "T Strength  :"+ str(world.thermal_strength) +" m/s", 0, xp.Font_Basic)
+        xp.drawString(color, left + 5, top - 110,  "T Radius    :"+ str(world.thermal_radius )+"m", 0, xp.Font_Basic)

@@ -35,4 +35,16 @@ I am thinking that the solution to this may be to generate a large common csv fi
 Another feature would be to have that thermal map stored at a central repository that may be changing the thermal map as the day passes, adding a new dimension to the simulation. This thermal map, could be hand designed, primed from local gps tracks, or maybe defined by some sort of fancy AI based thermal generator. Personally I believe that using online soaring competitions tracks to reverse engineer thermal trigger points, then using generated RAOB information to define strenght size and cycle times,  would be the most realistic option. 
 
 
+Thermal radius 
 
+50 <  small <= 150
+150 > mid >= 400
+400 > large >= 800
+800 < xlarge
+
+Thermal power
+
+0   <  weak   <= 2 m/s
+2   <  mid    <= 4 m/s
+4   <  strong <= 6 ms
+6   <  bomb  

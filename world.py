@@ -12,8 +12,20 @@ from thermal import Thermal
 LIB_VERSION = "Version ----------------------------   world.py v2.0"
 print(LIB_VERSION)
 
+# holders for the thermal data display
+thermal_strength = 0 # meters per second
+thermal_radius = 0 # meters
+distance_from_center = 100000 # meters
+tot_lift_force = 0 # Newtons
+cal_lift_force = 0 # Newtons
+tot_roll_force = 0 # Newtons
+applied_lift_force = 0 # Newtons
+
+
+
+
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
-DEBUG = 6
+DEBUG = 0
 update_loop = 101 
 sun_factor = 0
 
@@ -74,9 +86,9 @@ default_thermal_dict = [
  
     ]
 
-thermal_dict = default_thermal_dict
+thermal_list = default_thermal_dict
 
-print("Thermal dict->", thermal_dict)
+print("Thermal dict->", thermal_list)
 
 thermal_band = {1000: .8, 2000: .9, 3000: 1, 5000: 1, 5100: .4, 5500: 0}
 
@@ -108,13 +120,34 @@ thermal_refresh_time = 20  # auto-refresh timr for thermal map in minutes
 
 
 # Default thermal config values
-thermal_tops = 2000  # alx 2000 meters thermal top
-thermal_distance = 300  # alx 500 meters min separation distance between thermals
-thermal_density = 50  # alx 60 qty of thermal generated
-thermal_size = 50       # diameter of thermals in meters
-thermal_power = 10     # strength of thermals in fpm lift
-thermal_cycle = 30       # thermal life cycle time in minutes
-cloud_streets = False    # not yet implemented..
+thermal_tops = 2000  # 2000 meters thermal top
+thermal_distance = 1000  # meters min separation distance between thermals
+thermal_density = 50  #  qty of thermal generated
+
+
+''''
+Thermal size
+50 <  small <= 150
+150 > mid >= 400
+400 > large >= 800
+800 < xlarge
+'''
+thermal_size = 1000     # diameter of thermals in meters
+
+
+'''
+Thermal climb rate
+0   <  weak   <= 2 m/s
+2   <  mid    <= 4 m/s
+4   <  strong <= 6 ms
+6   <  bomb  
+max = 15
+'''
+thermal_power = 5    # strength of thermals in m/s  * 10
+
+
+thermal_cycle = 30    # thermal life cycle time in minutes
+cloud_streets = False # not yet implemented..
 
 '''Control factors
 Constants for fine tuning the value of the lift forces from the thermal model into the plane. 

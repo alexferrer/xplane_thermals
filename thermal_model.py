@@ -108,8 +108,8 @@ def calc_thermalx(lat, lon, alt, heading, roll_angle):
 
     _dx, _dy = calc_drift(alt)     # total wind drift
     # instead off aplying it to the thermal list, reverse apply to the current plane position
-    _plane_x += _dy
-    _plane_y += _dx
+    _plane_x -= _dx  # east / west
+    _plane_y += _dy # north / south
 
     # left and right wings position from current plane heading
     _angle_l = math.radians(heading - 90)

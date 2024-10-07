@@ -20,8 +20,9 @@ tot_lift_force = 0 # Newtons
 cal_lift_force = 0 # Newtons
 tot_roll_force = 0 # Newtons
 applied_lift_force = 0 # Newtons
-
-
+message  = "- - - - -"
+message1 = " - - - - "
+message2 = " x x x x "
 
 
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
@@ -77,12 +78,15 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 #Texas Soaring Gliderport TSA Airport Designator: TA11
 print("---------------------- creating default thermal list ----------------------")
 default_thermal_dict = [
-    Thermal(32.38836669921875, -96.87739562988281, 5000, 1030),
-    Thermal(32.33936669921875, -96.82419562988281, 5000, 1030),
-    Thermal(32.39333883666992, -96.77991150877395, 5000, 1030),
-    Thermal(32.45798438836669, -96.91300968773956, 5000, 1030),
-    Thermal(32.39350891138836, -96.92049487739562, 5000, 1030),
-    Thermal(32.38911437988281, -97.01346588134766, 5000, 1030),
+    Thermal(32.324161530, -97.039894104, 200,  1), #lake 1
+    Thermal(32.380264282, -97.079566956, 300,  2), # lake2
+    Thermal(32.581195831, -96.719421387, 100,  3), #Lancaster Windsock
+    Thermal(31.916921616, -97.204803467, 500,  4), #Y lake island
+    Thermal(32.456172943, -96.911354065, 1000, 5), #KJWY Midlothian Windsock
+    #Thermal(32.389057159, -97.013374329, 10, .5),
+    Thermal(32.390254974, -97.011375427, 10, .1),  #TSA Windsock
+
+    
  
     ]
 

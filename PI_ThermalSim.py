@@ -71,7 +71,7 @@ class PythonInterface:
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
         # -------------------------------------------------
         if world.DEBUG > 3 : print("setting up global variables")
-        world.THERMAL_COLUMN_VISIBLE = False
+        world.THERMAL_COLUMN_VISIBLE = True
         self.Name = "ThermalSim2"
         self.Sig = "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"
@@ -87,7 +87,7 @@ class PythonInterface:
         self.PlaneRol = xp.findDataRef(
             "sim/flightmodel/position/phi")  # plane roll
 
-        if world.DEBUG > 2: print(" Wind data")
+        if world.DEBUG > 3: print(" Wind data")
         self.WindSpeed = xp.findDataRef(
             "sim/weather/wind_speed_kt[0]")  # wind speed at surface
         self.WindDir = xp.findDataRef(
@@ -120,9 +120,6 @@ class PythonInterface:
 
         # Drawing update flag
         world.world_update = True
-
-        # image to mark thermals
-        self.ObjectPath = 'Custom Scenery/X-Plane Airports - TNCS Juancho E Yrausquin/objects/mt_scenery.obj'
 
         """
         Register our callback for once a second.  Positive intervals
@@ -1136,3 +1133,7 @@ class PythonInterface:
 
         xp.drawString(color, left + 5, top - 90,  "T Strength  :"+ str(world.thermal_strength) +" m/s", 0, xp.Font_Basic)
         xp.drawString(color, left + 5, top - 110,  "T Radius    :"+ str(world.thermal_radius )+"m", 0, xp.Font_Basic)
+
+        xp.drawString(RED, left + 5, top - 170, "["+world.message+"]", 0, xp.Font_Basic)
+        xp.drawString(GREEN, left + 5, top - 180, "["+world.message1+"]", 0, xp.Font_Basic)
+        xp.drawString(color, left + 5, top - 190, "["+world.message2+"]", 0, xp.Font_Basic)

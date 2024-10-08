@@ -111,8 +111,8 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle):
     _plane_ns = _plane_ns - _dy # north / south
 
     # left and right wings position from current plane heading
-    _angle_l = math.radians(heading - 90)
-    _angle_r = math.radians(heading + 90)
+    _angle_l = math.radians(heading )
+    _angle_r = math.radians(heading + 180)
 
     # size of each wing   10m -> -----(*)----- <-10m
 

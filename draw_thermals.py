@@ -6,24 +6,38 @@ import xp # type: ignore
 LIB_VERSION = "Version ----------------------------   draw_thermals.py v2.0"
 print(LIB_VERSION)
 
-THERMAL_COLUMN = 'Resources/plugins/PythonPlugins/t_ring_50.obj'
+THERMAL_COLUMN_sm = 'Resources/plugins/PythonPlugins/t_ring_50.obj'
+THERMAL_COLUMN_m  = 'Resources/plugins/PythonPlugins/t_ring_200.obj'
+THERMAL_COLUMN_lg = 'Resources/plugins/PythonPlugins/t_ring_800.obj'
+
 
 # thermal column and cloud images
-thermal_column = xp.loadObject(THERMAL_COLUMN)
+thermal_column_sm = xp.loadObject(THERMAL_COLUMN_sm)
+thermal_column_m = xp.loadObject(THERMAL_COLUMN_m)
+thermal_column_lg = xp.loadObject(THERMAL_COLUMN_lg)
+
 huge_cloud = xp.loadObject('Resources/plugins/PythonPlugins/mt_scenery.obj')
 
-def draw_thermal(lat, lon):  # min_alt,max_alt
+def draw_thermal(lat, lon, radius):  # min_alt,max_alt
     ''' Draw thermal images along the raising thermal, accounting
         for wind drift along the climb. end at almost the thermal top
     '''
     if world.DEBUG == 6 : print("B ", end='') 
+
+
     base = 1
     _dew, _dud, _dns = xp.worldToLocal(
         lat, lon, 0)  # Dew=E/W,Dud=Up/Down,Dns=N/S
     # from 100 to almost thermal top steps of 200
     for alt in range(base, world.thermal_tops-200, 50):
         _dx, _dy = calc_drift(alt)
-        instance = xp.createInstance(thermal_column)
+        if radius < 100:
+            instance = xp.createInstance(thermal_column_sm)
+        elif radius >= 100 and radius < 500:
+            instance = xp.createInstance(thermal_column_m)  
+        else:       
+            instance = xp.createInstance(thermal_column_lg)
+
         xp.instanceSetPosition(
             instance, [_dew + _dx, _dud + alt, _dns + _dy, 0, 0, 0])
         world.instance_list.append(instance)
@@ -52,9 +66,9 @@ def draw_thermal_columns(lat, lon):
     _p1x, _p1y = convert_lat_lon2meters(lat, lon)
 
     for athermal in world.thermal_list:
-        p2x, p2y = athermal.p_x, athermal.p_y
+        p2x, p2y , radius = athermal.p_x, athermal.p_y, athermal.radius 
         if calc_dist(_p1x, _p1y, p2x, p2y) < world.max_draw_distance:
-            draw_thermal(athermal.lat, athermal.lon)
+            draw_thermal(athermal.lat, athermal.lon, radius)
 
 
 def draw_clouds(lat, lon):

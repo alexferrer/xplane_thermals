@@ -178,7 +178,7 @@ thrust_factor = 5.0  # ask21  1.1
 
 # wing span in meters for lift differential calculation
 # size of each wing   10m -> -----(*)----- <-10m
-wing_size = 10  # 10
+wing_size = 10 * 2.5  # 10  times 2.5 to improve thefeel of roll effect as test
 
 
 def dummy_terrain_is_water(lat, lon):

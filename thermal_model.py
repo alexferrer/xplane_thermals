@@ -55,13 +55,18 @@ def calc_lift(p1x, p1y):
     #Find closest thermal in the Thermal array
     closest_thermal = world.thermal_list[0]  # first entry of the thermal array
     min_distance = 1000000000000
-    #print ("-------------  thermal dict size=", len(world.thermal_list))
+    
+    n = 0
     for _thermal in world.thermal_list:
+        n += 1
         p2x,alt,p2y = xp.worldToLocal(_thermal.lat, _thermal.lon, 0)
         distance = calc_dist(p1x, p1y, p2x, p2y)
         if distance < min_distance:
             min_distance = distance
             closest_thermal = _thermal
+            close_n = n
+
+    #print ("-------------  thermal dict size =", len(world.thermal_list) , "closest = ", close_n)
 
     distance = min_distance
     #if inside the thermal compute forces
@@ -69,10 +74,7 @@ def calc_lift(p1x, p1y):
         # lift is the thermal strength times % of distance away from center
         lift += closest_thermal.strength *                                  \
             round((closest_thermal.radius - distance) / closest_thermal.radius, 2)
-        #minimum lift is 10% of the thermal strength for "sharp" thermals effect
-        #if lift < closest_thermal.strength * 0.1:
-        #    lift = closest_thermal.strength * 0.1
-
+        
         world.tot_lift_force = lift
 
     world.thermal_strength = closest_thermal.strength
@@ -145,7 +147,7 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle):
     roll_value = (_lift_r - _lift_l) * roll_angle_factor * world.roll_factor * 5
     world.tot_roll_force = roll_value
 
-    world.message =  "Wing L | R ( "+str(_lift_l) + " | "+str(_lift_r)+" )   "
+    world.message =  "Wing L | R ( "+str(round(_lift_l,3)) + " | "+str(round(_lift_r,3))+" )   "
     world.message1 = "Roll angle factor "+ str(round(roll_angle_factor,4))
     world.message2 = "Wing Size "+ str( world.wing_size )
     #need to calculate pitch

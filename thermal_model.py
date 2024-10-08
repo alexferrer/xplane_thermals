@@ -70,8 +70,8 @@ def calc_lift(p1x, p1y):
         lift += closest_thermal.strength *                                  \
             round((closest_thermal.radius - distance) / closest_thermal.radius, 2)
         #minimum lift is 10% of the thermal strength for "sharp" thermals effect
-        if lift < closest_thermal.strength * 0.1:
-            lift = closest_thermal.strength * 0.1
+        #if lift < closest_thermal.strength * 0.1:
+        #    lift = closest_thermal.strength * 0.1
 
         world.tot_lift_force = lift
 
@@ -117,12 +117,12 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle):
     # size of each wing   10m -> -----(*)----- <-10m
 
     # left wing tip coordinates
-    _lwing_x = _plane_ew + math.cos(_angle_l) * world.wing_size
-    _lwing_y = _plane_ns + math.sin(_angle_l) * world.wing_size
+    _lwing_x = _plane_ew + math.cos(_angle_l) * world.wing_size*3 #* 2 for testing feeling of wing bump
+    _lwing_y = _plane_ns + math.sin(_angle_l) * world.wing_size*3
 
     # right wing tip coordinates
-    _rwing_x = _plane_ew + math.cos(_angle_r) * world.wing_size
-    _rwing_y = _plane_ns + math.sin(_angle_r) * world.wing_size
+    _rwing_x = _plane_ew + math.cos(_angle_r) * world.wing_size*3
+    _rwing_y = _plane_ns + math.sin(_angle_r) * world.wing_size*3
 
     # Thermal Band: adjust thermal strength according to altitude band
     #alx tband_factor = calc_thermal_band(alt)
@@ -142,7 +142,7 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle):
     #         should add some pitch change to the roll effect.
 
     roll_angle_factor = 1 # math.cos(math.radians(airplane_roll_angle))
-    roll_value = (_lift_r - _lift_l) * roll_angle_factor * world.roll_factor * 2
+    roll_value = (_lift_r - _lift_l) * roll_angle_factor * world.roll_factor * 5
     world.tot_roll_force = roll_value
 
     world.message =  "Wing L | R ( "+str(_lift_l) + " | "+str(_lift_r)+" )   "

@@ -333,7 +333,6 @@ class PythonInterface:
             '''
             Set constant lift calibration mode = 1m/s lift
             '''
-            world.CALIBRATE_MODE = True
             if (self.CGMenuItem == 0):
                 print(" create the thermal config box ")
                 self.CreateCGWindow(100, 550, 550, 330)
@@ -554,7 +553,7 @@ class PythonInterface:
             x+170, y-80, x+370, y-102, 1, "", 0, self.TCWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.TSize_scrollbar, xp.Property_ScrollBarMin, 50)
         xp.setWidgetProperty(self.TSize_scrollbar,
-                             xp.Property_ScrollBarMax, 1500)
+                             xp.Property_ScrollBarMax, 3000)
         xp.setWidgetProperty(self.TSize_scrollbar,
                              xp.Property_ScrollBarPageAmount, 20)
         xp.setWidgetProperty(
@@ -850,9 +849,9 @@ class PythonInterface:
 
         # Wing Size
         self.CGWing_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Wing Size", 0, self.CGWidget,  xp.WidgetClass_Caption)
+            x+60,  y-80, x+140, y-102, 1, "Wingspan    Small", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGWing_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "meters", 0, self.CGWidget,  xp.WidgetClass_Caption)
+            x+375, y-80, x+410, y-102, 1, "Large", 0, self.CGWidget,  xp.WidgetClass_Caption)
         # define scrollbar
         self.CGWing_value = xp.createWidget(
             x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
@@ -860,7 +859,7 @@ class PythonInterface:
             x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.CGWing_scrollbar, xp.Property_ScrollBarMin, 1)
         xp.setWidgetProperty(self.CGWing_scrollbar,
-                             xp.Property_ScrollBarMax, 30)
+                             xp.Property_ScrollBarMax, 100)
         xp.setWidgetProperty(self.CGWing_scrollbar,
                              xp.Property_ScrollBarPageAmount, 1)
         xp.setWidgetProperty(self.CGWing_scrollbar,

@@ -241,10 +241,6 @@ class PythonInterface:
         # apply sun elevation as a % factor to thermal power
         # average lift depends on sun angle over the earth.
         lift_val = lift_val * world.sun_factor
-        # ----------------------------- for fine tuning!!! -----------------------
-        # lift_val = 500
-        # roll_val = 0
-        # ------------------------------------------------------------------------
 
         world.cal_lift_force = lift_val
         # apply the force to the airplanes lift.value dataref
@@ -872,7 +868,7 @@ class PythonInterface:
         xp.setWidgetDescriptor(self.CGWing_value, str(world.wing_size))
         y -= 32
 
-        # Define checkbox for thermal visibility
+        # Define checkbox for auto themals for calibration
         xp.createWidget(x+60, y-80, x+140, y-102, 1, 'Toggle Calibrate Mode ', 0,
                         self.CGWidget,  xp.WidgetClass_Caption)
         self.enableCheck1 = xp.createWidget(
@@ -1120,20 +1116,25 @@ class PythonInterface:
         """
         if world.thermal_radius > world.distance_from_center:
            xp.drawString(GREEN, left + 90, top - 20, "IN THERMAL", 0, xp.Font_Basic)
+
            xp.drawString(color, left + 5, top - 125, "T Lift :"+ str(round(world.tot_lift_force, 2)) +"m/s", 0, xp.Font_Basic)
            xp.drawString(GREEN, left + 99, top - 125, "% "+ str(round(world.cal_lift_force, 2)) +"m/s", 0, xp.Font_Basic)
+
            xp.drawString(color, left + 5, top - 145, "T Roll :"+ str(round(world.tot_roll_force, 2) )+"N", 0, xp.Font_Basic)
+
+           xp.drawString(GREEN, left + 5, top -160, "Applied: "+ str(round(world.applied_lift_force, 2)) +"N", 0, xp.Font_Basic)
         else:
             xp.drawString(RED, left + 90, top - 20, "OFF THERMAL", 0, xp.Font_Basic)
 
         dfc = str(round(world.distance_from_center, 2))
-        xp.drawString(color, left + 80, top - 35, "Distance :"+ dfc +"m", 0, xp.Font_Basic)
-        xp.drawString(color, left + 80, top - 50, "Lift: "+ str(round(world.applied_lift_force, 2)) +"N", 0, xp.Font_Basic)
-        xp.drawString(color, left + 80, top - 66, "Lfactor: "+ str(round(world.lift_factor, 2)) +"X", 0, xp.Font_Basic)
+        xp.drawString(color, left + 80, top - 35,  "Distance   : "+ dfc +"m", 0, xp.Font_Basic)
+        xp.drawString(color, left + 80, top - 50,  "T Radius   : "+ str(world.thermal_radius )+"m", 0, xp.Font_Basic)
+        xp.drawString(color, left + 80, top - 65,  "T Strength : "+ str(world.thermal_strength) +" m/s", 0, xp.Font_Basic)
+        xp.drawString(color, left + 80, top - 90,  "Lfactor: "+ str(round(world.lift_factor, 2)) +"X", 0, xp.Font_Basic)
+        xp.drawString(color, left + 80, top - 105, "Rfactor: "+ str(round(world.roll_factor, 2)) +"X", 0, xp.Font_Basic)
+        
 
-        xp.drawString(color, left + 5, top - 90,  "T Strength  :"+ str(world.thermal_strength) +" m/s", 0, xp.Font_Basic)
-        xp.drawString(color, left + 5, top - 110,  "T Radius    :"+ str(world.thermal_radius )+"m", 0, xp.Font_Basic)
 
-        xp.drawString(RED, left + 5, top - 170, "["+world.message+"]", 0, xp.Font_Basic)
+        xp.drawString(color, left + 5, top - 170, "["+world.message+"]", 0, xp.Font_Basic)
         xp.drawString(GREEN, left + 5, top - 180, "["+world.message1+"]", 0, xp.Font_Basic)
         xp.drawString(color, left + 5, top - 190, "["+world.message2+"]", 0, xp.Font_Basic)

@@ -116,7 +116,7 @@ thermal_band = {1000: .8, 2000: .9, 3000: 1, 5000: 1, 5100: .4, 5500: 0}
 '''
 # GUI state variables
 THERMAL_COLUMN_VISIBLE = False  # are thermals visible as clouds, start false
-CALIBRATE_MODE = False  # set calibration mode on/off for lift factor
+CALIBRATE_MODE = False  # set calibration mode on/off to generate fake thermal to adjust lift factor
 
 # Thermal auto refersh data
 thermal_map_start_time = 0    # Thermal map age in seconds
@@ -171,7 +171,7 @@ Adjust using the Glider config menu in Xplane
 lift_factor = 1.4  # ask21  3.9
 
 # Roll effect because of differential lift between wings.
-roll_factor = 100  # ask21  100
+roll_factor = 50  # ask21  
 roll_test_pulse =  100  # 100 units of roll for testing from config glider menu
 # For realism purposes, some of the lift has to go to forward thrust
 thrust_factor = 5.0  # ask21  1.1

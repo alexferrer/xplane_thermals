@@ -13,14 +13,11 @@ import thermal
 import xp
 
 # comment out before testing with PlotThermals!!
-#import xp
-LIB_VERSION = "Version ----------------------------   thermal_model V2.0"
+LIB_VERSION = "Version ----------------------------   thermal_model V3.0"
 print(LIB_VERSION)
 
 def calc_dist_square(p1x, p1y, p2x, p2y):
     ''' Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2 '''
-    #print( "p = (" , p1x, p1y, ")(", p2x, p2y,")" )
-    #print("dist p2-p1 = ", p2x-p1x, p2y-p1y)
     return (p2x - p1x)**2 + (p2y - p1y)**2
 
 
@@ -30,7 +27,8 @@ def calc_dist(p1x, p1y, p2x, p2y):
 
 
 def convert_lat_lon2meters(lat, lon):
-    ''' Converts lat/lon to meters (approximation); returns a point (px,py)'''
+    ''' Converts lat/lon to meters (approximation); returns a point (px,py)
+    need to phase out.. use xp.worldToLocal instead'''
     _px = lat * world.latlon2meter
     _py = lon * world.latlon2meter * math.cos(math.radians(lat))
     return (_px, _py)
@@ -59,7 +57,6 @@ def calc_lift(p1x, p1y):
     min_distance = 1000000000000
     #print ("-------------  thermal dict size=", len(world.thermal_list))
     for _thermal in world.thermal_list:
-        #p2x, p2y = _thermal.p_x, _thermal.p_y
         p2x,alt,p2y = xp.worldToLocal(_thermal.lat, _thermal.lon, 0)
         distance = calc_dist(p1x, p1y, p2x, p2y)
         if distance < min_distance:
@@ -68,11 +65,14 @@ def calc_lift(p1x, p1y):
 
     distance = min_distance
     #if inside the thermal compute forces
-    #print("min thermal:", closest_thermal)
     if closest_thermal is not None and distance < closest_thermal.radius:
         # lift is the thermal strength times % of distance away from center
         lift += closest_thermal.strength *                                  \
             round((closest_thermal.radius - distance) / closest_thermal.radius, 2)
+        #minimum lift is 10% of the thermal strength for "sharp" thermals effect
+        if lift < closest_thermal.strength * 0.1:
+            lift = closest_thermal.strength * 0.1
+
         world.tot_lift_force = lift
 
     world.thermal_strength = closest_thermal.strength
@@ -80,9 +80,7 @@ def calc_lift(p1x, p1y):
     world.distance_from_center = distance
 
     p2x,alt,p2y = xp.worldToLocal(closest_thermal.lat, closest_thermal.lon, 0)
-    world.message =  str(int(p2x)) + "," + str(int(p2y))
-    world.message1 = str(int(p1x)) + "," + str(int(p1y))
-    world.message2 = str(int(p2x-p1x)) + "," + str(int(p2y-p1y))
+    
 
     return lift
 
@@ -90,12 +88,12 @@ def calc_lift(p1x, p1y):
 def calc_thermal_band(alt):
     '''Calculate the lift per altitude band'''
     top_factor = 1
-    #if (world.thermal_tops - alt) < 100:
-    #    top_factor = (world.thermal_tops - alt) / 100
+    if (world.thermal_tops - alt) < 100:
+        top_factor = (world.thermal_tops - alt) / 100
     return top_factor
 
 
-def calc_thermalx(lat, lon, alt, heading, roll_angle):
+def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle):
     """
      Calculate the strength of the thermal at this particular point
      in space by computing the distance from center of all thermals
@@ -103,66 +101,57 @@ def calc_thermalx(lat, lon, alt, heading, roll_angle):
      the value representing lift is the maxpower times a  % of distance away from center
      Return the total lift and roll value.
     """
-    #alx print("inside calc_thermal [lat,lon,alt,head,roll]", lat, lon, alt, heading, roll_angle)
-
     # current plane position
     #_plane_ew, _plane_ns = convert_lat_lon2meters(lat, lon)
-    #print("plane pos:", _plane_x, _plane_y)
     _plane_ew, _plane_alt, _plane_ns = xp.worldToLocal(lat, lon, alt)
-
-
     _dx, _dy = calc_drift(alt)     # total wind drift
+
     # instead off aplying it to the thermal list, reverse apply to the current plane position
     _plane_ew = _plane_ew - _dx  # east / west
     _plane_ns = _plane_ns - _dy # north / south
-    #print(" drift, dir ,speed,dx,dy", round(world.wind_dir, 3), round(world.wind_speed, 3), round(_dx, 3), round(_dy, 3))
-
 
     # left and right wings position from current plane heading
     _angle_l = math.radians(heading - 90)
     _angle_r = math.radians(heading + 90)
 
     # size of each wing   10m -> -----(*)----- <-10m
-    wingsize = world.wing_size
 
     # left wing tip coordinates
-    _lwing_x = _plane_ew + math.cos(_angle_l) * wingsize
-    _lwing_y = _plane_ns + math.sin(_angle_l) * wingsize
+    _lwing_x = _plane_ew + math.cos(_angle_l) * world.wing_size
+    _lwing_y = _plane_ns + math.sin(_angle_l) * world.wing_size
 
     # right wing tip coordinates
-    _rwing_x = _plane_ew + math.cos(_angle_r) * wingsize
-    _rwing_y = _plane_ns + math.sin(_angle_r) * wingsize
+    _rwing_x = _plane_ew + math.cos(_angle_r) * world.wing_size
+    _rwing_y = _plane_ns + math.sin(_angle_r) * world.wing_size
 
     # Thermal Band: adjust thermal strength according to altitude band
     #alx tband_factor = calc_thermal_band(alt)
     tband_factor = 1
 
-    #alx _lift_l = calc_lift(_lwing_x, _lwing_y) * tband_factor
-    #alx _lift_r = calc_lift(_rwing_x, _rwing_y) * tband_factor
-    _lift_m = calc_lift(_plane_ew, _plane_ns) * tband_factor
+    _lift_l = calc_lift(_lwing_x, _lwing_y) 
+    _lift_r = calc_lift(_rwing_x, _rwing_y) 
+    _lift_m = calc_lift(_plane_ew, _plane_ns) 
 
     # total lift component
-    #alx lift_value = (_lift_l + _lift_r + _lift_m) / 3
-    lift_value =  _lift_m
-
+    lift_value = (_lift_l + _lift_r + _lift_m) / 3 * tband_factor
+    
     # total roll component
     #         the more airplane is rolled, the less thermal roll effect
     #         if the plane is flying inverted the roll effect should be reversed
     #         the roll effect is proportional to the difference in lift between wings
     #         should add some pitch change to the roll effect.
 
-    roll_factor = math.cos(math.radians(roll_angle))
-    # alx  roll_value = -(_lift_r - _lift_l) * roll_factor
-    roll_value = 0
+    roll_angle_factor = 1 # math.cos(math.radians(airplane_roll_angle))
+    roll_value = (_lift_r - _lift_l) * roll_angle_factor * world.roll_factor * 2
     world.tot_roll_force = roll_value
 
+    world.message =  "Wing L | R ( "+str(_lift_l) + " | "+str(_lift_r)+" )   "
+    world.message1 = "Roll angle factor "+ str(round(roll_angle_factor,4))
+    world.message2 = "Wing Size "+ str( world.wing_size )
     #need to calculate pitch
-    #ALX DEBUG
     if world.DEBUG == 1 : print( "pos[",'%.4f'%_plane_ew,",",'%.4f'%_plane_ns,"] head",'%.0f'%(heading), \
-         "roll ",'%.1f'%(roll_angle), "   Lift [",'%.1f'%lift_value,"| Roll:",
+         "roll ",'%.1f'%(airplane_roll_angle), "   Lift [",'%.1f'%lift_value,"| Roll:",
       '%.1f'%roll_value ,"]   ",'%.1f'%alt)
-    
-
     """Todo: thermals have cycles, begin, middle , end.. and reflect in strength.."""
 
     return lift_value, roll_value

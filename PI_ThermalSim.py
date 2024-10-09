@@ -288,6 +288,7 @@ class PythonInterface:
         else:
            rval = roll_val * world.roll_factor + xp.getDataf(self.roll_Dref)
            xp.setDataf(self.roll_Dref, rval) 
+           world.applied_roll_force = rval
 
 
         # set the next callback time in +n for # of seconds and -n for # of Frames
@@ -1119,7 +1120,9 @@ class PythonInterface:
            xp.drawString(color, left + 5, top - 125, "T Lift :"+ str(round(world.tot_lift_force, 2)) +"m/s", 0, xp.Font_Basic)
            xp.drawString(GREEN, left + 99, top - 125, "% "+ str(round(world.cal_lift_force, 2)) +"m/s", 0, xp.Font_Basic)
 
-           xp.drawString(color, left + 5, top - 145, "T Roll :"+ str(round(world.tot_roll_force, 2) )+"N", 0, xp.Font_Basic)
+           xp.drawString(color, left + 5, top - 145,  "T Roll :"+ str(round(world.tot_roll_force, 2) )+"N", 0, xp.Font_Basic)
+           xp.drawString(color, left + 99, top - 145, "% "+ str(round(world.applied_roll_force, 2) )+"N", 0, xp.Font_Basic)
+
 
            xp.drawString(GREEN, left + 5, top -160, "Applied: "+ str(round(world.applied_lift_force, 2)) +"N", 0, xp.Font_Basic)
         else:

@@ -143,8 +143,11 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle):
     #         the roll effect is proportional to the difference in lift between wings
     #         should add some pitch change to the roll effect.
 
-    roll_angle_factor = 1 # math.cos(math.radians(airplane_roll_angle))
-    roll_value = (_lift_r - _lift_l) * roll_angle_factor * world.roll_factor * 5
+    #compensate for the roll angle of the plane on the roll forces
+    roll_angle_factor = math.cos(math.radians(airplane_roll_angle))   
+    roll_speed_factor = 1 # TBD should be inversly proportional to the speed of the plane
+
+    roll_value = (_lift_r - _lift_l) * roll_angle_factor * world.roll_factor * 2.5 * roll_speed_factor
     world.tot_roll_force = roll_value
 
     world.message =  "Wing L | R ( "+str(round(_lift_l,3)) + " | "+str(round(_lift_r,3))+" )   "

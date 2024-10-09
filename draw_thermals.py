@@ -18,7 +18,7 @@ thermal_column_lg = xp.loadObject(THERMAL_COLUMN_lg)
 
 huge_cloud = xp.loadObject('Resources/plugins/PythonPlugins/mt_scenery.obj')
 
-def draw_thermal(lat, lon, radius):  # min_alt,max_alt
+def draw_thermal_column(lat, lon, radius):  # min_alt,max_alt
     ''' Draw thermal images along the raising thermal, accounting
         for wind drift along the climb. end at almost the thermal top
     '''
@@ -28,8 +28,8 @@ def draw_thermal(lat, lon, radius):  # min_alt,max_alt
     base = 1
     _dew, _dud, _dns = xp.worldToLocal(
         lat, lon, 0)  # Dew=E/W,Dud=Up/Down,Dns=N/S
-    # from 100 to almost thermal top steps of 200
-    for alt in range(base, world.thermal_tops-200, 50):
+    # from 100 to almost thermal top steps of 300
+    for alt in range(base, world.thermal_tops-200, 300):
         _dx, _dy = calc_drift(alt)
         if radius < 100:
             instance = xp.createInstance(thermal_column_sm)
@@ -68,7 +68,7 @@ def draw_thermal_columns(lat, lon):
     for athermal in world.thermal_list:
         p2x, p2y , radius = athermal.p_x, athermal.p_y, athermal.radius 
         if calc_dist(_p1x, _p1y, p2x, p2y) < world.max_draw_distance:
-            draw_thermal(athermal.lat, athermal.lon, radius)
+            draw_thermal_column(athermal.lat, athermal.lon, radius)
 
 
 def draw_clouds(lat, lon):

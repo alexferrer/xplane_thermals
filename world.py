@@ -20,6 +20,7 @@ tot_lift_force = 0 # Newtons
 cal_lift_force = 0 # Newtons
 tot_roll_force = 0 # Newtons
 applied_lift_force = 0 # Newtons
+applied_roll_force = 0 # Newtons
 message  = "- - - - -"
 message1 = " - - - - "
 message2 = " x x x x "
@@ -31,6 +32,8 @@ update_loop = 101
 sun_factor = 0
 
 if os.path.exists('hotspots.csv') == True:
+    print("Sorry: hotspots.csv loading is disabled for maintenance. ")
+    '''
     with open("hotspots.csv", 'r') as f:
         with open("converted_hotspots.csv", 'w') as f1:
             f.next()  # skip header line
@@ -39,6 +42,7 @@ if os.path.exists('hotspots.csv') == True:
     with open('converted_hotspots.csv', 'rU') as f:
         reader = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
         hotspots = map(tuple, reader)
+    '''
 else:
     hotspots = []
     print("Can't find hotspots.csv in X-Plane root directory")
@@ -84,7 +88,7 @@ default_thermal_dict = [
     Thermal(31.916921616, -97.204803467, 500,  4), #Y lake island
     Thermal(32.456172943, -96.911354065, 1000, 5), #KJWY Midlothian Windsock
     #Thermal(32.389057159, -97.013374329, 10, .5),
-    Thermal(32.390254974, -97.011375427, 10, .1),  #TSA Windsock
+    Thermal(32.390254974, -97.011375427, 50, .1),  #TSA Windsock
 
     
  

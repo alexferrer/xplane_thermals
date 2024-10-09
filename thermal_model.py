@@ -223,15 +223,14 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
 
 
 def make_csv_thermal_map(_lat, _lon, _strength, _count, _radius):
-    ''' Create xx random thermals around the hotspot lat/lon point
-      us parameters average strength
-      Params: center (lat,lon) , max strength, count , radius
-      thermal_list =     { (lat,lon):(radius,strength) }
+    ''' Create xx random thermals around the hotspot provded by thermals.kk7
+        https://thermal.kk7.ch/#30.862,-96.53,10
+        use CSV file
+        Lat , Lon , Altitude , Probability
+
     '''
     #csv_list = world.hotspots
     hotspots = world.hotspots
-    # hotspots = [(36.7913278, -119.3000250,255,70),(36.7845528,
-    # -119.3029139,275, 20),(36.7974417, -119.2900083,435, 100)]
     average_radius = _radius
     thermals = []
     print(_strength)

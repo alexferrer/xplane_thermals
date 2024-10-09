@@ -66,7 +66,8 @@ class PythonInterface:
             "Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         xp.appendMenuItem(
             self.myMenu, "Generate Random Thermals", randomThermal, 1)
-        xp.appendMenuItem(self.myMenu, "Generate CSV Thermals", csvThermal, 1)
+        #ALX Disabled until remake
+        #xp.appendMenuItem(self.myMenu, "Generate CSV Thermals", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
         # -------------------------------------------------
@@ -317,7 +318,7 @@ class PythonInterface:
                 if(not xp.isWidgetVisible(self.TCWidget)):
                     print("re-show test config box ")
                     xp.showWidget(self.TCWidget)
-
+ 
         if (inItemRef == csvThermal):
             print("Making thermals from list")
             if (self.CSVMenuItem == 0):

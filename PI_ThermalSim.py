@@ -9,7 +9,7 @@ Thermal simulator  Ver .04
 
 import world
 # thermal modeling tools
-from thermal_model import calc_thermalx
+from thermal_model import calc_thermalx, make_thermal_map_kk7
 from thermal_model import make_random_thermal_map
 from thermal_model import make_csv_thermal_map
 
@@ -66,8 +66,7 @@ class PythonInterface:
             "Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         xp.appendMenuItem(
             self.myMenu, "Generate Random Thermals", randomThermal, 1)
-        #ALX Disabled until remake
-        #xp.appendMenuItem(self.myMenu, "Generate CSV Thermals", csvThermal, 1)
+        xp.appendMenuItem(self.myMenu, "Load KK7 Thermals for CSV", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
         # -------------------------------------------------
@@ -915,11 +914,11 @@ class PythonInterface:
 
             # Tests the Command API, will find command
             if (inParam1 == self.CSVTGenerate_button):
-                print("Generate Thermals")
-                lat = xp.getDataf(self.PlaneLat)
-                lon = xp.getDataf(self.PlaneLon)
-                world.thermal_list = make_csv_thermal_map(
-                    lat, lon, world.thermal_power, world.thermal_density, world.thermal_size)
+                print("Generate KK7 Thermals")
+                world.thermal_list = make_thermal_map_kk7(
+                     world.thermal_power, 
+                     world.thermal_size)
+                
                 world.world_update = True
                 return 1
 
@@ -961,7 +960,7 @@ class PythonInterface:
     def CreateCSVWindow(self, x, y, w, h):
         x2 = x + w
         y2 = y - h
-        Title = "Thermal generation from CSV"
+        Title = "Thermal generation from KK7 CSV"
 
         # create the window
         self.CSVWidget = xp.createWidget(

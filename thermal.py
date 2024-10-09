@@ -1,6 +1,5 @@
 ''' Thermal datastructures '''
-from thermal_model import convert_lat_lon2meters
-
+import xp
 
 class Thermal:
     ''' Define a datastructure to hold thermal infomation'''
@@ -15,7 +14,7 @@ class Thermal:
         self.lat = lat
         self.lon = lon
         self.alt = 0
-        self.p_x, self.p_y = convert_lat_lon2meters(lat, lon)
+        self.p_x, alt, self.p_y =  xp.worldToLocal(lat,lon,0) 
 
     def set_radius(self, radius):
         ''' store radius of the thermal '''

@@ -1,6 +1,6 @@
 import world
 import thermal
-from thermal_model import convert_lat_lon2meters, calc_dist, calc_drift
+from thermal_model import calc_dist, calc_drift
 import xp # type: ignore
 
 LIB_VERSION = "Version ----------------------------   draw_thermals.py v2.0"
@@ -63,7 +63,7 @@ def draw_thermal_columns(lat, lon):
     ''' return a list of thermal location tuples, if the distance not exceeds max display
         draw the thermal column of rising air
     '''
-    _p1x, _p1y = convert_lat_lon2meters(lat, lon)
+    _p1x, alt, _p1y  = xp.worldToLocal(lat, lon,0)
 
     for athermal in world.thermal_list:
         p2x, p2y , radius = athermal.p_x, athermal.p_y, athermal.radius 
@@ -76,7 +76,7 @@ def draw_clouds(lat, lon):
     Just the thermals at cloudbase
     '''
     if world.DEBUG == 6: print("draw_clouds") 
-    p1x, p1y = convert_lat_lon2meters(lat, lon)
+    p1x,alt, p1y = xp.worldToLocal(lat, lon,0)
 
     for athermal in world.thermal_list:
         p2x, p2y = athermal.p_x, athermal.p_y

@@ -31,21 +31,8 @@ DEBUG = 0
 update_loop = 101 
 sun_factor = 0
 
-if os.path.exists('hotspots.csv') == True:
-    print("Sorry: hotspots.csv loading is disabled for maintenance. ")
-    '''
-    with open("hotspots.csv", 'r') as f:
-        with open("converted_hotspots.csv", 'w') as f1:
-            f.next()  # skip header line
-            for line in f:
-                f1.write(line)
-    with open('converted_hotspots.csv', 'rU') as f:
-        reader = csv.reader(f, quoting=csv.QUOTE_NONNUMERIC)
-        hotspots = map(tuple, reader)
-    '''
-else:
-    hotspots = []
-    print("Can't find hotspots.csv in X-Plane root directory")
+kk7_hotspot_file_name = 'Resources/plugins/PythonPlugins/kk7_hotspots.csv'
+
 
 # Conversion constants
 nm2meter = 1852  # nautical miles to meters

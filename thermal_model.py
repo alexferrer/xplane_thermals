@@ -25,15 +25,6 @@ def calc_dist(p1x, p1y, p2x, p2y):
     ''' Calculates distance between (p1x,p1y) and (p2x,p2y) in meters'''
     return math.sqrt(calc_dist_square(p1x, p1y, p2x, p2y))
 
-
-def convert_lat_lon2meters(lat, lon):
-    ''' Converts lat/lon to meters (approximation); returns a point (px,py)
-    need to phase out.. use xp.worldToLocal instead'''
-    _px = lat * world.latlon2meter
-    _py = lon * world.latlon2meter * math.cos(math.radians(lat))
-    return (_px, _py)
-
-
 def calc_drift(alt):
     ''' Calculates drift (based on wind direction and speed) in meters for the given altitude;
         returns (dx,dy)
@@ -104,7 +95,6 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle):
      Return the total lift and roll value.
     """
     # current plane position
-    #_plane_ew, _plane_ns = convert_lat_lon2meters(lat, lon)
     _plane_ew, _plane_alt, _plane_ns = xp.worldToLocal(lat, lon, alt)
     _dx, _dy = calc_drift(alt)     # total wind drift
 
@@ -221,53 +211,36 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
     print("# of generated thermals", len(thermals))
     return thermals
 
-
-def make_csv_thermal_map(_lat, _lon, _strength, _count, _radius):
+import csv
+import os
+def make_thermal_map_kk7( _strength, _radius):
     ''' Create xx random thermals around the hotspot provded by thermals.kk7
         https://thermal.kk7.ch/#30.862,-96.53,10
         use CSV file
         Lat , Lon , Altitude , Probability
 
     '''
-    #csv_list = world.hotspots
-    hotspots = world.hotspots
+    file_path = world.kk7_hotspot_file_name
+
     average_radius = _radius
     thermals = []
-    print(_strength)
-    if _count < len(hotspots):
-        count = _count
-    else:
-        count = len(hotspots)
-
-    for select_spot in sample(range(0, len(hotspots)), count):
-
-        _r = randrange(1, 40000)
-        prob_test = random.random() * 100 / 2
-        # probabilty test has to be random.random()*100 ,
-        # but we need would need more thermal hotspots then
-        hotspot_prob = hotspots[select_spot][3]
-        if hotspot_prob > prob_test:
-            hotspot_lat = hotspots[select_spot][0]
-            hotspot_lon = hotspots[select_spot][1]
-            _x = _r / 200      # col
-            _y = _r - _x * 200  # row
+    if not os.path.exists(file_path):
+        print(f"File {file_path} does not exist. Skipping thermal map creation.")
+        return thermals
+    
+    with open(file_path, mode='r') as file:
+        csv_reader = csv.reader(file)
+        next(csv_reader)  # Skip the header row
+        for row in csv_reader:
+            lat, lon, alt, prob = row
+            _lat = float(lat)
+            _lon = float(lon)
+            _prob = float(prob)
             # random diameter for the thermal
-            radius = randrange(average_radius / 5, average_radius)
+            radius = randrange(int(average_radius / 5), average_radius)
             # randomize thermal strength weighted towards stronger
             strength = choice((4, 5, 5, 6, 6, 7, 7, 7, 8,
                               8, 9, 9, 10)) * _strength * .1
-            # min thermal separation = 100m
-            lat = hotspot_lat + (_x - 100) * .00001
-            # max distance =  100x100 100m
-            lon = hotspot_lon + (_y - 100) * .00001
-
-            # No thermals start over water..
-            if world.terrain_is_water(lat, lon):
-                continue
-
-            # (lat,lon):(radius,strength)
-            # print( "makeRandomThermal",lat,lon,radius,strength)
-            #thermals[(lat,lon)] = (radius,strength)
-            thermals.append(thermal.Thermal(lat, lon, radius, strength))
+            thermals.append(thermal.Thermal(_lat, _lon, radius, strength))
 
     return thermals

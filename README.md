@@ -35,16 +35,15 @@ A thermal visualization aid (shows markers where the thermals are) exists with a
 
 UPDATE
 -----
+- Youtube videos showing the pluggin in action https://www.youtube.com/playlist?list=PLCOXBmOQk9UA55rzYTZvHnyQ_FopH_U9x
 - Real clouds!!!
 - Select thermal column visibility from generate thermal menu (broken)
-- (For Dev only) New PlotThermals.py program to plot the thermal map
-- Python 3 now Works! try it, report bugs 
 - https://forums.x-plane.org/index.php?/forums/topic/225976-xppython3-v312-now-available/
 - https://xppython3.readthedocs.io/en/stable/
 
 
+- Loading CSV hotspots from https://thermal.kk7.ch/ added. Download your fav. thermal hotspots and put it in your X-plane root directory. --->>>  Rename the file to: kk7_hotspots.csv
 
-- Loading CSV hotspots from https://thermal.kk7.ch/ added. Download your fav. thermal hotspots and put the hotspot.csv into your X-plane root directory
 
 TODOs
 -----

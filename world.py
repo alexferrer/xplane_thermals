@@ -31,7 +31,7 @@ DEBUG = 0
 update_loop = 101 
 sun_factor = 0
 
-kk7_hotspot_file_name = 'Resources/plugins/PythonPlugins/kk7_hotspots.csv'
+kk7_hotspot_file_name = 'kk7_hotspots.csv'
 
 
 # Conversion constants

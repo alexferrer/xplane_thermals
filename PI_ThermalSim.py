@@ -280,11 +280,11 @@ class PythonInterface:
 
         # apply a roll to the plane
         if world.CALIBRATE_MODE:
-            roll_amount = float(-100.0) * world.roll_factor
+            roll_amount = float(-200.0) * world.roll_factor
             if world.roll_test_pulse > 0:
                world.roll_test_pulse -= 1
                xp.setDataf(self.roll_Dref, roll_amount)
-               if world.DEBUG > 3: print("apply roll to the plane [roll factor/tot]",world.roll_factor ,roll_amount,world.roll_test_pulse)
+               print("apply roll to the plane [roll factor/tot]",world.roll_factor ,roll_amount,world.roll_test_pulse)
         else:
            rval = roll_val * world.roll_factor + xp.getDataf(self.roll_Dref)
            xp.setDataf(self.roll_Dref, rval) 

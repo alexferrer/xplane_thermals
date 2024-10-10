@@ -242,5 +242,5 @@ def make_thermal_map_kk7( _strength, _radius):
             strength = choice((4, 5, 5, 6, 6, 7, 7, 7, 8,
                               8, 9, 9, 10)) * _strength * .1
             thermals.append(thermal.Thermal(_lat, _lon, radius, strength))
-
+            print("makeKK7Thermal", _lat, _lon, radius, strength)
     return thermals

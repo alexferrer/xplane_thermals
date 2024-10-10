@@ -11,7 +11,7 @@ import world
 # thermal modeling tools
 from thermal_model import calc_thermalx, make_thermal_map_kk7
 from thermal_model import make_random_thermal_map
-from thermal_model import make_csv_thermal_map
+from thermal_model import make_thermal_map_kk7
 
 from draw_thermals import drawThermalsOnScreen, eraseThermalsOnScreen
 

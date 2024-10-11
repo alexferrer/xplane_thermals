@@ -11,7 +11,6 @@ import world
 # thermal modeling tools
 from thermal_model import calc_thermalx, make_thermal_map_kk7
 from thermal_model import make_random_thermal_map
-from thermal_model import make_thermal_map_kk7
 
 from draw_thermals import drawThermalsOnScreen, eraseThermalsOnScreen
 
@@ -915,7 +914,8 @@ class PythonInterface:
             # Tests the Command API, will find command
             if (inParam1 == self.CSVTGenerate_button):
                 print("Generate KK7 Thermals")
-                world.thermal_list = make_thermal_map_kk7(
+                world.thermal_list = make_thermal_map_kk7(   
+                     self.sim_time,                  
                      world.thermal_power, 
                      world.thermal_size)
                 

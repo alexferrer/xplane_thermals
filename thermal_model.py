@@ -213,7 +213,7 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
 
 import csv
 import os
-def make_thermal_map_kk7( _strength, _radius):
+def make_thermal_map_kk7(_time, _strength, _radius):
     ''' Create xx random thermals around the hotspot provded by thermals.kk7
         https://thermal.kk7.ch/#30.862,-96.53,10
         use CSV file
@@ -243,4 +243,8 @@ def make_thermal_map_kk7( _strength, _radius):
                               8, 9, 9, 10)) * _strength * .1
             thermals.append(thermal.Thermal(_lat, _lon, radius, strength))
             print("makeKK7Thermal", _lat, _lon, radius, strength)
+
+    # reset the thermal start time to now
+    world.thermal_map_start_time = _time
+    print("# of generated thermals", len(thermals))    
     return thermals

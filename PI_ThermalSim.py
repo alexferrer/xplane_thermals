@@ -66,9 +66,9 @@ class PythonInterface:
             "Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         xp.appendMenuItem(
             self.myMenu, "Generate Random Thermals", randomThermal, 1)
-        xp.appendMenuItem(self.myMenu, "Load KK7 Thermals for CSV", csvThermal, 1)
+        #xp.appendMenuItem(self.myMenu, "Load KK7 Thermals for CSV", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
-        xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
+        #xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
         # -------------------------------------------------
         if world.DEBUG > 3 : print("setting up global variables")
         world.THERMAL_COLUMN_VISIBLE = True
@@ -1130,8 +1130,8 @@ class PythonInterface:
 
         dfc = str(round(world.distance_from_center, 2))
         xp.drawString(color, left + 80, top - 35,  "Distance   : "+ dfc +"m", 0, xp.Font_Basic)
-        xp.drawString(color, left + 80, top - 50,  "T Radius   : "+ str(world.thermal_radius )+"m", 0, xp.Font_Basic)
-        xp.drawString(color, left + 80, top - 65,  "T Strength : "+ str(world.thermal_strength) +" m/s", 0, xp.Font_Basic)
+        xp.drawString(color, left + 80, top - 50,  "T Radius   : "+ str(round(world.thermal_radius,2) )+"m", 0, xp.Font_Basic)
+        xp.drawString(color, left + 80, top - 65,  "T Strength : "+ str(round(world.thermal_strength,2)) +" m/s", 0, xp.Font_Basic)
         xp.drawString(color, left + 80, top - 90,  "Lfactor: "+ str(round(world.lift_factor, 2)) +"X", 0, xp.Font_Basic)
         xp.drawString(color, left + 80, top - 105, "Rfactor: "+ str(round(world.roll_factor, 2)) +"X", 0, xp.Font_Basic)
         

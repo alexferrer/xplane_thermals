@@ -162,7 +162,7 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
       thermal_list =     { (lat,lon):(radius,strength) }
     '''
 
-    if world.DEBUG > 4:
+    if world.DEBUG > 3:
         print("makeRandomThermalMap lat lon strength count radius", _lat, _lon, _strength, _count, _radius)
     
 
@@ -198,12 +198,12 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
 
         # create the thermal
         thermals.append(thermal.Thermal(lat, lon, radius, strength))
-        if world.DEBUG > 4:
+        if world.DEBUG > 3:
             print("RandomThermal > ", lat, lon, radius, strength)
 
     # reset the thermal start time to now
     world.thermal_map_start_time = time
-    print("# of generated thermals", len(thermals))
+    if world.DEBUG > 3: print("# of generated thermals", len(thermals))
     return thermals
 
 import csv

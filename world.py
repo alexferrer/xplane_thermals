@@ -25,7 +25,7 @@ message2 = " x x x x "
 
 
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
-DEBUG = 0
+DEBUG = 4
 update_loop = 101 
 sun_factor = 0
 
@@ -65,7 +65,7 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 
 # A list of thermals for testing { (lat,lon):(radius,strength) }
 #Texas Soaring Gliderport TSA Airport Designator: TA11
-if DEBUG > 5: print("---------------------- creating default thermal list ----------------------")
+if DEBUG > 3: print("---------------------- creating default thermal list ----------------------")
 default_thermal_dict = [
     Thermal(32.324161530, -97.039894104, 200,  1), #lake 1
     Thermal(32.380264282, -97.079566956, 300,  2), # lake2
@@ -77,7 +77,7 @@ default_thermal_dict = [
  
     ]
 
-thermal_list = default_thermal_dict
+thermal_list = []    # default_thermal_dict
 
 if DEBUG > 3:  print("Thermal dict->", thermal_list)
 

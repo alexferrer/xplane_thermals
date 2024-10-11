@@ -118,16 +118,7 @@ class PythonInterface:
         # might float in the air without moving!
         #self.thrust = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
         self.thrust_Dref = xp.findDataRef('sim/flightmodel/forces/faxil_plug_acf')
-
-        # create an initial thermal map
-        if world.DEBUG > 3 : print("create initial thermal map")
-        lat = xp.getDataf(self.PlaneLat)
-        lon = xp.getDataf(self.PlaneLon)
-        world.thermal_list = make_random_thermal_map(0, lat, lon,
-                                                    world.thermal_power,
-                                                    world.thermal_density,
-                                                    world.thermal_size) 
-        
+      
         # Drawing update flag
         world.world_update = True
 
@@ -217,7 +208,7 @@ class PythonInterface:
                 world.world_update = True
 
             # Check if it is time to referesh the thermal map
-            if (self.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60):
+            if ( (self.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60) ) or len(world.thermal_list) == 0 :
                 if world.DEBUG > 4: print("time is up , refreshing thermal map......................")
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)

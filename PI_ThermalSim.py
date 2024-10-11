@@ -58,6 +58,8 @@ class PythonInterface:
         self.AboutMenuItem = 0
 
         global myMenu
+
+        # Define the main menu items
         mySubMenuItem = xp.appendMenuItem(
             xp.findPluginsMenu(), "Thermal Simulator", 0, 1)
         self.MyMenuHandlerCB = self.MyMenuHandlerCallback
@@ -67,7 +69,9 @@ class PythonInterface:
             self.myMenu, "Generate Random Thermals", randomThermal, 1)
         #xp.appendMenuItem(self.myMenu, "Load KK7 Thermals for CSV", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
-        #xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
+        xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
+
+
         # -------------------------------------------------
         if world.DEBUG > 3 : print("setting up global variables")
         world.THERMAL_COLUMN_VISIBLE = True
@@ -81,16 +85,14 @@ class PythonInterface:
         self.PlaneLat = xp.findDataRef("sim/flightmodel/position/latitude")
         self.PlaneLon = xp.findDataRef("sim/flightmodel/position/longitude")
         self.PlaneElev = xp.findDataRef("sim/flightmodel/position/elevation")
-        self.PlaneHdg = xp.findDataRef(
-            "sim/flightmodel/position/psi")  # plane heading
-        self.PlaneRol = xp.findDataRef(
-            "sim/flightmodel/position/phi")  # plane roll
+        self.PlaneHdg = xp.findDataRef("sim/flightmodel/position/psi")  # plane heading
+        self.PlaneRol = xp.findDataRef("sim/flightmodel/position/phi")  # plane roll
 
-        if world.DEBUG > 3: print(" Wind data")
         self.WindSpeed = xp.findDataRef(
             "sim/weather/wind_speed_kt[0]")  # wind speed at surface
         self.WindDir = xp.findDataRef(
             "sim/weather/wind_direction_degt[0]")  # wind direction
+
         # is the sim paused?
         self.runningTime = xp.findDataRef("sim/time/total_running_time_sec")
         self.sim_time = 0
@@ -107,7 +109,7 @@ class PythonInterface:
         world.terrain_is_water = xplane_terrain_is_water
 
         # variables to inject energy to the plane
-        if world.DEBUG > 2 : print("Airplane forces ")
+
         self.lift_Dref = xp.findDataRef('sim/flightmodel/forces/fnrml_plug_acf')
         self.roll_Dref = xp.findDataRef('sim/flightmodel/forces/L_plug_acf')
 
@@ -117,6 +119,15 @@ class PythonInterface:
         #self.thrust = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
         self.thrust_Dref = xp.findDataRef('sim/flightmodel/forces/faxil_plug_acf')
 
+        # create an initial thermal map
+        if world.DEBUG > 3 : print("create initial thermal map")
+        lat = xp.getDataf(self.PlaneLat)
+        lon = xp.getDataf(self.PlaneLon)
+        world.thermal_list = make_random_thermal_map(0, lat, lon,
+                                                    world.thermal_power,
+                                                    world.thermal_density,
+                                                    world.thermal_size) 
+        
         # Drawing update flag
         world.world_update = True
 
@@ -125,7 +136,7 @@ class PythonInterface:
         are in seconds, negative are the negative of sim frames.  Zero
         registers but does not schedule a callback for time.
         """
-        if world.DEBUG > 2 : print("registering callback")
+        if world.DEBUG > 3 : print("registering callback")
         xp.registerFlightLoopCallback(self.FlightLoopCallback, 1.0, 0)
 
         #------------------------------
@@ -144,16 +155,12 @@ class PythonInterface:
         return self.Name, self.Sig, self.Desc
 
     def XPluginStop(self):    # Unregister the callbacks
-        if world.DEBUG > 1 : print("XPPluginStop")
+        if world.DEBUG > 3 : print("XPPluginStop")
         xp.unregisterFlightLoopCallback(self.FlightLoopCallback, 0)
-        #XPLMUnregisterDrawCallback(self.DrawObjectCB, xplm_Phase_Objects, 0, 0)
-        # deprecated...    https://developer.x-plane.com/sdk/XPLMDrawingPhase/#xplm_Phase_Objects
-
+ 
         xp.destroyMenu(self.myMenu)
         # for probe suff
         xp.destroyProbe(world.probe)
-        # debug
-        #xp.destroyWindow(self.WindowId)
 
     def XPluginEnable(self):
         return 1
@@ -176,7 +183,7 @@ class PythonInterface:
         self.sim_time = runtime
 
         # instantiate the actual callbacks.
-        if world.DEBUG == 3 : print(" Update position,wind,sun")
+        if world.DEBUG > 5 : print(" Update position,wind,sun")
         lat = xp.getDataf(self.PlaneLat)
         lon = xp.getDataf(self.PlaneLon)
         elevation = xp.getDataf(self.PlaneElev)
@@ -189,14 +196,13 @@ class PythonInterface:
 
         if world.update_loop > 100 :
             world.update_loop = 0 
-            if world.DEBUG == 6: print("world update loop")
+            if world.DEBUG > 5: print("world update loop")
 
 
             wind_speed = round(xp.getDataf(self.WindSpeed) *
                             0.5144, 2)      # Knots to m/s
             # Degrees to radians
             wind_dir = round(math.radians(xp.getDataf(self.WindDir)), 4)
-            #if world.DEBUG: print("wind deg/rad :",xp.getDataf(self.WindDir),wind_dir)
 
             # sun pitch afects thermal power , noon in summer is the best..
             sun_pitch = xp.getDataf(self.SunPitch)  # Degrees
@@ -206,13 +212,13 @@ class PythonInterface:
 
             # keep up with wind changes
             if [wind_speed, wind_dir] != [world.wind_speed, world.wind_dir]:
-                if world.DEBUG > 3 : print( "wind changed [kt,deg], update world ",wind_speed,world.wind_speed,wind_dir,world.wind_dir)
+                if world.DEBUG > 4 : print( "wind changed [kt,deg], update world ",wind_speed,world.wind_speed,wind_dir,world.wind_dir)
                 [world.wind_speed, world.wind_dir] = [wind_speed, wind_dir]
                 world.world_update = True
 
             # Check if it is time to referesh the thermal map
             if (self.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60):
-                if world.DEBUG > 1: print("time is up , refreshing thermal map......................")
+                if world.DEBUG > 4: print("time is up , refreshing thermal map......................")
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
                 world.thermal_list = make_random_thermal_map(self.sim_time,
@@ -221,12 +227,12 @@ class PythonInterface:
                                                             world.thermal_density,
                                                             world.thermal_size)
 
-                if world.DEBUG == 4 : print("request Update the world map") 
+                if world.DEBUG > 4 : print("request Update the world map") 
                 world.world_update = True
 
             # if anything has changed updte the screen drawings
             if world.world_update:
-                if world.DEBUG == 6: print("drawing thermals on screen")
+                if world.DEBUG > 4: print("drawing thermals on screen")
                 drawThermalsOnScreen(xp.getDataf(self.PlaneLat),
                                     xp.getDataf(self.PlaneLon)
                                     )
@@ -235,7 +241,7 @@ class PythonInterface:
         # Get the lift value of the current position from the world thermal map
         lift_val, roll_val = calc_thermalx(
             lat, lon, elevation, heading, roll_angle)
-        if world.DEBUG == 1: print("calc_thermal lift/roll",lift_val, roll_val)
+        if world.DEBUG > 5: print("calc_thermal lift/roll",lift_val, roll_val)
 
         # apply sun elevation as a % factor to thermal power
         # average lift depends on sun angle over the earth.
@@ -283,7 +289,7 @@ class PythonInterface:
             if world.roll_test_pulse > 0:
                world.roll_test_pulse -= 1
                xp.setDataf(self.roll_Dref, roll_amount)
-               print("apply roll to the plane [roll factor/tot]",world.roll_factor ,roll_amount,world.roll_test_pulse)
+               if world.DEBUG > 4: print("apply roll to the plane [roll factor/tot]",world.roll_factor ,roll_amount,world.roll_test_pulse)
         else:
            rval = roll_val * world.roll_factor + xp.getDataf(self.roll_Dref)
            xp.setDataf(self.roll_Dref, rval) 
@@ -292,8 +298,9 @@ class PythonInterface:
 
         # set the next callback time in +n for # of seconds and -n for # of Frames
         CALLBACKTIME = .01
-        #if world.DEBUG > 0: CALLBACKTIME = 5
-        if world.DEBUG == 3: print("next callback in second", CALLBACKTIME)
+
+        if world.DEBUG > 5: CALLBACKTIME = 5 # slow down for debugging
+        if world.DEBUG > 5: print("next callback in second", CALLBACKTIME)
         world.update_loop += 1
         #return .01  # works good on my (pretty fast) machine..
         return CALLBACKTIME
@@ -330,9 +337,6 @@ class PythonInterface:
 
         if (inItemRef == configGlider):
             print("show thermal config box ")
-            '''
-            Set constant lift calibration mode = 1m/s lift
-            '''
             if (self.CGMenuItem == 0):
                 print(" create the thermal config box ")
                 self.CreateCGWindow(100, 550, 550, 330)
@@ -796,7 +800,7 @@ class PythonInterface:
             x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
         xp.setWidgetProperty(self.CGLift_scrollbar, xp.Property_ScrollBarMin, 0)
         xp.setWidgetProperty(self.CGLift_scrollbar,
-                             xp.Property_ScrollBarMax, 100)
+                             xp.Property_ScrollBarMax, 50)
         xp.setWidgetProperty(self.CGLift_scrollbar,
                              xp.Property_ScrollBarPageAmount, 1)
         xp.setWidgetProperty(

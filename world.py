@@ -5,11 +5,9 @@
   so I rather read them once and store them here for all to use.
   * We store variables in their ready to use units format, (usually metric)
 '''
-# import CSV from https://thermal.kk7.ch/ ,  clean the header and save the converted csv
-import csv
-import os
+
 from thermal import Thermal
-LIB_VERSION = "Version ----------------------------   world.py v2.0"
+LIB_VERSION = "Version ----------------------------   world.py v3.0"
 print(LIB_VERSION)
 
 # holders for the thermal data display
@@ -67,7 +65,7 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 
 # A list of thermals for testing { (lat,lon):(radius,strength) }
 #Texas Soaring Gliderport TSA Airport Designator: TA11
-print("---------------------- creating default thermal list ----------------------")
+if DEBUG > 5: print("---------------------- creating default thermal list ----------------------")
 default_thermal_dict = [
     Thermal(32.324161530, -97.039894104, 200,  1), #lake 1
     Thermal(32.380264282, -97.079566956, 300,  2), # lake2
@@ -76,14 +74,12 @@ default_thermal_dict = [
     Thermal(32.456172943, -96.911354065, 1000, 5), #KJWY Midlothian Windsock
     #Thermal(32.389057159, -97.013374329, 10, .5),
     Thermal(32.390254974, -97.011375427, 50, .1),  #TSA Windsock
-
-    
  
     ]
 
 thermal_list = default_thermal_dict
 
-print("Thermal dict->", thermal_list)
+if DEBUG > 3:  print("Thermal dict->", thermal_list)
 
 thermal_band = {1000: .8, 2000: .9, 3000: 1, 5000: 1, 5100: .4, 5500: 0}
 
@@ -180,4 +176,5 @@ def dummy_terrain_is_water(lat, lon):
 terrain_is_water = dummy_terrain_is_water
 
 # stuff for drawing of thermals
-instance_list = []  # a list of all draw object instances
+cloud_instance_list = []  # a list of all draw object instances
+thermal_rings_instance_list = []    

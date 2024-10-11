@@ -144,9 +144,12 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle):
     world.message1 = "Roll angle factor "+ str(round(roll_angle_factor,4))
     world.message2 = "Wing Size "+ str( world.wing_size )
     #need to calculate pitch
-    if world.DEBUG == 1 : print( "pos[",'%.4f'%_plane_ew,",",'%.4f'%_plane_ns,"] head",'%.0f'%(heading), \
+    
+    if world.DEBUG > 6 : print( "pos[",'%.4f'%_plane_ew,",",'%.4f'%_plane_ns,"] head",'%.0f'%(heading), \
          "roll ",'%.1f'%(airplane_roll_angle), "   Lift [",'%.1f'%lift_value,"| Roll:",
       '%.1f'%roll_value ,"]   ",'%.1f'%alt)
+        
+
     """Todo: thermals have cycles, begin, middle , end.. and reflect in strength.."""
 
     return lift_value, roll_value
@@ -158,11 +161,8 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
       Params: center (lat,lon) , max strength, count , radius
       thermal_list =     { (lat,lon):(radius,strength) }
     '''
-    
-    # on debug return defult thermals
-    if world.DEBUG == 1 : return world.thermal_list
 
-    if world.DEBUG > 0:
+    if world.DEBUG > 4:
         print("makeRandomThermalMap lat lon strength count radius", _lat, _lon, _strength, _count, _radius)
     
 
@@ -198,13 +198,8 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
 
         # create the thermal
         thermals.append(thermal.Thermal(lat, lon, radius, strength))
-        if world.DEBUG > 1:
-            print("makeRandomThermal", lat, lon, radius, strength)
-
-    # for debug make a large thermal arount current _lat,_lon position
-    #if world.DEBUG > 1:
-    #    thermals.append(thermal.Thermal(
-    #        _lat, _lon, average_radius*10, _strength*10))
+        if world.DEBUG > 4:
+            print("RandomThermal > ", lat, lon, radius, strength)
 
     # reset the thermal start time to now
     world.thermal_map_start_time = time

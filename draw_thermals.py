@@ -22,7 +22,7 @@ def draw_thermal_column(lat, lon, radius):  # min_alt,max_alt
     ''' Draw thermal images along the raising thermal, accounting
         for wind drift along the climb. end at almost the thermal top
     '''
-    if world.DEBUG == 6 : print("B ", end='') 
+    if world.DEBUG > 4 : print("B ", end='') 
 
 
     base = 1
@@ -40,14 +40,14 @@ def draw_thermal_column(lat, lon, radius):  # min_alt,max_alt
 
         xp.instanceSetPosition(
             instance, [_dew + _dx, _dud + alt, _dns + _dy, 0, 0, 0])
-        world.instance_list.append(instance)
+        world.cloud_instance_list.append(instance)
 
 
 def draw_cloud(lat, lon):
     ''' Return the location for a cloud at the top of the raising thermal, accounting
         for wind drift along the climb.
     '''
-    if world.DEBUG == 6 : print("Cloud-", end='') 
+    if world.DEBUG > 5 : print("Cloud-", end='') 
 
     # Dew=E/W,Dud=Up/Down,Dns=N/S
     _dew, _dud, _dns = xp.worldToLocal(lat, lon, 0)
@@ -56,7 +56,7 @@ def draw_cloud(lat, lon):
     instance = xp.createInstance(huge_cloud)
     xp.instanceSetPosition(
         instance, [_dew + _dx, _dud + _alt, _dns + _dy, 0, 0, 0])
-    world.instance_list.append(instance)
+    world.cloud_instance_list.append(instance)
 
 
 def draw_thermal_columns(lat, lon):
@@ -75,7 +75,7 @@ def draw_clouds(lat, lon):
     ''' return a list of thermal location tuples, if the distance not exceeds max display
     Just the thermals at cloudbase
     '''
-    if world.DEBUG == 6: print("draw_clouds") 
+    if world.DEBUG > 5: print("draw_clouds") 
     p1x,alt, p1y = xp.worldToLocal(lat, lon,0)
 
     for athermal in world.thermal_list:
@@ -85,27 +85,27 @@ def draw_clouds(lat, lon):
 
 
 def eraseThermalsOnScreen():
-    if world.DEBUG > 0: print("Delete old image instances #", len(world.instance_list))
-    for i in world.instance_list:
-        if world.DEBUG == 6 : print("-i ", end='') 
+    if world.DEBUG > 4: print("Delete old image instances #", len(world.cloud_instance_list))
+    for i in world.cloud_instance_list:
+        if world.DEBUG > 5 : print("-i ", end='') 
         if i:
             try:
                 xp.destroyInstance(i)
-                world.instance_list.remove(i)
+                world.cloud_instance_list.remove(i)
             except Exception as e:
                 print(f"Exception destroying instance {i}: {e}")
 
 def drawThermalsOnScreen(lat, lon):
     # if visibility is off, only draw clouds at cloudbase (no visible columns)
 
-    if world.DEBUG == 6: print(" eraseThermalsOnScreen")
-    eraseThermalsOnScreen()
+    if world.DEBUG > 5: print(" eraseThermalsOnScreen, draw_clouds, reset update")
 
+    eraseThermalsOnScreen()
     draw_clouds(lat, lon)
 
     if world.THERMAL_COLUMN_VISIBLE:
         draw_thermal_columns(lat, lon)
 
-    if world.DEBUG == 6: print("set world_update = False")
+    if world.DEBUG > 5: print("set world_update = False")
     world.world_update = False
     return 1

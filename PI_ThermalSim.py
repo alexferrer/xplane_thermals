@@ -12,7 +12,7 @@ import world
 from thermal_model import calc_thermalx, make_thermal_map_kk7
 from thermal_model import make_random_thermal_map
 
-from draw_thermals import drawThermalsOnScreen, eraseThermalsOnScreen
+from draw_thermals import drawThermalsOnScreen, eraseThermalsCloudsOnScreen
 
 import random
 from random import randrange
@@ -693,7 +693,8 @@ class PythonInterface:
             val = xp.getWidgetProperty(
                 self.DBug_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.DBug_value, str(val))
-            world.DEBUG = int(val * world.f2m)
+            world.DEBUG = int(val)
+            print("DEBUG LEVEL ", world.DEBUG)
 
         return 0
 # ----------------------------------------- new...

@@ -19,7 +19,7 @@ thermal_column_lg = xp.loadObject(THERMAL_COLUMN_lg)
 huge_cloud = xp.loadObject('Resources/plugins/PythonPlugins/mt_scenery.obj')
 
 def draw_thermal_column(lat, lon, radius):  # min_alt,max_alt
-    ''' Draw thermal images along the raising thermal, accounting
+    ''' Draw thermal images ( Rings ) along the raising thermal, accounting
         for wind drift along the climb. end at almost the thermal top
     '''
     if world.DEBUG > 4 : print("B ", end='') 
@@ -32,15 +32,15 @@ def draw_thermal_column(lat, lon, radius):  # min_alt,max_alt
     for alt in range(base, world.thermal_tops-200, 300):
         _dx, _dy = calc_drift(alt)
         if radius < 100:
-            instance = xp.createInstance(thermal_column_sm)
+            ring_instance = xp.createInstance(thermal_column_sm)
         elif radius >= 100 and radius < 500:
-            instance = xp.createInstance(thermal_column_m)  
+            ring_instance = xp.createInstance(thermal_column_m)  
         else:       
-            instance = xp.createInstance(thermal_column_lg)
+            ring_instance = xp.createInstance(thermal_column_lg)
 
         xp.instanceSetPosition(
-            instance, [_dew + _dx, _dud + alt, _dns + _dy, 0, 0, 0])
-        world.cloud_instance_list.append(instance)
+            ring_instance, [_dew + _dx, _dud + alt, _dns + _dy, 0, 0, 0])
+        world.thermal_rings_instance_list.append(ring_instance)
 
 
 def draw_cloud(lat, lon):
@@ -53,10 +53,10 @@ def draw_cloud(lat, lon):
     _dew, _dud, _dns = xp.worldToLocal(lat, lon, 0)
     _alt = world.thermal_tops
     _dx, _dy = calc_drift(_alt)
-    instance = xp.createInstance(huge_cloud)
+    cloud_instance = xp.createInstance(huge_cloud)
     xp.instanceSetPosition(
-        instance, [_dew + _dx, _dud + _alt, _dns + _dy, 0, 0, 0])
-    world.cloud_instance_list.append(instance)
+        cloud_instance, [_dew + _dx, _dud + _alt, _dns + _dy, 0, 0, 0])
+    world.cloud_instance_list.append(cloud_instance)
 
 
 def draw_thermal_columns(lat, lon):
@@ -75,7 +75,7 @@ def draw_clouds(lat, lon):
     ''' return a list of thermal location tuples, if the distance not exceeds max display
     Just the thermals at cloudbase
     '''
-    if world.DEBUG > 5: print("draw_clouds") 
+    if world.DEBUG > 4: print("draw_clouds") 
     p1x,alt, p1y = xp.worldToLocal(lat, lon,0)
 
     for athermal in world.thermal_list:
@@ -84,23 +84,36 @@ def draw_clouds(lat, lon):
             draw_cloud(athermal.lat, athermal.lon)
 
 
-def eraseThermalsOnScreen():
-    if world.DEBUG > 4: print("Delete old image instances #", len(world.cloud_instance_list))
+def eraseThermalsCloudsOnScreen():
+    if world.DEBUG > 3: print("Delete old cloud instances #", len(world.cloud_instance_list))
     for i in world.cloud_instance_list:
-        if world.DEBUG > 5 : print("-i ", end='') 
+        if world.DEBUG > 4 : print("-i ", end='') 
         if i:
             try:
                 xp.destroyInstance(i)
                 world.cloud_instance_list.remove(i)
             except Exception as e:
-                print(f"Exception destroying instance {i}: {e}")
+                print(f"Exception destroying cloud instance {i}: {e}")
+
+def eraseThermalsRingsOnScreen():
+    if world.DEBUG > 3: print("Delete old thermal rings instances #", len(world.thermal_rings_instance_list))
+    for i in world.thermal_rings_instance_list:
+        if world.DEBUG > 4 : print("-i ", end='') 
+        if i:
+            try:
+                xp.destroyInstance(i)
+                world.thermal_rings_instance_list.remove(i)
+            except Exception as e:
+                print(f"Exception destroying thermal ring instance {i}: {e}")
+
 
 def drawThermalsOnScreen(lat, lon):
     # if visibility is off, only draw clouds at cloudbase (no visible columns)
 
-    if world.DEBUG > 5: print(" eraseThermalsOnScreen, draw_clouds, reset update")
+    if world.DEBUG > 5: print(" eraseThermalsRingsOnScreen, draw_clouds, reset update")
 
-    eraseThermalsOnScreen()
+    eraseThermalsRingsOnScreen()
+    eraseThermalsCloudsOnScreen()
     draw_clouds(lat, lon)
 
     if world.THERMAL_COLUMN_VISIBLE:

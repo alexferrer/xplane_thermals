@@ -174,7 +174,7 @@ class PythonInterface:
         self.sim_time = runtime
 
         # instantiate the actual callbacks.
-        if world.DEBUG > 5 : print(" Update position,wind,sun")
+        if world.DEBUG > 5 : print("FlightLoop: Update xplane drefs : position,wind,sun")
         lat = xp.getDataf(self.PlaneLat)
         lon = xp.getDataf(self.PlaneLon)
         elevation = xp.getDataf(self.PlaneElev)
@@ -187,7 +187,7 @@ class PythonInterface:
 
         if world.update_loop > 100 :
             world.update_loop = 0 
-            if world.DEBUG > 5: print("world update loop")
+            if world.DEBUG > 5: print("FlightLoop:  inside world update loop")
 
 
             wind_speed = round(xp.getDataf(self.WindSpeed) *
@@ -350,21 +350,17 @@ class PythonInterface:
                     xp.showWidget(self.AboutWidget)
 
     def TCHandler(self, inMessage, inWidget,       inParam1, inParam2):
-        # When widget close cross is clicked we only hide the widget
         if (inMessage == xp.Message_CloseButtonPushed):
-            print("close button pushed")
             if (self.TCMenuItem == 1):
-                print("hide the widget")
                 xp.hideWidget(self.TCWidget)
                 return 1
 
         # Process when a button on the widget is pressed
         if (inMessage == xp.Msg_PushButtonPressed):
-            print("[button was pressed", inParam1, "]")
 
             # Tests the Command API, will find command
             if (inParam1 == self.TGenerate_button):
-                print("Menu: Generate Thermas")
+                print("Menu: Generate Thermals")
                 print("minimum separation between thermals :", world.thermal_distance)
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
@@ -622,7 +618,6 @@ class PythonInterface:
 
 # ----------------------- About Window
 
-
     def CreateAboutWindow(self, x, y, w, h):
         x2 = x + w
         y2 = y - h
@@ -681,15 +676,11 @@ class PythonInterface:
      # ----
 
     def AboutHandler(self, inMessage, inWidget,       inParam1, inParam2):
-        # When widget close cross is clicked we only hide the widget
         if (inMessage == xp.Message_CloseButtonPushed ):
-            print("about close button pushed")
             if (self.AboutMenuItem == 1):
-                print("hide the widget")
                 xp.hideWidget(self.AboutWidget)
                 return 1
         if (inMessage == xp.Msg_ScrollBarSliderPositionChanged):
-            # Thermal Tops
             val = xp.getWidgetProperty(
                 self.DBug_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.DBug_value, str(val))

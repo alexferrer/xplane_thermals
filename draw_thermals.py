@@ -16,11 +16,16 @@ huge_cloud = None
 
 
 # thermal column and cloud images
-def load_image_objects(self):
-   self.thermal_column_sm = xp.loadObject(THERMAL_COLUMN_sm)
-   self.thermal_column_m = xp.loadObject(THERMAL_COLUMN_m)
-   self.thermal_column_lg = xp.loadObject(THERMAL_COLUMN_lg)
-   self.huge_cloud = xp.loadObject('Resources/plugins/PythonPlugins/mt_scenery.obj')
+def load_image_objects():
+   global huge_cloud 
+   global thermal_column_sm 
+   global thermal_column_m 
+   global thermal_column_lg 
+
+   thermal_column_sm = xp.loadObject(THERMAL_COLUMN_sm)
+   thermal_column_m = xp.loadObject(THERMAL_COLUMN_m)
+   thermal_column_lg = xp.loadObject(THERMAL_COLUMN_lg)
+   huge_cloud = xp.loadObject('Resources/plugins/PythonPlugins/mt_scenery.obj')
    # huge_cloud = xp.loadObject('Custom Scenery/X-Plane Airports - TNCS Juancho E Yrausquin/objects/mt_scenery.obj')
 
 

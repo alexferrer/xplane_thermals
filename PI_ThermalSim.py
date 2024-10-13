@@ -114,7 +114,8 @@ class PythonInterface:
         self.roll_Dref = xp.findDataRef('sim/flightmodel/forces/L_plug_acf')
 
                              
-        # although lift should be enough, some energy has to go as thrust, or the plane
+        # although lift should be enough, 
+        # some energy has to go as thrust, or the plane
         # might float in the air without moving!
         #self.thrust = EasyDref('sim/flightmodel/forces/faxil_plug_acf', 'float')
         self.thrust_Dref = xp.findDataRef('sim/flightmodel/forces/faxil_plug_acf')

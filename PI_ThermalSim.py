@@ -155,7 +155,6 @@ class PythonInterface:
         xp.destroyProbe(world.probe)
 
     def XPluginEnable(self):
-           load_image_objects()
            return 1
 
     def XPluginDisable(self):
@@ -191,6 +190,11 @@ class PythonInterface:
             world.update_loop = 0 
             if world.DEBUG > 5: print("FlightLoop:  inside world update loop")
 
+            #delay loading images until 100 cycles
+            if world.images_loaded == False:
+                           load_image_objects()
+                           world.images_loaded = True
+                           
 
             wind_speed = round(xp.getDataf(self.WindSpeed) *
                             0.5144, 2)      # Knots to m/s

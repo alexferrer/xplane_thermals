@@ -29,7 +29,9 @@ message2 = " x x x x "
 
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
 DEBUG = 4
-update_loop = 101 
+# handle image loading before plane bug
+images_loaded = False   
+update_loop = 0 
 sun_factor = 0
 
 kk7_hotspot_file_name = 'kk7_hotspots.csv'
@@ -69,7 +71,7 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 # A list of thermals for testing { (lat,lon):(radius,strength) }
 #Texas Soaring Gliderport TSA Airport Designator: TA11
 if DEBUG > 3: print("---------------------- creating default thermal list ----------------------")
-default_thermal_dict = [
+default_thermal_list = [
     Thermal(32.324161530, -97.039894104, 200,  1), #lake 1
     Thermal(32.380264282, -97.079566956, 300,  2), # lake2
     Thermal(32.581195831, -96.719421387, 100,  3), #Lancaster Windsock
@@ -80,7 +82,7 @@ default_thermal_dict = [
  
     ]
 
-thermal_list = []    # default_thermal_dict
+thermal_list = default_thermal_list
 
 if DEBUG > 3:  print("Thermal dict->", thermal_list)
 
@@ -116,7 +118,7 @@ thermal_refresh_time = 20  # auto-refresh timr for thermal map in minutes
 # Default thermal config values
 thermal_tops = 2000  # 2000 meters thermal top
 thermal_distance = 1000  # meters min separation distance between thermals
-thermal_density = 50  #  qty of thermal generated
+thermal_density = 100  #  qty of thermal generated
 
 
 ''''
@@ -126,7 +128,7 @@ Thermal size
 400 > large >= 800
 800 < xlarge
 '''
-thermal_size = 1000     # diameter of thermals in meters
+thermal_size = 1500     # diameter of thermals in meters
 
 
 '''

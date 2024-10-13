@@ -9,14 +9,21 @@ print(LIB_VERSION)
 THERMAL_COLUMN_sm = 'Resources/plugins/PythonPlugins/t_ring_50.obj'
 THERMAL_COLUMN_m  = 'Resources/plugins/PythonPlugins/t_ring_200.obj'
 THERMAL_COLUMN_lg = 'Resources/plugins/PythonPlugins/t_ring_800.obj'
+thermal_column_sm = None
+thermal_column_m = None
+thermal_column_lg = None
+huge_cloud = None
 
 
 # thermal column and cloud images
-thermal_column_sm = xp.loadObject(THERMAL_COLUMN_sm)
-thermal_column_m = xp.loadObject(THERMAL_COLUMN_m)
-thermal_column_lg = xp.loadObject(THERMAL_COLUMN_lg)
+def load_image_objects(self):
+   self.thermal_column_sm = xp.loadObject(THERMAL_COLUMN_sm)
+   self.thermal_column_m = xp.loadObject(THERMAL_COLUMN_m)
+   self.thermal_column_lg = xp.loadObject(THERMAL_COLUMN_lg)
+   self.huge_cloud = xp.loadObject('Resources/plugins/PythonPlugins/mt_scenery.obj')
+   # huge_cloud = xp.loadObject('Custom Scenery/X-Plane Airports - TNCS Juancho E Yrausquin/objects/mt_scenery.obj')
 
-huge_cloud = xp.loadObject('Resources/plugins/PythonPlugins/mt_scenery.obj')
+
 
 def draw_thermal_column(lat, lon, radius):  # min_alt,max_alt
     ''' Draw thermal images ( Rings ) along the raising thermal, accounting

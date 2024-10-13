@@ -10,6 +10,8 @@ from thermal import Thermal
 LIB_VERSION = "Version ----------------------------   world.py v3.0"
 print(LIB_VERSION)
 
+plugin_enabled = False  # plugin enabled/disabled
+
 # holders for the thermal data display
 thermal_strength = 0 # meters per second
 thermal_radius = 0 # meters
@@ -22,6 +24,7 @@ applied_roll_force = 0 # Newtons
 message  = "- - - - -"
 message1 = " - - - - "
 message2 = " x x x x "
+
 
 
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 

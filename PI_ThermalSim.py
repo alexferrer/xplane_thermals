@@ -12,7 +12,7 @@ import world
 from thermal_model import calc_thermalx, make_thermal_map_kk7
 from thermal_model import make_random_thermal_map
 
-from draw_thermals import drawThermalsOnScreen, eraseThermalsCloudsOnScreen
+from draw_thermals import drawThermalsOnScreen, eraseThermalsCloudsOnScreen, load_image_objects
 
 import random
 from random import randrange
@@ -154,7 +154,8 @@ class PythonInterface:
         xp.destroyProbe(world.probe)
 
     def XPluginEnable(self):
-        return 1
+           load_image_objects()
+           return 1
 
     def XPluginDisable(self):
         pass

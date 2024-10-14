@@ -53,7 +53,7 @@ class PythonInterface:
         # ----- menu stuff --------------------------
         # init menu control params
         self.TCMenuItem = 0
-        self.CSVMenuItem = 0
+        self.KK7MenuItem = 0
         self.CGMenuItem = 0
         self.AboutMenuItem = 0
 
@@ -67,7 +67,7 @@ class PythonInterface:
             "Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         xp.appendMenuItem(
             self.myMenu, "Generate Random Thermals", randomThermal, 1)
-        xp.appendMenuItem(self.myMenu, "Load KK7 Thermals for CSV", csvThermal, 1)
+        xp.appendMenuItem(self.myMenu, "Load KK7 Thermals", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
 
@@ -323,14 +323,14 @@ class PythonInterface:
  
         if (inItemRef == csvThermal):
             print("Making thermals from list")
-            if (self.CSVMenuItem == 0):
+            if (self.KK7MenuItem == 0):
                 print(" create the thermal config box ")
-                self.CreateCSVWindow(100, 550, 550, 330)
-                self.CSVMenuItem = 1
+                self.CreateKK7Window(100, 550, 550, 330)
+                self.KK7MenuItem = 1
             else:
-                if(not xp.isWidgetVisible(self.CSVWidget)):
+                if(not xp.isWidgetVisible(self.KK7Widget)):
                     print("re-show test config box ")
-                    xp.showWidget(self.CSVWidget)
+                    xp.showWidget(self.KK7Widget)
 
         if (inItemRef == configGlider):
             print("show thermal config box ")
@@ -777,7 +777,7 @@ class PythonInterface:
         self.CGLift_label_a = xp.createWidget(
             x+80,  y-20, x+140, y-35, 1, CGLift_message0, 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGLift_label_b = xp.createWidget(
-            x+110,  y-30, x+140, y-60, 1, CGLift_message1, 0, self.CGWidget,  xp.WidgetClass_Caption)
+            x+110,  y-28, x+140, y-60, 1, CGLift_message1, 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGLift_label1 = xp.createWidget(
             x+60,  y-80, x+140, y-102, 1, "Lift Factor", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGLift_label2 = xp.createWidget(
@@ -874,13 +874,13 @@ class PythonInterface:
         y -= 75
 
         # define button
-        self.CGRandom_button = xp.createWidget(x+60, y-60, x+200, y-82,
+        self.CGRandom_button = xp.createWidget(x+60, y-50, x+200, y-72,
                                                1, "Roll Left", 0, self.CGWidget, xp.WidgetClass_Button)
         xp.setWidgetProperty(self.CGRandom_button,
                              xp.Property_ButtonType, xp.PushButton)
 
         # define button
-        self.CGGenerate_button = xp.createWidget(x+320, y-60, x+440, y-82,
+        self.CGGenerate_button = xp.createWidget(x+320, y-50, x+440, y-72,
                                                  1, "ToBeDone", 0, self.CGWidget, xp.WidgetClass_Button)
         xp.setWidgetProperty(self.CGGenerate_button,
                              xp.Property_ButtonType, xp.PushButton)
@@ -889,15 +889,15 @@ class PythonInterface:
         self.CGHandlerCB = self.CGHandler
         xp.addWidgetCallback(self.CGWidget, self.CGHandlerCB)
 
-        # CSV MENU
+        # KK7 MENU
 
-    def CSVHandler(self, inMessage, inWidget, inParam1, inParam2):
+    def KK7Handler(self, inMessage, inWidget, inParam1, inParam2):
         # When widget close cross is clicked we only hide the widget
         if (inMessage == xp.Message_CloseButtonPushed):
             print("close button pushed")
-            if (self.CSVMenuItem == 1):
+            if (self.KK7MenuItem == 1):
                 print("hide the widget")
-                xp.hideWidget(self.CSVWidget)
+                xp.hideWidget(self.KK7Widget)
                 return 1
 
         # Process when a button on the widget is pressed
@@ -905,7 +905,7 @@ class PythonInterface:
             print("[button was pressed", inParam1, "]")
 
             # Tests the Command API, will find command
-            if (inParam1 == self.CSVTGenerate_button):
+            if (inParam1 == self.KK7TGenerate_button):
                 print("Generate KK7 Thermals")
                 world.thermal_list = make_thermal_map_kk7(   
                      self.sim_time,                  
@@ -918,169 +918,151 @@ class PythonInterface:
         if (inMessage == xp.Msg_ScrollBarSliderPositionChanged):
             # Thermal Tops
             val = xp.getWidgetProperty(
-                self.CSVTTops_scrollbar, xp.Property_ScrollBarSliderPosition, None)
-            xp.setWidgetDescriptor(self.CSVTTops_value, str(val))
+                self.KK7TTops_scrollbar, xp.Property_ScrollBarSliderPosition, None)
+            xp.setWidgetDescriptor(self.KK7TTops_value, str(val))
             world.thermal_tops = int(val * world.f2m)
-
-            # Thermal Density
-            val = xp.getWidgetProperty(
-                self.CSVTDensity_scrollbar, xp.Property_ScrollBarSliderPosition, None)
-            xp.setWidgetDescriptor(self.CSVTDensity_value, str(val))
-            world.thermal_density = val
 
             # Thermal Size
             val = xp.getWidgetProperty(
-                self.CSVTSize_scrollbar, xp.Property_ScrollBarSliderPosition, None)
-            xp.setWidgetDescriptor(self.CSVTSize_value, str(val))
+                self.KK7TSize_scrollbar, xp.Property_ScrollBarSliderPosition, None)
+            xp.setWidgetDescriptor(self.KK7TSize_value, str(val))
             world.thermal_size = val
 
             # Thermal Power
             val = xp.getWidgetProperty(
-                self.CSVTPower_scrollbar, xp.Property_ScrollBarSliderPosition, None)
-            xp.setWidgetDescriptor(self.CSVTPower_value, str(val))
+                self.KK7TPower_scrollbar, xp.Property_ScrollBarSliderPosition, None)
+            xp.setWidgetDescriptor(self.KK7TPower_value, str(val))
             world.thermal_power = val
 
             # Thermal Cycle
             val = xp.getWidgetProperty(
-                self.CSVTCycle_scrollbar, xp.Property_ScrollBarSliderPosition, None)
-            xp.setWidgetDescriptor(self.CSVTCycle_value, str(val))
+                self.KK7TCycle_scrollbar, xp.Property_ScrollBarSliderPosition, None)
+            xp.setWidgetDescriptor(self.KK7TCycle_value, str(val))
             world.thermal_cycle = val
 
         return 0
 
     # Creates the widget with buttons for test and edit boxes for info
 
-    def CreateCSVWindow(self, x, y, w, h):
+    def CreateKK7Window(self, x, y, w, h):
         x2 = x + w
         y2 = y - h
         Title = "Thermal generation from KK7 CSV"
 
         # create the window
-        self.CSVWidget = xp.createWidget(
+        self.KK7Widget = xp.createWidget(
             x, y, x2, y2, 1, Title, 1,     0, xp.WidgetClass_MainWindow)
         xp.setWidgetProperty(
-            self.CSVWidget, xp.Property_MainWindowHasCloseBoxes, 1)
-        CSVWindow = xp.createWidget(
-            x+50, y-50, x2-50, y2+50, 1, "",     0, self.CSVWidget, xp.WidgetClass_SubWindow)
+            self.KK7Widget, xp.Property_MainWindowHasCloseBoxes, 1)
+        KK7Window = xp.createWidget(
+            x+50, y-50, x2-50, y2+50, 1, "",     0, self.KK7Widget, xp.WidgetClass_SubWindow)
         xp.setWidgetProperty(
-            CSVWindow, xp.Property_SubWindowType, xp.SubWindowStyle_SubWindow)
+            KK7Window, xp.Property_SubWindowType, xp.SubWindowStyle_SubWindow)
+
+
 
         # -----------------------------
         # Thermal Tops
-        self.CSVTTops_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermals Tops", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTTops_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Feet", 0, self.CSVWidget,  xp.WidgetClass_Caption)
+        self.KK7TTops_label1 = xp.createWidget(
+            x+60,  y-80, x+140, y-102, 1, "Thermals Tops", 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.KK7TTops_label2 = xp.createWidget(
+            x+375, y-80, x+410, y-102, 1, "Feet", 0, self.KK7Widget,  xp.WidgetClass_Caption)
         # define scrollbar
-        self.CSVTTops_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTTops_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.CSVTTops_scrollbar,
+        self.KK7TTops_value = xp.createWidget(
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.KK7TTops_scrollbar = xp.createWidget(
+            x+170, y-80, x+370, y-102, 1, "", 0, self.KK7Widget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.KK7TTops_scrollbar,
                              xp.Property_ScrollBarMin, 100)
-        xp.setWidgetProperty(self.CSVTTops_scrollbar,
+        xp.setWidgetProperty(self.KK7TTops_scrollbar,
                              xp.Property_ScrollBarMax, 20000)
-        xp.setWidgetProperty(self.CSVTTops_scrollbar,
+        xp.setWidgetProperty(self.KK7TTops_scrollbar,
                              xp.Property_ScrollBarPageAmount, 500)
-        xp.setWidgetProperty(self.CSVTTops_scrollbar, xp.Property_ScrollBarSliderPosition, int(
+        xp.setWidgetProperty(self.KK7TTops_scrollbar, xp.Property_ScrollBarSliderPosition, int(
             world.thermal_tops*world.m2f))
-        xp.setWidgetDescriptor(self.CSVTTops_value, str(
+        xp.setWidgetDescriptor(self.KK7TTops_value, str(
             int(world.thermal_tops*world.m2f)))
         y -= 32
 
-        # Thermal Density
-        self.CSVTDensity_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Density", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTDensity_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max # of Thermals", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        # define scrollbar
-        self.CSVTDensity_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTDensity_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.CSVTDensity_scrollbar,
-                             xp.Property_ScrollBarMin, 1)
-        xp.setWidgetProperty(self.CSVTDensity_scrollbar,
-                             xp.Property_ScrollBarMax, 500)
-        xp.setWidgetProperty(self.CSVTDensity_scrollbar,
-                             xp.Property_ScrollBarPageAmount, 10)
-        xp.setWidgetProperty(self.CSVTDensity_scrollbar,
-                             xp.Property_ScrollBarSliderPosition, world.thermal_density)
-        xp.setWidgetDescriptor(self.CSVTDensity_value,
-                               str(world.thermal_density))
-        y -= 32
 
         # Thermal Size
-        self.CSVTSize_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Size", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTSize_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max Diameter m", 0, self.CSVWidget,  xp.WidgetClass_Caption)
+        self.KK7TSize_label1 = xp.createWidget(
+            x+60,  y-80, x+140, y-102, 1, "Thermal Size", 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.KK7TSize_label2 = xp.createWidget(
+            x+375, y-80, x+410, y-102, 1, "Max Diameter m", 0, self.KK7Widget,  xp.WidgetClass_Caption)
         # define scrollbar
-        self.CSVTSize_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTSize_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.CSVTSize_scrollbar,
+        self.KK7TSize_value = xp.createWidget(
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.KK7TSize_scrollbar = xp.createWidget(
+            x+170, y-80, x+370, y-102, 1, "", 0, self.KK7Widget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.KK7TSize_scrollbar,
                              xp.Property_ScrollBarMin, 50)
-        xp.setWidgetProperty(self.CSVTSize_scrollbar,
+        xp.setWidgetProperty(self.KK7TSize_scrollbar,
                              xp.Property_ScrollBarMax, 1500)
-        xp.setWidgetProperty(self.CSVTSize_scrollbar,
+        xp.setWidgetProperty(self.KK7TSize_scrollbar,
                              xp.Property_ScrollBarPageAmount, 20)
-        xp.setWidgetProperty(self.CSVTSize_scrollbar,
+        xp.setWidgetProperty(self.KK7TSize_scrollbar,
                              xp.Property_ScrollBarSliderPosition, world.thermal_size)
-        xp.setWidgetDescriptor(self.CSVTSize_value, str(world.thermal_size))
+        xp.setWidgetDescriptor(self.KK7TSize_value, str(world.thermal_size))
         y -= 32
 
         # Thermal Strength
-        self.CSVTPower_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thermal Vs", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTPower_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Max m/s", 0, self.CSVWidget,  xp.WidgetClass_Caption)
+        self.KK7TPower_label1 = xp.createWidget(
+            x+60,  y-80, x+140, y-102, 1, "Thermal Vs", 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.KK7TPower_label2 = xp.createWidget(
+            x+375, y-80, x+410, y-102, 1, "Max m/s", 0, self.KK7Widget,  xp.WidgetClass_Caption)
         # define scrollbar
-        self.CSVTPower_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTPower_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.CSVTPower_scrollbar,
+        self.KK7TPower_value = xp.createWidget(
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.KK7TPower_scrollbar = xp.createWidget(
+            x+170, y-80, x+370, y-102, 1, "", 0, self.KK7Widget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.KK7TPower_scrollbar,
                              xp.Property_ScrollBarMin, 1)
-        xp.setWidgetProperty(self.CSVTPower_scrollbar,
+        xp.setWidgetProperty(self.KK7TPower_scrollbar,
                              xp.Property_ScrollBarMax, 15)
-        xp.setWidgetProperty(self.CSVTPower_scrollbar,
+        xp.setWidgetProperty(self.KK7TPower_scrollbar,
                              xp.Property_ScrollBarPageAmount, 1)
-        xp.setWidgetProperty(self.CSVTPower_scrollbar,
+        xp.setWidgetProperty(self.KK7TPower_scrollbar,
                              xp.Property_ScrollBarSliderPosition, world.thermal_power)
-        xp.setWidgetDescriptor(self.CSVTPower_value, str(world.thermal_power))
+        xp.setWidgetDescriptor(self.KK7TPower_value, str(world.thermal_power))
         y -= 32
 
         # Thermal Cycle time
-        self.CSVTCycle_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Cycle Time", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTCycle_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Minutes", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTCycle_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CSVWidget,  xp.WidgetClass_Caption)
-        self.CSVTCycle_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CSVWidget, xp.WidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.CSVTCycle_scrollbar,
+        self.KK7TCycle_label1 = xp.createWidget(
+            x+60,  y-80, x+140, y-102, 1, "Cycle Time", 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.KK7TCycle_label2 = xp.createWidget(
+            x+375, y-80, x+410, y-102, 1, "Minutes", 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.KK7TCycle_value = xp.createWidget(
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.KK7TCycle_scrollbar = xp.createWidget(
+            x+170, y-80, x+370, y-102, 1, "", 0, self.KK7Widget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.KK7TCycle_scrollbar,
                              xp.Property_ScrollBarMin, 5)
-        xp.setWidgetProperty(self.CSVTCycle_scrollbar,
+        xp.setWidgetProperty(self.KK7TCycle_scrollbar,
                              xp.Property_ScrollBarMax, 90)
-        xp.setWidgetProperty(self.CSVTCycle_scrollbar,
+        xp.setWidgetProperty(self.KK7TCycle_scrollbar,
                              xp.Property_ScrollBarPageAmount, 1)
-        xp.setWidgetProperty(self.CSVTCycle_scrollbar,
+        xp.setWidgetProperty(self.KK7TCycle_scrollbar,
                              xp.Property_ScrollBarSliderPosition, world.thermal_cycle)
-        xp.setWidgetDescriptor(self.CSVTCycle_value, str(world.thermal_cycle))
+        xp.setWidgetDescriptor(self.KK7TCycle_value, str(world.thermal_cycle))
         y -= 30
 
         # define "Generate Thermals button
-        self.CSVTGenerate_button = xp.createWidget(x+320, y-60, x+440, y-82,
-                                                   1, "Generate Thermals", 0, self.CSVWidget, xp.WidgetClass_Button)
-        xp.setWidgetProperty(self.CSVTGenerate_button,
+        self.KK7TGenerate_button = xp.createWidget(x+320, y-80, x+440, y-102,
+                                                   1, "Generate Thermals", 0, self.KK7Widget, xp.WidgetClass_Button)
+        xp.setWidgetProperty(self.KK7TGenerate_button,
                              xp.Property_ButtonType, xp.PushButton)
 
+        kk7_message0 = "1. Download a thermal hotspot from  https://thermal.kk7.ch/ "
+        kk7_message1 = "2. Rename file to kk7_hotspots.csv an place in the root X-Plane folder"
+        self.kk7_label_a = xp.createWidget(
+            x+60,  y-160, x+450, y-175, 1, kk7_message0, 0, self.KK7Widget,  xp.WidgetClass_Caption)
+        self.kk7_label_b = xp.createWidget(
+            x+60,  y-176, x+450, y-195, 1, kk7_message1, 0, self.KK7Widget,  xp.WidgetClass_Caption)
+
         # --------------------------
-        self.CSVHandlerCB = self.CSVHandler
-        xp.addWidgetCallback(self.CSVWidget, self.CSVHandlerCB)
+        self.KK7HandlerCB = self.KK7Handler
+        xp.addWidgetCallback(self.KK7Widget, self.KK7HandlerCB)
 
     # ------- after this debug
 

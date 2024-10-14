@@ -67,7 +67,7 @@ class PythonInterface:
             "Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         xp.appendMenuItem(
             self.myMenu, "Generate Random Thermals", randomThermal, 1)
-        #xp.appendMenuItem(self.myMenu, "Load KK7 Thermals for CSV", csvThermal, 1)
+        xp.appendMenuItem(self.myMenu, "Load KK7 Thermals for CSV", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
 

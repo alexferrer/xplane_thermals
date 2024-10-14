@@ -67,9 +67,9 @@ Installation
 ( https://xppython3.readthedocs.io/en/latest/index.html )
 This is XPPython3 version 4 and includes both the X-Plane plugin as well as a private version of Python3. Unlike previous versions of XPPython3, you no longer need to install your own copy of Python.
 
-For installation copy the XPLANE THERMALS Python files to the X-Plane Resources/PythonScripts folder so that the Python plugin can find them.
+For installation copy the XPLANE THERMALS Python files to the X-Plane Resources/plugins/PythonPlugins folder so that the Python plugin can find them.
 
-Other than that, all is needed is PI_ThermalSym, thermal_model.py and world.py anything else is test stuff or helpers. 
+Other than that, all is needed is PI_ThermalSim, thermal_model.py and world.py anything else is test stuff or helpers. 
 
 V.04 Changes: 
 

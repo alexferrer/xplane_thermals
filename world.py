@@ -28,7 +28,7 @@ message2 = " x x x x "
 
 
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
-DEBUG = 4
+DEBUG = 0
 # handle image loading before plane bug
 images_loaded = False   
 update_loop = 0 

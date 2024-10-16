@@ -131,19 +131,6 @@ class PythonInterface:
         if world.DEBUG > 3 : print("registering callback")
         xp.registerFlightLoopCallback(self.FlightLoopCallback, 1.0, 0)
 
-        #------------------------------
-        self.WindowId = xp.createWindowEx(50, 600, 300, 400, 1,
-                                          self.DrawWindowCallback,
-                                          None,
-                                          None,
-                                          None,
-                                          None,
-                                          0,
-                                          xp.WindowDecorationRoundRectangle,
-                                          xp.WindowLayerFloatingWindows,
-                                          None)
-        #--------------
-
         return self.Name, self.Sig, self.Desc
 
     def XPluginStop(self):    # Unregister the callbacks
@@ -348,7 +335,7 @@ class PythonInterface:
             print("show about box ")
             if (self.AboutMenuItem == 0):
                 print(" create the thermal config box ")
-                self.CreateAboutWindow(100, 550, 450, 230)
+                self.CreateAboutWindow(100, 550, 460, 380)
                 self.AboutMenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.AboutWidget)):
@@ -677,6 +664,14 @@ class PythonInterface:
             int(world.DEBUG)))
         y -= 32
         #------
+
+        # Show force stats window button
+        self.DBug__button = xp.createWidget(x+170, y-110, x+300, y-130,
+                                                 1, "Open Stats Window", 0, self.AboutWidget, xp.WidgetClass_Button)
+        xp.setWidgetProperty(self.DBug__button,
+                             xp.Property_ButtonType, xp.PushButton)
+        
+
         self.AboutHandlerCB = self.AboutHandler
         xp.addWidgetCallback(self.AboutWidget, self.AboutHandlerCB)
      # ----
@@ -692,6 +687,27 @@ class PythonInterface:
             xp.setWidgetDescriptor(self.DBug_value, str(val))
             world.DEBUG = int(val)
             print("DEBUG LEVEL ", world.DEBUG)
+
+        if (inMessage == xp.Msg_PushButtonPressed):
+            print("[button was pressed", inParam1, "]")
+            if (inParam1 == self.DBug__button):
+                print("Open Stats Window")
+                '''
+                  floating stats window to show applied forces statistics
+                '''
+                self.WindowId = xp.createWindowEx(50, 600, 300, 400, 1,
+                                    self.DrawWindowCallback,
+                                    None,
+                                    None,
+                                    None,
+                                    None,
+                                    0,
+                                    xp.WindowDecorationRoundRectangle,
+                                    xp.WindowLayerFloatingWindows,
+                                    None)
+
+                return 1
+
 
         return 0
 # ----------------------------------------- new...

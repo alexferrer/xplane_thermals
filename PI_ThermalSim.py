@@ -74,8 +74,9 @@ class PythonInterface:
             xp.findPluginsMenu(), "Thermal Simulator", 0, 1)
         self.MyMenuHandlerCB = self.MyMenuHandlerCallback
         self.myMenu = xp.createMenu("Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
-
-        xp.appendMenuItem(self.myMenu, "Activate Plugin On/Off", activatePlugin, 1)
+        
+        # No idea how to enable disable plugin.. maybe let it sit iddle ?
+        # xp.appendMenuItem(self.myMenu, "Activate Plugin On/Off", activatePlugin, 1)
         xp.appendMenuItem(self.myMenu, "Generate Random Thermals", randomThermal, 1)
         xp.appendMenuItem(self.myMenu, "Load KK7 Thermals", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
@@ -315,13 +316,7 @@ class PythonInterface:
         # activate / deactivate  plugin
         if (inItemRef == activatePlugin):
             print("activate/de activate plugin ")
-            if (self.TCMenuItem == 0):
-                print(" create the thermal config box ")
-                self.TCMenuItem = 1
-            else:
-                if(not xp.isWidgetVisible(self.TCWidget)):
-                    print("re-show test config box ")
-                    xp.showWidget(self.TCWidget)
+            print(" xxxxxxxxx ")
 
         # activate / deactivate  plugin
         if (inItemRef == statsWindow):

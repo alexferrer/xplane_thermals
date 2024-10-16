@@ -27,11 +27,13 @@ from XPPython3.xp_typing import *
 LIB_VERSION = "Version ----------------------------   PI_ThermalSim V2.0"
 print(LIB_VERSION)
 
+activatePlugin = 0
 toggleThermal = 1
 randomThermal = 2
 csvThermal = 3
 aboutThermal = 4
 configGlider = 5
+statsWindow = 6
 
 def xplane_terrain_is_water(lat, lon):
     # https://xppython3.readthedocs.io/en/stable/development/changesfromp2.html?highlight=xplmprobeterrainxyz
@@ -62,6 +64,7 @@ class PythonInterface:
         self.TCMenuItem = 0
         self.KK7MenuItem = 0
         self.CGMenuItem = 0
+        self.StatsWindowItem = 0
         self.AboutMenuItem = 0
 
         global myMenu
@@ -70,12 +73,13 @@ class PythonInterface:
         mySubMenuItem = xp.appendMenuItem(
             xp.findPluginsMenu(), "Thermal Simulator", 0, 1)
         self.MyMenuHandlerCB = self.MyMenuHandlerCallback
-        self.myMenu = xp.createMenu(
-            "Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
-        xp.appendMenuItem(
-            self.myMenu, "Generate Random Thermals", randomThermal, 1)
+        self.myMenu = xp.createMenu("Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
+
+        xp.appendMenuItem(self.myMenu, "Activate Plugin On/Off", activatePlugin, 1)
+        xp.appendMenuItem(self.myMenu, "Generate Random Thermals", randomThermal, 1)
         xp.appendMenuItem(self.myMenu, "Load KK7 Thermals", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
+        xp.appendMenuItem(self.myMenu, "Activate Stats Window", statsWindow, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
         # -------------------------------------------------
 
@@ -308,6 +312,32 @@ class PythonInterface:
 
     def MyMenuHandlerCallback(self, inMenuRef, inItemRef):
 
+        # activate / deactivate  plugin
+        if (inItemRef == activatePlugin):
+            print("activate/de activate plugin ")
+            if (self.TCMenuItem == 0):
+                print(" create the thermal config box ")
+                self.TCMenuItem = 1
+            else:
+                if(not xp.isWidgetVisible(self.TCWidget)):
+                    print("re-show test config box ")
+                    xp.showWidget(self.TCWidget)
+
+        # activate / deactivate  plugin
+        if (inItemRef == statsWindow):
+            print("Open Stats Window")
+            self.WindowId = xp.createWindowEx(50, 600, 300, 400, 1,
+                                self.DrawWindowCallback,
+                                None,
+                                None,
+                                None,
+                                None,
+                                0,
+                                xp.WindowDecorationRoundRectangle,
+                                xp.WindowLayerFloatingWindows,
+                                None)
+
+        #--------------------------------
         if (inItemRef == randomThermal):
             print("show thermal config box ")
             if (self.TCMenuItem == 0):
@@ -431,7 +461,6 @@ class PythonInterface:
 
         return 0
 
-    # Creates the widget with buttons for test and edit boxes for info
 
     def CreateTCWindow(self, x, y, w, h):
         x2 = x + w
@@ -676,13 +705,6 @@ class PythonInterface:
         y -= 32
         #------
 
-        # Show force stats window button
-        self.DBug__button = xp.createWidget(x+170, y-110, x+300, y-130,
-                                                 1, "Open Stats Window", 0, self.AboutWidget, xp.WidgetClass_Button)
-        xp.setWidgetProperty(self.DBug__button,
-                             xp.Property_ButtonType, xp.PushButton)
-        
-
         self.AboutHandlerCB = self.AboutHandler
         xp.addWidgetCallback(self.AboutWidget, self.AboutHandlerCB)
      # ----
@@ -698,27 +720,6 @@ class PythonInterface:
             xp.setWidgetDescriptor(self.DBug_value, str(val))
             world.DEBUG = int(val)
             print("DEBUG LEVEL ", world.DEBUG)
-
-        if (inMessage == xp.Msg_PushButtonPressed):
-            print("[button was pressed", inParam1, "]")
-            if (inParam1 == self.DBug__button):
-                print("Open Stats Window")
-                '''
-                  floating stats window to show applied forces statistics
-                '''
-                self.WindowId = xp.createWindowEx(50, 600, 300, 400, 1,
-                                    self.DrawWindowCallback,
-                                    None,
-                                    None,
-                                    None,
-                                    None,
-                                    0,
-                                    xp.WindowDecorationRoundRectangle,
-                                    xp.WindowLayerFloatingWindows,
-                                    None)
-
-                return 1
-
 
         return 0
 # ----------------------------------------- new...

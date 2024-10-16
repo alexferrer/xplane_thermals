@@ -36,7 +36,6 @@ def draw_thermal_column(lat, lon, radius):  # min_alt,max_alt
     '''
     if world.DEBUG > 4 : print("B ", end='') 
 
-
     base = 1
     _dew, _dud, _dns = xp.worldToLocal(
         lat, lon, 0)  # Dew=E/W,Dud=Up/Down,Dns=N/S
@@ -98,25 +97,20 @@ def draw_clouds(lat, lon):
 
 def eraseThermalsCloudsOnScreen():
     if world.DEBUG > 3: print("Delete old cloud instances #", len(world.cloud_instance_list))
-    for i in world.cloud_instance_list:
-        if world.DEBUG > 4 : print("-i ", end='') 
-        if i:
-            try:
-                xp.destroyInstance(i)
-                world.cloud_instance_list.remove(i)
-            except Exception as e:
-                print(f"Exception destroying cloud instance {i}: {e}")
+    csize = len(world.cloud_instance_list)
+    for x in range(csize):
+       i = world.cloud_instance_list[x]
+       xp.destroyInstance(i)
+
+    world.cloud_instance_list = []
 
 def eraseThermalsRingsOnScreen():
-    if world.DEBUG > 3: print("Delete old thermal rings instances #", len(world.thermal_rings_instance_list))
-    for i in world.thermal_rings_instance_list:
-        if world.DEBUG > 4 : print("-i ", end='') 
-        if i:
-            try:
-                xp.destroyInstance(i)
-                world.thermal_rings_instance_list.remove(i)
-            except Exception as e:
-                print(f"Exception destroying thermal ring instance {i}: {e}")
+    tsize = len(world.thermal_rings_instance_list)
+    for x in range(tsize):
+       i = world.thermal_rings_instance_list[x]
+       xp.destroyInstance(i)
+
+    world.thermal_rings_instance_list = []
 
 
 def drawThermalsOnScreen(lat, lon):

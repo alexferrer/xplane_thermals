@@ -48,7 +48,14 @@ def xplane_terrain_is_water(lat, lon):
 
 class PythonInterface:
     def XPluginStart(self):
+        self.Name = "ThermalSim2"
+        self.Sig = "AlexFerrer.Python.ThermalSim2"
+        self.Desc = "A plugin that simulates thermals (beta)"
+
         global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl
+
+        # hot key for thermal visibility control 
+        self.HotKey = xp.registerHotKey(xp.VK_F1, xp.DownFlag, "Says 'Hello World 1'", self.MyHotKeyCallback, 0)
 
         # ----- menu stuff --------------------------
         # init menu control params
@@ -70,14 +77,9 @@ class PythonInterface:
         xp.appendMenuItem(self.myMenu, "Load KK7 Thermals", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
-
-
         # -------------------------------------------------
-        if world.DEBUG > 3 : print("setting up global variables")
+
         world.THERMAL_COLUMN_VISIBLE = True
-        self.Name = "ThermalSim2"
-        self.Sig = "AlexFerrer.Python.ThermalSim2"
-        self.Desc = "A plugin that simulates thermals (beta)"
 
         """ Data refs we want to record."""
         # airplane current flight info
@@ -112,7 +114,6 @@ class PythonInterface:
 
         self.lift_Dref = xp.findDataRef('sim/flightmodel/forces/fnrml_plug_acf')
         self.roll_Dref = xp.findDataRef('sim/flightmodel/forces/L_plug_acf')
-
                              
         # although lift should be enough, 
         # some energy has to go as thrust, or the plane
@@ -128,10 +129,9 @@ class PythonInterface:
         are in seconds, negative are the negative of sim frames.  Zero
         registers but does not schedule a callback for time.
         """
-        if world.DEBUG > 3 : print("registering callback")
         xp.registerFlightLoopCallback(self.FlightLoopCallback, 1.0, 0)
-
         return self.Name, self.Sig, self.Desc
+
 
     def XPluginStop(self):    # Unregister the callbacks
         if world.DEBUG > 3 : print("XPPluginStop")
@@ -149,6 +149,17 @@ class PythonInterface:
 
     def XPluginReceiveMessage(self, inFromWho, inMessage, inParam):
         pass
+
+    def MyHotKeyCallback(self, inRefcon):
+        # This is our hot key handler.  Note that we don't know what key stroke
+        # was pressed!  We can identify our hot key by the 'refcon' value though.
+        # This is because our hot key could have been remapped by the user and we
+        # wouldn't know it.
+        world.world_update = True
+        world.THERMAL_COLUMN_VISIBLE = not world.THERMAL_COLUMN_VISIBLE
+        print(" F1 Toggle thermal column visibility ",world.THERMAL_COLUMN_VISIBLE)
+
+
 
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
         #if world.DEBUG: print("start the FlightLoopCallback ")

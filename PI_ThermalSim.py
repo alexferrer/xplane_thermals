@@ -240,7 +240,7 @@ class PythonInterface:
         # Get the lift value of the current position from the world thermal map
         lift_val, roll_val, pitch_val = calc_thermalx(
             lat, lon, elevation, heading, roll_angle, pitch_angle)
-        if world.DEBUG > 5: print("calc_thermal lift/roll/pitch",lift_val, roll_val)
+        if world.DEBUG > 5: print("calc_thermal lift/roll/pitch",lift_val, roll_val,roll_val)
 
         # apply sun elevation as a % factor to thermal power
         # average lift depends on sun angle over the earth.
@@ -262,41 +262,51 @@ class PythonInterface:
         #   11k   = 2 @ 90
         #   10k   = 1 @ 90
 
-        METERS_PER_SECOND_TO_NEWTON = 5000 # 1m/s = 1000N
+        METERS_PER_SECOND_TO_NEWTON = 500 # 1m/s = 1000N
         if world.CALIBRATE_MODE:
-           amount =  METERS_PER_SECOND_TO_NEWTON *  world.lift_factor + xp.getDataf(self.lift_Dref)
-           xp.setDataf(self.lift_Dref, amount)
-           world.applied_lift_force = amount
+           #lift (always)
+           lift_amount =  METERS_PER_SECOND_TO_NEWTON *  world.lift_factor + xp.getDataf(self.lift_Dref)
+           xp.setDataf(self.lift_Dref, lift_amount)
+           lift = lift_amount
+
+           #roll on pulse
+           roll_amount = float(-200.0) * world.roll_factor
+           roll = 0
+           if world.roll_test_pulse > 0:
+               world.roll_test_pulse -= 1
+               xp.setDataf(self.roll_Dref, roll_amount)
+               roll = roll_amount
+
+           #pich on pulse
+           pitch_amount = float(200.0) * world.pitch_factor
+           pitch = 0
+           if world.pitch_test_pulse > 0:
+               world.pitch_test_pulse -= 1
+               xp.setDataf(self.pitch_Dref, pitch_amount)
+               pitch = pitch_amount
+
+           world.message2  =  "Cal: L({:<10}) R({:<10}) P({:<10})".format(
+               round(lift, 3), round(roll, 3), round(pitch, 3))
+
+    
         else:
+           # standart mode (non calibrate) 
            lval = lift_val * world.lift_factor * METERS_PER_SECOND_TO_NEWTON + xp.getDataf(self.lift_Dref)
            xp.setDataf(self.lift_Dref, lval)
            world.applied_lift_force = lval
 
-        # apply a roll to the plane
-        if world.CALIBRATE_MODE:
-            roll_amount = float(-200.0) * world.roll_factor
-            if world.roll_test_pulse > 0:
-               world.roll_test_pulse -= 1
-               xp.setDataf(self.roll_Dref, roll_amount)
-               if world.DEBUG > 4: print("apply roll to the plane [roll factor/tot]",world.roll_factor ,roll_amount,world.roll_test_pulse)
-        else:
+           # apply a roll to the plane
            rval = roll_val * world.roll_factor + xp.getDataf(self.roll_Dref)
            xp.setDataf(self.roll_Dref, rval) 
            world.applied_roll_force = rval
 
-        # apply a pitch to the plane
-        if world.CALIBRATE_MODE:
-            pitch_amount = float(-10.0) * world.pitch_factor
-            if world.pitch_test_pulse > 0:
-               world.pitch_test_pulse -= 1
-               xp.setDataf(self.pitch_Dref, pitch_amount)
-               if world.DEBUG > 4: print("apply pitch to the plane [roll factor/tot]",world.pitch_factor ,pitch_amount,world.pitch_test_pulse)
-        else:
+           # apply a pitch to the plane
            pval = pitch_val * world.pitch_factor + xp.getDataf(self.pitch_Dref)
            xp.setDataf(self.pitch_Dref, pval) 
            world.applied_roll_force = pval
 
-
+           world.message2  =  "Cal: L:{:<10} R:{:<10} P:{:<10}".format(
+               round(lval, 3), round(rval, 3), round(pval, 3))
 
 
         # set the next callback time in +n for # of seconds and -n for # of Frames
@@ -759,13 +769,13 @@ class PythonInterface:
             val = xp.getWidgetProperty(
                 self.CGLift_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CGLift_value, str(val))
-            world.lift_factor = val * .1
+            world.lift_factor = val 
 
             # Pitch Factor
             val = xp.getWidgetProperty(
                 self.CGPitch_scrollbar, xp.Property_ScrollBarSliderPosition, None)
             xp.setWidgetDescriptor(self.CGPitch_value, str(val))
-            world.pitch_factor = val * .1
+            world.pitch_factor = val
 
             # Roll factor
             val = xp.getWidgetProperty(
@@ -793,7 +803,7 @@ class PythonInterface:
         x2 = x + w
         y2 = y - h
         Title = "Glider Energy Configuration"
-        print("creating glider config window 790")
+        print("alx creating glider config window 806")
         # create the window
         self.CGWidget = xp.createWidget(
             x, y, x2, y2, 1, Title, 1,     0, xp.WidgetClass_MainWindow)

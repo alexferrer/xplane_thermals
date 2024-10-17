@@ -165,10 +165,10 @@ lift_factor = 1.4  # ask21  3.9
 
 # Roll effect because of differential lift between wings.
 roll_factor = 50  # ask21  
-roll_test_pulse =  100  # 100 units of roll for testing from config glider menu
+roll_test_pulse =  0  
 
 pitch_factor = 2
-pitch_test_pulse =  100
+pitch_test_pulse =  0
 
 # wing span in meters for lift differential calculation
 # size of each wing   10m -> -----(*)----- <-10m

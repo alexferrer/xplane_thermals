@@ -93,8 +93,8 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle, airplane_pitch_an
      the value representing lift is the maxpower times a  % of distance away from center
      Return the total lift and roll value.
     """
-    world.message  =  "Lat( "+str(round(lat,3)) + ") Lon( "+str(round(lon,3)) 
-    world.message1 =  "Hed("+str(round(heading,3) ) + ") Rl("+str(round(airplane_roll_angle,3) ) + ") Pt("+str(round(airplane_pitch_angle,3) )
+    world.message  = "Lat: " + str(round(lat, 3)).ljust(10) + " Lon: " + str(round(lon, 3)).ljust(10)
+    world.message1 = "Hed: " + str(round(heading, 3)).ljust(10) + " Rl:" + str(round(airplane_roll_angle, 3)).ljust(10) + " Pt:" + str(round(airplane_pitch_angle, 3)).ljust(10)
     # current plane position
     _plane_ew, _plane_alt, _plane_ns = xp.worldToLocal(lat, lon, alt)
     _dx, _dy = calc_drift(alt)     # total wind drift
@@ -134,7 +134,7 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle, airplane_pitch_an
     _lift_t = calc_lift(_tail_x, _tail_y) 
 
     # total lift component
-    lift_value = (_lift_l + _lift_r + _lift_m) / 3 * tband_factor
+    lift_value = ( _lift_l + _lift_r + _lift_m + _lift_t  ) / 3 * tband_factor
     
     # total roll component
     #         the more airplane is rolled, the less thermal roll effect
@@ -161,8 +161,6 @@ def calc_thermalx(lat, lon, alt, heading, airplane_roll_angle, airplane_pitch_an
     if world.DEBUG > 6 : print( "pos[",'%.4f'%_plane_ew,",",'%.4f'%_plane_ns,"] head",'%.0f'%(heading), \
          "roll ",'%.1f'%(airplane_roll_angle), "   Lift [",'%.1f'%lift_value,"| Roll:",
       '%.1f'%roll_value ,"]   ",'%.1f'%alt)      
-
-    world.message2  =  "L("+str(round(lift_value,3)) + ") R("+str(round(roll_value,3)) + ") P("+str(round(pitch_value,3)) 
 
     """Todo: thermals have cycles, begin, middle , end.. and reflect in strength.."""
     return lift_value, roll_value, pitch_value

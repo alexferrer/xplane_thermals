@@ -89,11 +89,13 @@ class PythonInterface:
         """ Data refs we want to record."""
         # airplane current flight info
         if world.DEBUG > 3 : print(" aircraft position")
-        self.PlaneLat = xp.findDataRef("sim/flightmodel/position/latitude")
-        self.PlaneLon = xp.findDataRef("sim/flightmodel/position/longitude")
-        self.PlaneElev = xp.findDataRef("sim/flightmodel/position/elevation")
-        self.PlaneHdg = xp.findDataRef("sim/flightmodel/position/psi")  # plane heading
-        self.PlaneRol = xp.findDataRef("sim/flightmodel/position/phi")  # plane roll
+        self.PlaneLat   = xp.findDataRef("sim/flightmodel/position/latitude")
+        self.PlaneLon   = xp.findDataRef("sim/flightmodel/position/longitude")
+        self.PlaneElev  = xp.findDataRef("sim/flightmodel/position/elevation")
+        self.PlaneHdg   = xp.findDataRef("sim/flightmodel/position/psi")  # plane heading
+        self.PlaneRol   = xp.findDataRef("sim/flightmodel/position/phi")  # plane roll
+        self.PlanePitch = xp.findDataRef("sim/flightmodel/position/theta")  # plane pitch
+
 
         self.WindSpeed = xp.findDataRef(
             "sim/weather/wind_speed_kt[0]")  # wind speed at surface
@@ -119,6 +121,7 @@ class PythonInterface:
 
         self.lift_Dref = xp.findDataRef('sim/flightmodel/forces/fnrml_plug_acf')
         self.roll_Dref = xp.findDataRef('sim/flightmodel/forces/L_plug_acf')
+        self.pitch_Dref = xp.findDataRef('sim/flightmodel/forces/M_plug_acf')
                              
         # although lift should be enough, 
         # some energy has to go as thrust, or the plane
@@ -136,7 +139,6 @@ class PythonInterface:
         """
         xp.registerFlightLoopCallback(self.FlightLoopCallback, 1.0, 0)
         return self.Name, self.Sig, self.Desc
-
 
     def XPluginStop(self):    # Unregister the callbacks
         if world.DEBUG > 3 : print("XPPluginStop")
@@ -164,10 +166,7 @@ class PythonInterface:
         world.THERMAL_COLUMN_VISIBLE = not world.THERMAL_COLUMN_VISIBLE
         print(" F1 Toggle thermal column visibility ",world.THERMAL_COLUMN_VISIBLE)
 
-
-
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
-        #if world.DEBUG: print("start the FlightLoopCallback ")
         # the actual callback, runs once every x period as defined
 
         # is the sim paused? , then skip
@@ -184,10 +183,10 @@ class PythonInterface:
         elevation = xp.getDataf(self.PlaneElev)
         heading = xp.getDataf(self.PlaneHdg)
         roll_angle = xp.getDataf(self.PlaneRol)
+        pitch_angle = xp.getDataf(self.PlanePitch)
 
         # ----------------------------------------------------------
-        # - REDUCE CALLS FOR THIS BLOCK TO REDUCE PERFORMANCE IMPACT
-        
+        # - REDUCE CALLS FOR THIS BLOCK TO REDUCE PERFORMANCE IMPACT   
 
         if world.update_loop > 100 :
             world.update_loop = 0 
@@ -239,9 +238,9 @@ class PythonInterface:
         #--------------------------------------------------        
 
         # Get the lift value of the current position from the world thermal map
-        lift_val, roll_val = calc_thermalx(
-            lat, lon, elevation, heading, roll_angle)
-        if world.DEBUG > 5: print("calc_thermal lift/roll",lift_val, roll_val)
+        lift_val, roll_val, pitch_val = calc_thermalx(
+            lat, lon, elevation, heading, roll_angle, pitch_angle)
+        if world.DEBUG > 5: print("calc_thermal lift/roll/pitch",lift_val, roll_val)
 
         # apply sun elevation as a % factor to thermal power
         # average lift depends on sun angle over the earth.
@@ -268,20 +267,10 @@ class PythonInterface:
            amount =  METERS_PER_SECOND_TO_NEWTON *  world.lift_factor + xp.getDataf(self.lift_Dref)
            xp.setDataf(self.lift_Dref, amount)
            world.applied_lift_force = amount
-
         else:
            lval = lift_val * world.lift_factor * METERS_PER_SECOND_TO_NEWTON + xp.getDataf(self.lift_Dref)
            xp.setDataf(self.lift_Dref, lval)
            world.applied_lift_force = lval
-
-        # although extra lift is what should be happening...
-        # adding a bit of thrust works much better! -150 = 1m/s
-        # apply a max thurst to a factor of 500fpm
-        #ALX maybe i should use pitch down instead of thrust ?
-        tval = xp.getDataf(self.thrust_Dref)
-        new_tvalue = (- world.thrust_factor) * lift_val + tval 
-        #ALX xp.setDataf(self.thrust_Dref, new_tvalue) 
-
 
         # apply a roll to the plane
         if world.CALIBRATE_MODE:
@@ -295,14 +284,30 @@ class PythonInterface:
            xp.setDataf(self.roll_Dref, rval) 
            world.applied_roll_force = rval
 
+        # apply a pitch to the plane
+        if world.CALIBRATE_MODE:
+            pitch_amount = float(-10.0) * world.pitch_factor
+            if world.pitch_test_pulse > 0:
+               world.pitch_test_pulse -= 1
+               xp.setDataf(self.pitch_Dref, pitch_amount)
+               if world.DEBUG > 4: print("apply pitch to the plane [roll factor/tot]",world.pitch_factor ,pitch_amount,world.pitch_test_pulse)
+        else:
+           pval = pitch_val * world.pitch_factor + xp.getDataf(self.pitch_Dref)
+           xp.setDataf(self.pitch_Dref, pval) 
+           world.applied_roll_force = pval
+
+
+
 
         # set the next callback time in +n for # of seconds and -n for # of Frames
+        #return .01  # works good on my (pretty fast) machine..
         CALLBACKTIME = .01
 
-        if world.DEBUG > 5: CALLBACKTIME = 5 # slow down for debugging
-        if world.DEBUG > 5: print("next callback in second", CALLBACKTIME)
+        if world.DEBUG > 5:
+            CALLBACKTIME = 5 # slow down for debugging
+            print("next callback in second", CALLBACKTIME)
+
         world.update_loop += 1
-        #return .01  # works good on my (pretty fast) machine..
         return CALLBACKTIME
 
     # --------------------------------------------------------------------------------------------------
@@ -341,36 +346,36 @@ class PythonInterface:
                 self.TCMenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.TCWidget)):
-                    print("re-show test config box ")
+                    print("re-show Thermal config box ")
                     xp.showWidget(self.TCWidget)
  
         if (inItemRef == csvThermal):
             print("Making thermals from list")
             if (self.KK7MenuItem == 0):
-                print(" create the thermal config box ")
+                print(" create the KK7 thermal config box ")
                 self.CreateKK7Window(100, 550, 550, 330)
                 self.KK7MenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.KK7Widget)):
-                    print("re-show test config box ")
+                    print("re-show KK7 config box ")
                     xp.showWidget(self.KK7Widget)
 
         if (inItemRef == configGlider):
-            print("show thermal config box ")
+            print("show Glider config box ")
             if (self.CGMenuItem == 0):
-                print(" create the thermal config box ")
+                print(" create the Glider config box ")
                 self.CreateCGWindow(100, 550, 550, 330)
                 self.CGMenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.CGWidget)):
-                    print("re-show test config box ")
+                    print("re-show Glider config box ")
                     xp.showWidget(self.CGWidget)
 
         print("menu option ------>", inItemRef)
         if (inItemRef == aboutThermal):
             print("show about box ")
             if (self.AboutMenuItem == 0):
-                print(" create the thermal config box ")
+                print(" create the About box ")
                 self.CreateAboutWindow(100, 550, 460, 380)
                 self.AboutMenuItem = 1
             else:
@@ -738,16 +743,16 @@ class PythonInterface:
         if (inMessage ==  xp.Msg_PushButtonPressed):
             print("[button was pressed", inParam1, "]")
 
-            # Tests the Command API, will find command
-            if (inParam1 == self.CGGenerate_button):
-                print("Generate")
-                return 1
-
-            if (inParam1 == self.CGRandom_button):
+            if (inParam1 == self.CGRoll_button):
                 print("Glider Config: roll wing left")
-                # roll for 100 units
                 world.roll_test_pulse = 50
                 return 1
+            
+            if (inParam1 == self.CGPitch_button):
+                print("Glider Config: Pitch nose Up")
+                world.pitch_test_pulse = 50
+                return 1
+
         # Process when a scrollbar on the widget is changed
         if (inMessage == xp.Msg_ScrollBarSliderPositionChanged):
             # Lift Factor
@@ -756,11 +761,11 @@ class PythonInterface:
             xp.setWidgetDescriptor(self.CGLift_value, str(val))
             world.lift_factor = val * .1
 
-            # Thrust Factor
+            # Pitch Factor
             val = xp.getWidgetProperty(
-                self.CGThrust_scrollbar, xp.Property_ScrollBarSliderPosition, None)
-            xp.setWidgetDescriptor(self.CGThrust_value, str(val))
-            world.thrust_factor = val * .1
+                self.CGPitch_scrollbar, xp.Property_ScrollBarSliderPosition, None)
+            xp.setWidgetDescriptor(self.CGPitch_value, str(val))
+            world.pitch_factor = val * .1
 
             # Roll factor
             val = xp.getWidgetProperty(
@@ -774,6 +779,12 @@ class PythonInterface:
             xp.setWidgetDescriptor(self.CGWing_value, str(val))
             world.wing_size = val
 
+            # Tail Size
+            val = xp.getWidgetProperty(
+                self.CGTail_scrollbar, xp.Property_ScrollBarSliderPosition, None)
+            xp.setWidgetDescriptor(self.CGTail_value, str(val))
+            world.tail_size = val
+
         return 0
 
     # Creates the config glider widget
@@ -782,7 +793,7 @@ class PythonInterface:
         x2 = x + w
         y2 = y - h
         Title = "Glider Energy Configuration"
-
+        print("creating glider config window 790")
         # create the window
         self.CGWidget = xp.createWidget(
             x, y, x2, y2, 1, Title, 1,     0, xp.WidgetClass_MainWindow)
@@ -821,34 +832,11 @@ class PythonInterface:
             self.CGLift_value, str(int(world.lift_factor*10)))
         y -= 32
 
-        # Thrust Component
-        self.CGThrust_label1 = xp.createWidget(
-            x+60,  y-80, x+140, y-102, 1, "Thrust Factor", 0, self.CGWidget,  xp.WidgetClass_Caption)
-        self.CGThrust_label2 = xp.createWidget(
-            x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget,  xp.WidgetClass_Caption)
-        # define scrollbar
-        self.CGThrust_value = xp.createWidget(
-            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
-        self.CGThrust_scrollbar = xp.createWidget(
-            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
-        xp.setWidgetProperty(self.CGThrust_scrollbar,
-                             xp.Property_ScrollBarMin, 0)
-        xp.setWidgetProperty(self.CGThrust_scrollbar,
-                             xp.Property_ScrollBarMax, 100)
-        xp.setWidgetProperty(self.CGThrust_scrollbar,
-                             xp.Property_ScrollBarPageAmount, 1)
-        xp.setWidgetProperty(self.CGThrust_scrollbar, xp.Property_ScrollBarSliderPosition, int(
-            world.thrust_factor*10))
-        xp.setWidgetDescriptor(self.CGThrust_value,
-                               str(world.thrust_factor*10))
-        y -= 32
-
         # Roll Component
         self.CGRoll_label1 = xp.createWidget(
             x+60,  y-80, x+140, y-102, 1, "Roll Factor", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGRoll_label2 = xp.createWidget(
             x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget,  xp.WidgetClass_Caption)
-        # define scrollbar
         self.CGRoll_value = xp.createWidget(
             x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGRoll_scrollbar = xp.createWidget(
@@ -863,12 +851,28 @@ class PythonInterface:
         xp.setWidgetDescriptor(self.CGRoll_value, str(world.roll_factor))
         y -= 32
 
-        # Wing Size
+        self.CGPitch_label1 = xp.createWidget(
+            x+60,  y-80, x+140, y-102, 1, "Pitch Factor", 0, self.CGWidget,  xp.WidgetClass_Caption)
+        self.CGPitch_label2 = xp.createWidget(
+            x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget,  xp.WidgetClass_Caption)
+        self.CGPitch_value = xp.createWidget(
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
+        self.CGPitch_scrollbar = xp.createWidget(
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.CGPitch_scrollbar, xp.Property_ScrollBarMin, 0)
+        xp.setWidgetProperty(self.CGPitch_scrollbar,
+                             xp.Property_ScrollBarMax, 100)
+        xp.setWidgetProperty(self.CGPitch_scrollbar,
+                             xp.Property_ScrollBarPageAmount, 10)
+        xp.setWidgetProperty(self.CGPitch_scrollbar,
+                             xp.Property_ScrollBarSliderPosition, world.pitch_factor)
+        xp.setWidgetDescriptor(self.CGPitch_value, str(world.pitch_factor))
+        y -= 32
+
         self.CGWing_label1 = xp.createWidget(
             x+60,  y-80, x+140, y-102, 1, "Wingspan    Small", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGWing_label2 = xp.createWidget(
             x+375, y-80, x+410, y-102, 1, "Large", 0, self.CGWidget,  xp.WidgetClass_Caption)
-        # define scrollbar
         self.CGWing_value = xp.createWidget(
             x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
         self.CGWing_scrollbar = xp.createWidget(
@@ -877,10 +881,28 @@ class PythonInterface:
         xp.setWidgetProperty(self.CGWing_scrollbar,
                              xp.Property_ScrollBarMax, 100)
         xp.setWidgetProperty(self.CGWing_scrollbar,
-                             xp.Property_ScrollBarPageAmount, 1)
+                             xp.Property_ScrollBarPageAmount, 10)
         xp.setWidgetProperty(self.CGWing_scrollbar,
                              xp.Property_ScrollBarSliderPosition, world.wing_size)
         xp.setWidgetDescriptor(self.CGWing_value, str(world.wing_size))
+        y -= 32
+
+        self.CGTail_label1 = xp.createWidget(
+            x+60,  y-80, x+140, y-102, 1, "Tail Dist   Small", 0, self.CGWidget,  xp.WidgetClass_Caption)
+        self.CGTail_label2 = xp.createWidget(
+            x+375, y-80, x+410, y-102, 1, "Large", 0, self.CGWidget,  xp.WidgetClass_Caption)
+        self.CGTail_value = xp.createWidget(
+            x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
+        self.CGTail_scrollbar = xp.createWidget(
+            x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
+        xp.setWidgetProperty(self.CGTail_scrollbar, xp.Property_ScrollBarMin, 1)
+        xp.setWidgetProperty(self.CGTail_scrollbar,
+                             xp.Property_ScrollBarMax, 100)
+        xp.setWidgetProperty(self.CGTail_scrollbar,
+                             xp.Property_ScrollBarPageAmount, 10)
+        xp.setWidgetProperty(self.CGTail_scrollbar,
+                             xp.Property_ScrollBarSliderPosition, world.tail_size)
+        xp.setWidgetDescriptor(self.CGTail_value, str(world.tail_size))
         y -= 32
 
         # Define checkbox for auto themals for calibration
@@ -896,16 +918,16 @@ class PythonInterface:
                              xp.Property_ButtonState,  world.CALIBRATE_MODE)
         y -= 75
 
-        # define button
-        self.CGRandom_button = xp.createWidget(x+60, y-50, x+200, y-72,
+        # define Roll Left button
+        self.CGRoll_button = xp.createWidget(x+60, y-50, x+200, y-72,
                                                1, "Roll Left", 0, self.CGWidget, xp.WidgetClass_Button)
-        xp.setWidgetProperty(self.CGRandom_button,
+        xp.setWidgetProperty(self.CGRoll_button,
                              xp.Property_ButtonType, xp.PushButton)
 
-        # define button
-        self.CGGenerate_button = xp.createWidget(x+320, y-50, x+440, y-72,
-                                                 1, "ToBeDone", 0, self.CGWidget, xp.WidgetClass_Button)
-        xp.setWidgetProperty(self.CGGenerate_button,
+        # define Pitch Up button
+        self.CGPitch_button = xp.createWidget(x+320, y-50, x+440, y-72,
+                                                 1, "Pitch Up", 0, self.CGWidget, xp.WidgetClass_Button)
+        xp.setWidgetProperty(self.CGPitch_button,
                              xp.Property_ButtonType, xp.PushButton)
 
         # --------------------------

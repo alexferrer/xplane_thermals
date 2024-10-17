@@ -17,7 +17,8 @@ ATTR_LOD 0 8000
 #LINES 0 8
 
 ANIM_begin
-	ANIM_hide 65 99 sim/weather/view/wind_base_speed_kts
+	ANIM_hide 0  30 sim/weather/relative_humidity_sealevel_percent
+	ANIM_hide 25 99 sim/weather/view/wind_base_speed_kts
 	EMITTER summit_cloud 0.0 0.0 0.0  0.0 0.0 0.0  0
 ANIM_end
 

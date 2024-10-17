@@ -106,6 +106,7 @@ def eraseThermalsCloudsOnScreen():
 
 def eraseThermalsRingsOnScreen():
     tsize = len(world.thermal_rings_instance_list)
+    print("Delete old thermal instances #", tsize)
     for x in range(tsize):
        i = world.thermal_rings_instance_list[x]
        xp.destroyInstance(i)

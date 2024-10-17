@@ -12,19 +12,25 @@ print(LIB_VERSION)
 
 plugin_enabled = False  # plugin enabled/disabled
 
-# holders for the thermal data display
+# Holders for Stats Window display
+#-------------------------------------
 thermal_strength = 0 # meters per second
 thermal_radius = 0 # meters
 distance_from_center = 100000 # meters
 tot_lift_force = 0 # Newtons
 cal_lift_force = 0 # Newtons
 tot_roll_force = 0 # Newtons
+tot_pitch_force = 0 # Newtons
+
+applied_pitch_force = 0 # Newtons
 applied_lift_force = 0 # Newtons
 applied_roll_force = 0 # Newtons
+
 message  = "- - - - -"
 message1 = " - - - - "
 message2 = " x x x x "
 
+#-------------------------------------
 
 
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
@@ -70,14 +76,14 @@ http://www.xcskies.com/map # may interact with this to get baseline data?
 
 # A list of thermals for testing { (lat,lon):(radius,strength) }
 #Texas Soaring Gliderport TSA Airport Designator: TA11
-if DEBUG > 3: print("---------------------- creating default thermal list ----------------------")
+'''
+'''
 default_thermal_list = [
     Thermal(32.324161530, -97.039894104, 200,  1), #lake 1
     Thermal(32.380264282, -97.079566956, 300,  2), # lake2
     Thermal(32.581195831, -96.719421387, 100,  3), #Lancaster Windsock
     Thermal(31.916921616, -97.204803467, 500,  4), #Y lake island
     Thermal(32.456172943, -96.911354065, 1000, 5), #KJWY Midlothian Windsock
-    #Thermal(32.389057159, -97.013374329, 10, .5),
     Thermal(32.390254974, -97.011375427, 50, .1),  #TSA Windsock
  
     ]
@@ -114,12 +120,10 @@ CALIBRATE_MODE = False  # set calibration mode on/off to generate fake thermal t
 thermal_map_start_time = 0    # Thermal map age in seconds
 thermal_refresh_time = 20  # auto-refresh timr for thermal map in minutes
 
-
 # Default thermal config values
 thermal_tops = 2000  # 2000 meters thermal top
 thermal_distance = 1000  # meters min separation distance between thermals
 thermal_density = 100  #  qty of thermal generated
-
 
 ''''
 Thermal size
@@ -130,7 +134,6 @@ Thermal size
 '''
 thermal_size = 1500     # diameter of thermals in meters
 
-
 '''
 Thermal climb rate
 0   <  weak   <= 2 m/s
@@ -140,8 +143,6 @@ Thermal climb rate
 max = 15
 '''
 thermal_power = 5    # strength of thermals in m/s  * 10
-
-
 thermal_cycle = 30    # thermal life cycle time in minutes
 cloud_streets = False # not yet implemented..
 
@@ -165,13 +166,14 @@ lift_factor = 1.4  # ask21  3.9
 # Roll effect because of differential lift between wings.
 roll_factor = 50  # ask21  
 roll_test_pulse =  100  # 100 units of roll for testing from config glider menu
-# For realism purposes, some of the lift has to go to forward thrust
-thrust_factor = 5.0  # ask21  1.1
+
+pitch_factor = 2
+pitch_test_pulse =  100
 
 # wing span in meters for lift differential calculation
 # size of each wing   10m -> -----(*)----- <-10m
-wing_size = 10 * 2.5  # 10  times 2.5 to improve thefeel of roll effect as test
-
+wing_size = 25  # 10  times 2.5 to improve thefeel of roll effect as test
+tail_size = 5  # distance of the tail from the center of gravity
 
 def dummy_terrain_is_water(lat, lon):
     ''' Function that gets a value indicating whether the terrain at the geo location is water'''

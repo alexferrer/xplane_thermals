@@ -29,19 +29,16 @@ applied_roll_force = 0 # Newtons
 message  = "- - - - -"
 message1 = " - - - - "
 message2 = " x x x x "
-
 #-------------------------------------
-
-
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
 DEBUG = 0
+PLUGIN_ENABLED = True
 # handle image loading before plane bug
 images_loaded = False   
 update_loop = 0 
 sun_factor = 0
 
 kk7_hotspot_file_name = 'kk7_hotspots.csv'
-
 
 # Conversion constants
 nm2meter = 1852  # nautical miles to meters

@@ -76,7 +76,7 @@ class PythonInterface:
         self.myMenu = xp.createMenu("Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         
         # No idea how to enable disable plugin.. maybe let it sit iddle ?
-        # xp.appendMenuItem(self.myMenu, "Activate Plugin On/Off", activatePlugin, 1)
+        xp.appendMenuItem(self.myMenu, "Eanble Plugin ", activatePlugin, 1)
         xp.appendMenuItem(self.myMenu, "Generate Random Thermals", randomThermal, 1)
         xp.appendMenuItem(self.myMenu, "Load KK7 Thermals", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
@@ -169,6 +169,10 @@ class PythonInterface:
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
         # the actual callback, runs once every x period as defined
 
+        #If the plugin is disabled, skip the callback
+        if world.PLUGIN_ENABLED == False:
+            return 1    
+        
         # is the sim paused? , then skip
         runtime = xp.getDataf(self.runningTime)
         if self.sim_time == runtime:
@@ -330,10 +334,14 @@ class PythonInterface:
 
         # activate / deactivate  plugin
         if (inItemRef == activatePlugin):
-            print("activate/de activate plugin ")
-            print(" xxxxxxxxx ")
+            if world.PLUGIN_ENABLED :
+                xp.setMenuItemName(menuID=self.myMenu, index=activatePlugin, name='Disable Plugin')
+                world.PLUGIN_ENABLED = False
+            else:
+                xp.setMenuItemName(menuID=self.myMenu, index=activatePlugin, name='Enable Plugin')
+                world.PLUGIN_ENABLED = True
 
-        # activate / deactivate  plugin
+        # Open stats window
         if (inItemRef == statsWindow):
             print("Open Stats Window")
             self.WindowId = xp.createWindowEx(50, 600, 300, 400, 1,

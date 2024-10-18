@@ -42,7 +42,8 @@ def calc_drift(alt):
 def calc_lift(p1x, p1y):
     '''Calculate the lift component at this exact point'''
     lift = 0
-
+    if len(world.thermal_list) == 0:
+        return lift
     #Find closest thermal in the Thermal array
     closest_thermal = world.thermal_list[0]  # first entry of the thermal array
     min_distance = 1000000000000

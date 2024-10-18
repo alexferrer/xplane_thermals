@@ -12,7 +12,7 @@ import world
 from thermal_model import calc_thermalx, make_thermal_map_kk7
 from thermal_model import make_random_thermal_map
 
-from draw_thermals import drawThermalsOnScreen, eraseThermalsCloudsOnScreen, load_image_objects
+from draw_thermals import drawThermalsOnScreen, eraseThermalsCloudsOnScreen, eraseThermalsRingsOnScreen, load_image_objects
 
 import random
 from random import randrange
@@ -76,7 +76,7 @@ class PythonInterface:
         self.myMenu = xp.createMenu("Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         
         # No idea how to enable disable plugin.. maybe let it sit iddle ?
-        xp.appendMenuItem(self.myMenu, "Eanble Plugin ", activatePlugin, 1)
+        xp.appendMenuItem(self.myMenu, "Disable Plugin ", activatePlugin, 1)
         xp.appendMenuItem(self.myMenu, "Generate Random Thermals", randomThermal, 1)
         xp.appendMenuItem(self.myMenu, "Load KK7 Thermals", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
@@ -335,10 +335,13 @@ class PythonInterface:
         # activate / deactivate  plugin
         if (inItemRef == activatePlugin):
             if world.PLUGIN_ENABLED :
-                xp.setMenuItemName(menuID=self.myMenu, index=activatePlugin, name='Disable Plugin')
-                world.PLUGIN_ENABLED = False
-            else:
                 xp.setMenuItemName(menuID=self.myMenu, index=activatePlugin, name='Enable Plugin')
+                world.PLUGIN_ENABLED = False
+                eraseThermalsRingsOnScreen()
+                eraseThermalsCloudsOnScreen()
+                world.thermal_list = []
+            else:
+                xp.setMenuItemName(menuID=self.myMenu, index=activatePlugin, name='Disable Plugin')
                 world.PLUGIN_ENABLED = True
 
         # Open stats window

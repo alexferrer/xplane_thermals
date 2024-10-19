@@ -405,20 +405,20 @@ class PythonInterface:
     ''' Menu windows defined on their own files for clarity. 
     '''
     # Configure Thermals
-    from thermalsUI import TCHandler
-    from thermalsUI import CreateTCWindow
+    from UI_thermals import TCHandler
+    from UI_thermals import CreateTCWindow
 
     # About Window
-    from aboutUI import CreateAboutWindow
-    from aboutUI import AboutHandler
+    from UI_about import CreateAboutWindow
+    from UI_about import AboutHandler
 
     # Config Glider UI
-    from configGlider import CGHandler
-    from configGlider import CreateCGWindow
+    from UI_config_glider import CGHandler
+    from UI_config_glider import CreateCGWindow
 
     # Load KK7  UI
-    from kk7UI import KK7Handler
-    from kk7UI import CreateKK7Window
+    from UI_load_kk7 import KK7Handler
+    from UI_load_kk7 import CreateKK7Window
 
     # ------- after this debug
 

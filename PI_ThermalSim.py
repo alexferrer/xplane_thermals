@@ -266,15 +266,18 @@ class PythonInterface:
         #   11k   = 2 @ 90
         #   10k   = 1 @ 90
 
-        METERS_PER_SECOND_TO_NEWTON = 500 # 1m/s = 1000N
+        METERS_PER_SECOND_TO_NEWTON = 10 # 1m/s = 1000N
         if world.CALIBRATE_MODE:
-           #lift (always)
-           lift_amount =  METERS_PER_SECOND_TO_NEWTON *  world.lift_factor + xp.getDataf(self.lift_Dref)
-           xp.setDataf(self.lift_Dref, lift_amount)
+           #fake lift value  = 1 m/s
+           lift_val = 1
 
-           thrust_amount =  METERS_PER_SECOND_TO_NEWTON * world.thrust_factor + xp.getDataf(self.thrust_Dref)
-           xp.setDataf(self.thrust_Dref, thrust_amount)
+           lift =  lift_val* METERS_PER_SECOND_TO_NEWTON *  world.lift_factor + xp.getDataf(self.lift_Dref)
+           xp.setDataf(self.lift_Dref, lift)
 
+           thrust_val = lift_val  # same as lift for now 
+
+           thrust =  -1 * thrust_val * METERS_PER_SECOND_TO_NEWTON * world.thrust_factor + xp.getDataf(self.thrust_Dref)
+           xp.setDataf(self.thrust_Dref, thrust)
 
            #roll on pulse
            roll_amount = float(-200.0) * world.roll_factor
@@ -292,18 +295,20 @@ class PythonInterface:
                xp.setDataf(self.pitch_Dref, pitch_amount)
                pitch = pitch_amount
 
-           world.message2  =  "Cal: L({:<8}) T({:<8}) R({:<8}) P({:<8})".format(
-               round(lift_amount, 1), round(thrust_amount, 1), round(roll, 1), round(pitch, 1))
+           world.message2  =  "Cal: L({:<5}) T({:<5}) R({:<4}) P({:<4})".format(
+               round(lift, 1), round(thrust, 1), round(roll, 1), round(pitch, 1))
 
-    
+           world.message  =  "Fac: L({:<5}) T({:<5}) R({:<4}) P({:<4})".format(
+               round(world.lift_factor, 1), round(world.thrust_factor, 1), round(world.roll_factor, 1), round(world.pitch_factor, 1))
+
         else:
            # standart mode (non calibrate) 
-           lift = lift_val * world.lift_factor * METERS_PER_SECOND_TO_NEWTON + xp.getDataf(self.lift_Dref)
+           lift = lift_val * METERS_PER_SECOND_TO_NEWTON * world.lift_factor + xp.getDataf(self.lift_Dref)
            xp.setDataf(self.lift_Dref, lift)
            world.applied_lift_force = lift
 
            thrust_val = lift_val  # same as lift for now
-           thrust = thrust_val * world.thrust_factor * METERS_PER_SECOND_TO_NEWTON + xp.getDataf(self.thrust_Dref)
+           thrust = -1 * thrust_val * METERS_PER_SECOND_TO_NEWTON * world.thrust_factor + xp.getDataf(self.thrust_Dref)
            xp.setDataf(self.thrust_Dref, thrust)
            world.applied_thrust_force = thrust
 
@@ -317,8 +322,11 @@ class PythonInterface:
            xp.setDataf(self.pitch_Dref, pitch) 
            world.applied_pitch_force = pitch
 
-           world.message2  =  "Cal: L({:<8}) T({:<8}) R({:<8}) P({:<8})".format(
+           world.message2  =  "Cal: L({:<6}) T({:<6}) R({:<4}) P({:<4})".format(
                round(lift, 1), round(thrust, 1), round(roll, 1), round(pitch, 1))
+
+           world.message  =  "Fac: L({:<5}) T({:<5}) R({:<4}) P({:<4})".format(
+               round(world.lift_factor, 1), round(world.thrust_factor, 1), round(world.roll_factor, 1), round(world.pitch_factor, 1))
 
 
 

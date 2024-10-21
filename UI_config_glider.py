@@ -18,7 +18,7 @@ def CGHandler(self, inMessage, inWidget,       inParam1, inParam2):
 
     # Process button on the widget is pressed
     if (inMessage ==  xp.Msg_PushButtonPressed):
-        print("[button was pressed", inParam1, "]")
+        #print("[button was pressed", inParam1, "]")
 
         if (inParam1 == self.CGRoll_button):
             print("Glider Config: roll wing left")
@@ -36,13 +36,13 @@ def CGHandler(self, inMessage, inWidget,       inParam1, inParam2):
         val = xp.getWidgetProperty(
             self.CGLift_scrollbar, xp.Property_ScrollBarSliderPosition, None)
         xp.setWidgetDescriptor(self.CGLift_value, str(val))
-        world.thrust_factor = val 
+        world.lift_factor = val 
 
         # Thrust Factor
         val = xp.getWidgetProperty(
             self.CGThrust_scrollbar, xp.Property_ScrollBarSliderPosition, None)
         xp.setWidgetDescriptor(self.CGThrust_value, str(val))
-        world.lift_factor = val 
+        world.thrust_factor = val 
 
         # Pitch Factor
         val = xp.getWidgetProperty(
@@ -89,7 +89,7 @@ def CreateCGWindow(self, x, y, w, h):
     # -----------------------------
     # Lift Component
     CGLift_message0 = "Trim the glider for flight at best glide speed. ( flight model Ctrl-m )"
-    CGLift_message1 = "Adjust the lift & thrust factors until vario shows 1m/s Vs"
+    CGLift_message1 = "Adjust the lift & thrust factors until vario shows 1m/s Vs."
     self.CGLift_label_a = xp.createWidget(
         x+80,  y-20, x+140, y-35, 1, CGLift_message0, 0, self.CGWidget,  xp.WidgetClass_Caption)
     self.CGLift_label_b = xp.createWidget(
@@ -105,13 +105,13 @@ def CreateCGWindow(self, x, y, w, h):
         x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
     xp.setWidgetProperty(self.CGLift_scrollbar, xp.Property_ScrollBarMin, 0)
     xp.setWidgetProperty(self.CGLift_scrollbar,
-                            xp.Property_ScrollBarMax, 50)
+                            xp.Property_ScrollBarMax, 100)
     xp.setWidgetProperty(self.CGLift_scrollbar,
                             xp.Property_ScrollBarPageAmount, 1)
     xp.setWidgetProperty(
-        self.CGLift_scrollbar, xp.Property_ScrollBarSliderPosition, int(world.lift_factor*10))
+        self.CGLift_scrollbar, xp.Property_ScrollBarSliderPosition, int(world.lift_factor))
     xp.setWidgetDescriptor(
-        self.CGLift_value, str(int(world.lift_factor*10)))
+        self.CGLift_value, str(int(world.lift_factor)))
     y -= 32
 
     # Thrust Component
@@ -129,9 +129,9 @@ def CreateCGWindow(self, x, y, w, h):
     xp.setWidgetProperty(self.CGThrust_scrollbar,
                             xp.Property_ScrollBarPageAmount, 1)
     xp.setWidgetProperty(
-        self.CGThrust_scrollbar, xp.Property_ScrollBarSliderPosition, int(world.thrust_factor*10))
+        self.CGThrust_scrollbar, xp.Property_ScrollBarSliderPosition, int(world.thrust_factor))
     xp.setWidgetDescriptor(
-        self.CGThrust_value, str(int(world.thrust_factor*10)))
+        self.CGThrust_value, str(int(world.thrust_factor)))
     y -= 32
 
     # Roll Component

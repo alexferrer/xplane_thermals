@@ -14,7 +14,7 @@ def KK7Handler(self, inMessage, inWidget, inParam1, inParam2):
 
     # Process when a button on the widget is pressed
     if (inMessage == xp.Msg_PushButtonPressed):
-        print("[button was pressed", inParam1, "]")
+        #print("[button was pressed", inParam1, "]")
 
         # Tests the Command API, will find command
         if (inParam1 == self.KK7TGenerate_button):

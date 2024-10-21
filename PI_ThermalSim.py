@@ -271,7 +271,10 @@ class PythonInterface:
            #lift (always)
            lift_amount =  METERS_PER_SECOND_TO_NEWTON *  world.lift_factor + xp.getDataf(self.lift_Dref)
            xp.setDataf(self.lift_Dref, lift_amount)
-           lift = lift_amount
+
+           thrust_amount =  METERS_PER_SECOND_TO_NEWTON * world.thrust_factor + xp.getDataf(self.thrust_Dref)
+           xp.setDataf(self.thrust_Dref, thrust_amount)
+
 
            #roll on pulse
            roll_amount = float(-200.0) * world.roll_factor
@@ -289,28 +292,34 @@ class PythonInterface:
                xp.setDataf(self.pitch_Dref, pitch_amount)
                pitch = pitch_amount
 
-           world.message2  =  "Cal: L({:<10}) R({:<10}) P({:<10})".format(
-               round(lift, 3), round(roll, 3), round(pitch, 3))
+           world.message2  =  "Cal: L({:<8}) T({:<8}) R({:<8}) P({:<8})".format(
+               round(lift_amount, 1), round(thrust_amount, 1), round(roll, 1), round(pitch, 1))
 
     
         else:
            # standart mode (non calibrate) 
-           lval = lift_val * world.lift_factor * METERS_PER_SECOND_TO_NEWTON + xp.getDataf(self.lift_Dref)
-           xp.setDataf(self.lift_Dref, lval)
-           world.applied_lift_force = lval
+           lift = lift_val * world.lift_factor * METERS_PER_SECOND_TO_NEWTON + xp.getDataf(self.lift_Dref)
+           xp.setDataf(self.lift_Dref, lift)
+           world.applied_lift_force = lift
+
+           thrust_val = lift_val  # same as lift for now
+           thrust = thrust_val * world.thrust_factor * METERS_PER_SECOND_TO_NEWTON + xp.getDataf(self.thrust_Dref)
+           xp.setDataf(self.thrust_Dref, thrust)
+           world.applied_thrust_force = thrust
 
            # apply a roll to the plane
-           rval = roll_val * world.roll_factor + xp.getDataf(self.roll_Dref)
-           xp.setDataf(self.roll_Dref, rval) 
-           world.applied_roll_force = rval
+           roll = roll_val * world.roll_factor + xp.getDataf(self.roll_Dref)
+           xp.setDataf(self.roll_Dref, roll) 
+           world.applied_roll_force = roll
 
            # apply a pitch to the plane
-           pval = pitch_val * world.pitch_factor + xp.getDataf(self.pitch_Dref)
-           xp.setDataf(self.pitch_Dref, pval) 
-           world.applied_roll_force = pval
+           pitch = pitch_val * world.pitch_factor + xp.getDataf(self.pitch_Dref)
+           xp.setDataf(self.pitch_Dref, pitch) 
+           world.applied_pitch_force = pitch
 
-           world.message2  =  "Cal: L:{:<10} R:{:<10} P:{:<10}".format(
-               round(lval, 3), round(rval, 3), round(pval, 3))
+           world.message2  =  "Cal: L({:<8}) T({:<8}) R({:<8}) P({:<8})".format(
+               round(lift, 1), round(thrust, 1), round(roll, 1), round(pitch, 1))
+
 
 
         # set the next callback time in +n for # of seconds and -n for # of Frames
@@ -383,7 +392,7 @@ class PythonInterface:
             print("show Glider config box ")
             if (self.CGMenuItem == 0):
                 print(" create the Glider config box ")
-                self.CreateCGWindow(100, 550, 550, 330)
+                self.CreateCGWindow(100, 550, 550, 400)
                 self.CGMenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.CGWidget)):

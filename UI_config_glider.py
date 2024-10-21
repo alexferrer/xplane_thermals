@@ -36,6 +36,12 @@ def CGHandler(self, inMessage, inWidget,       inParam1, inParam2):
         val = xp.getWidgetProperty(
             self.CGLift_scrollbar, xp.Property_ScrollBarSliderPosition, None)
         xp.setWidgetDescriptor(self.CGLift_value, str(val))
+        world.thrust_factor = val 
+
+        # Thrust Factor
+        val = xp.getWidgetProperty(
+            self.CGThrust_scrollbar, xp.Property_ScrollBarSliderPosition, None)
+        xp.setWidgetDescriptor(self.CGThrust_value, str(val))
         world.lift_factor = val 
 
         # Pitch Factor
@@ -70,7 +76,6 @@ def CreateCGWindow(self, x, y, w, h):
     x2 = x + w
     y2 = y - h
     Title = "Glider Energy Configuration"
-    print("alx creating glider config window 806")
     # create the window
     self.CGWidget = xp.createWidget(
         x, y, x2, y2, 1, Title, 1,     0, xp.WidgetClass_MainWindow)
@@ -83,8 +88,8 @@ def CreateCGWindow(self, x, y, w, h):
 
     # -----------------------------
     # Lift Component
-    CGLift_message0 = "Trim the glider for flight straight and level at best glide speed."
-    CGLift_message1 = "Adjust the lift factor until vario shows 1m/s Vs"
+    CGLift_message0 = "Trim the glider for flight at best glide speed. ( flight model Ctrl-m )"
+    CGLift_message1 = "Adjust the lift & thrust factors until vario shows 1m/s Vs"
     self.CGLift_label_a = xp.createWidget(
         x+80,  y-20, x+140, y-35, 1, CGLift_message0, 0, self.CGWidget,  xp.WidgetClass_Caption)
     self.CGLift_label_b = xp.createWidget(
@@ -107,6 +112,26 @@ def CreateCGWindow(self, x, y, w, h):
         self.CGLift_scrollbar, xp.Property_ScrollBarSliderPosition, int(world.lift_factor*10))
     xp.setWidgetDescriptor(
         self.CGLift_value, str(int(world.lift_factor*10)))
+    y -= 32
+
+    # Thrust Component
+    self.CGThrust_label1 = xp.createWidget(
+        x+60,  y-80, x+140, y-102, 1, "Thrust Factor", 0, self.CGWidget,  xp.WidgetClass_Caption)
+    self.CGThrust_label2 = xp.createWidget(
+        x+375, y-80, x+410, y-102, 1, "Units", 0, self.CGWidget,  xp.WidgetClass_Caption)
+    self.CGThrust_value = xp.createWidget(
+        x+260, y-68, x+330, y-82, 1, "  0", 0, self.CGWidget,  xp.WidgetClass_Caption)
+    self.CGThrust_scrollbar = xp.createWidget(
+        x+170, y-80, x+370, y-102, 1, "", 0, self.CGWidget, xp.WidgetClass_ScrollBar)
+    xp.setWidgetProperty(self.CGThrust_scrollbar, xp.Property_ScrollBarMin, 0)
+    xp.setWidgetProperty(self.CGThrust_scrollbar,
+                            xp.Property_ScrollBarMax, 100)
+    xp.setWidgetProperty(self.CGThrust_scrollbar,
+                            xp.Property_ScrollBarPageAmount, 1)
+    xp.setWidgetProperty(
+        self.CGThrust_scrollbar, xp.Property_ScrollBarSliderPosition, int(world.thrust_factor*10))
+    xp.setWidgetDescriptor(
+        self.CGThrust_value, str(int(world.thrust_factor*10)))
     y -= 32
 
     # Roll Component

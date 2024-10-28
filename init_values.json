@@ -1,5 +1,9 @@
 {
     "DEBUG": 0,
     "PLUGIN_ENABLED": true,
-    "THERMAL_COLUMN_VISIBLE": true
+    "THERMAL_COLUMN_VISIBLE": true,
+    "lift_factor": 14,
+    "thrust_factor": 19,
+    "roll_factor": 4,
+    "pitch_factor": 3
 }

@@ -61,11 +61,11 @@ class PythonInterface:
 
         # ----- menu stuff --------------------------
         # init menu control params
-        self.TCMenuItem = 0
         self.KK7MenuItem = 0
         self.CGMenuItem = 0
         self.StatsWindowItem = 0
         self.AboutMenuItem = 0
+        self.TCMenuItem = 0
 
         global myMenu
 

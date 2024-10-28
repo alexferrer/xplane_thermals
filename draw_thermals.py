@@ -100,6 +100,7 @@ def eraseThermalsCloudsOnScreen():
     csize = len(world.cloud_instance_list)
     for x in range(csize):
        i = world.cloud_instance_list[x]
+       if world.DEBUG > 3: print("Deleting:", i)
        xp.destroyInstance(i)
 
     world.cloud_instance_list = []

@@ -5,12 +5,17 @@
   so I rather read them once and store them here for all to use.
   * We store variables in their ready to use units format, (usually metric)
 '''
-
 from thermal import Thermal
-LIB_VERSION = "Version ----------------------------   world.py v3.0"
-print(LIB_VERSION)
 
-plugin_enabled = False  # plugin enabled/disabled
+#-------------------------------------
+# debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
+DEBUG = 0
+PLUGIN_ENABLED = True    
+
+# GUI state variables
+THERMAL_COLUMN_VISIBLE = False  # are thermals visible as clouds, start false
+
+
 
 # Holders for Stats Window display
 #-------------------------------------
@@ -31,10 +36,6 @@ applied_pitch_force = 0 # Newtons
 message  = "- - - - -"
 message1 = " - - - - "
 message2 = " x x x x "
-#-------------------------------------
-# debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
-DEBUG = 0
-PLUGIN_ENABLED = True
 # handle image loading before plane bug
 images_loaded = False   
 update_loop = 0 
@@ -111,8 +112,9 @@ thermal_band = {1000: .8, 2000: .9, 3000: 1, 5000: 1, 5100: .4, 5500: 0}
                         
         raob ?
 '''
-# GUI state variables
-THERMAL_COLUMN_VISIBLE = False  # are thermals visible as clouds, start false
+
+
+
 CALIBRATE_MODE = False  # set calibration mode on/off to generate fake thermal to adjust lift factor
 
 # Thermal auto refersh data

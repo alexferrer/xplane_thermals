@@ -1,19 +1,48 @@
 ''' File: world.py
   Auth: Alex Ferrer @ 2014
+  Updated Oct 2024
   Central file to store all globally used variables.
   It is ugly to have globals but we depend on Xplane for lots of them
   so I rather read them once and store them here for all to use.
   * We store variables in their ready to use units format, (usually metric)
 '''
 from thermal import Thermal
+import json
+import os
 
+INIT_VALUES_FILE = 'Resources/plugins/PythonPlugins/init_values.json'
+def load_preferences():
+
+    if not os.path.exists(INIT_VALUES_FILE):
+        return None
+    
+    with open(INIT_VALUES_FILE, 'r') as file:
+        preferences = json.load(file)
+    
+    return preferences
+
+def save_preferences(**kwargs):
+    with open(INIT_VALUES_FILE, 'w') as file:
+        json.dump(kwargs, file)
+
+def save_init_values():
+    save_preferences( DEBUG=DEBUG,
+                      PLUGIN_ENABLED=PLUGIN_ENABLED,
+                      THERMAL_COLUMN_VISIBLE=THERMAL_COLUMN_VISIBLE
+                      )
+
+
+#Pull values from init values file
+print("loading preferences")
+prefs = load_preferences()
 #-------------------------------------
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 
-DEBUG = 0
-PLUGIN_ENABLED = True    
+DEBUG = prefs.get('DEBUG', 0)
+PLUGIN_ENABLED = prefs.get('PLUGIN_ENABLED', True) 
 
 # GUI state variables
-THERMAL_COLUMN_VISIBLE = False  # are thermals visible as clouds, start false
+# are thermals visible as clouds, start false
+THERMAL_COLUMN_VISIBLE = prefs.get('THERMAL_COLUMN_VISIBLE', True) 
 
 
 

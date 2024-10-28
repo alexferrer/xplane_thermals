@@ -142,6 +142,8 @@ class PythonInterface:
 
     def XPluginStop(self):    # Unregister the callbacks
         if world.DEBUG > 3 : print("XPPluginStop")
+        world.save_init_values()
+
         xp.unregisterFlightLoopCallback(self.FlightLoopCallback, 0)
  
         xp.destroyMenu(self.myMenu)
@@ -355,9 +357,11 @@ class PythonInterface:
                 eraseThermalsRingsOnScreen()
                 eraseThermalsCloudsOnScreen()
                 world.thermal_list = []
+                world.save_init_values()
             else:
                 xp.setMenuItemName(menuID=self.myMenu, index=activatePlugin, name='Disable Plugin')
                 world.PLUGIN_ENABLED = True
+                world.save_init_values()
 
         # Open stats window
         if (inItemRef == statsWindow):

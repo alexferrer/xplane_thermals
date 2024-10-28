@@ -37,7 +37,6 @@ def save_init_values():
 
 
 #Pull values from init values file
-print("loading preferences")
 prefs = load_preferences()
 #-------------------------------------
 # debug mode  0 = off , 1= stats, 2 = some, 3 = more, 4 = all 

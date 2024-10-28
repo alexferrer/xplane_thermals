@@ -166,7 +166,6 @@ class PythonInterface:
         # wouldn't know it.
         world.world_update = True
         world.THERMAL_COLUMN_VISIBLE = not world.THERMAL_COLUMN_VISIBLE
-        print(" F1 Toggle thermal column visibility ",world.THERMAL_COLUMN_VISIBLE)
 
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
         # the actual callback, runs once every x period as defined
@@ -337,7 +336,7 @@ class PythonInterface:
         CALLBACKTIME = .01
 
         if world.DEBUG > 5:
-            CALLBACKTIME = 5 # slow down for debugging
+            CALLBACKTIME = 3 # slow down for debugging
             print("next callback in second", CALLBACKTIME)
 
         world.update_loop += 1
@@ -365,7 +364,6 @@ class PythonInterface:
 
         # Open stats window
         if (inItemRef == statsWindow):
-            print("Open Stats Window")
             self.WindowId = xp.createWindowEx(50, 600, 300, 400, 1,
                                 self.DrawWindowCallback,
                                 None,
@@ -379,48 +377,35 @@ class PythonInterface:
 
         #--------------------------------
         if (inItemRef == randomThermal):
-            print("show thermal config box ")
             if (self.TCMenuItem == 0):
-                print(" create the thermal config box ")
                 self.CreateTCWindow(100, 600, 600, 400)
                 self.TCMenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.TCWidget)):
-                    print("re-show Thermal config box ")
                     xp.showWidget(self.TCWidget)
  
         if (inItemRef == csvThermal):
-            print("Making thermals from list")
             if (self.KK7MenuItem == 0):
-                print(" create the KK7 thermal config box ")
                 self.CreateKK7Window(100, 550, 550, 330)
                 self.KK7MenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.KK7Widget)):
-                    print("re-show KK7 config box ")
                     xp.showWidget(self.KK7Widget)
 
         if (inItemRef == configGlider):
-            print("show Glider config box ")
             if (self.CGMenuItem == 0):
-                print(" create the Glider config box ")
                 self.CreateCGWindow(100, 550, 550, 400)
                 self.CGMenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.CGWidget)):
-                    print("re-show Glider config box ")
                     xp.showWidget(self.CGWidget)
 
-        print("menu option ------>", inItemRef)
         if (inItemRef == aboutThermal):
-            print("show about box ")
             if (self.AboutMenuItem == 0):
-                print(" create the About box ")
                 self.CreateAboutWindow(100, 550, 460, 380)
                 self.AboutMenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.AboutWidget)):
-                    print("re-show about box ")
                     xp.showWidget(self.AboutWidget)
 
     ''' Menu windows defined on their own files for clarity. 

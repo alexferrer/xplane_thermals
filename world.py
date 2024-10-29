@@ -219,3 +219,9 @@ terrain_is_water = dummy_terrain_is_water
 # stuff for drawing of thermals
 cloud_instance_list = []  # a list of all draw object instances
 thermal_rings_instance_list = []    
+
+
+#GUI stuff 
+KK7_WINDOW_OPEN = True
+KK7_WINDOW = None
+KK7_current = 1  # default value

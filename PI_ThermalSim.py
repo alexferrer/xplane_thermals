@@ -105,7 +105,7 @@ class PythonInterface:
 
         # is the sim paused?
         self.runningTime = xp.findDataRef("sim/time/total_running_time_sec")
-        self.sim_time = 0
+        world.sim_time = 0
 
         # sun pitch from flat in OGL coordinates degrees, for thermal strength calculation
         # from zero to 90 at 12pm in summer near the equator ..
@@ -172,8 +172,7 @@ class PythonInterface:
         # the actual callback, runs once every x period as defined
 
         if not world.KK7_WINDOW_OPEN :
-           print("closing window from flightloop")
-           self.closeWindow("from flightloop")
+           self.close_KK7_Window()
            world.KK7_WINDOW_OPEN = True
 
         #If the plugin is disabled, skip the callback
@@ -182,10 +181,10 @@ class PythonInterface:
         
         # is the sim paused? , then skip
         runtime = xp.getDataf(self.runningTime)
-        if self.sim_time == runtime:
+        if world.sim_time == runtime:
             print("P ", end='')
             return 1
-        self.sim_time = runtime
+        world.sim_time = runtime
       
         # instantiate the actual callbacks.
         if world.DEBUG > 5 : print("FlightLoop: Update xplane drefs : position,wind,sun")
@@ -227,11 +226,11 @@ class PythonInterface:
                 world.world_update = True
 
             # Check if it is time to referesh the thermal map
-            if ( (self.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60) ) or len(world.thermal_list) == 0 :
+            if ( (world.sim_time - world.thermal_map_start_time) > (world.thermal_refresh_time * 60) ) or len(world.thermal_list) == 0 :
                 if world.DEBUG > 4: print("time is up , refreshing thermal map......................")
                 lat = xp.getDataf(self.PlaneLat)
                 lon = xp.getDataf(self.PlaneLon)
-                world.thermal_list = make_random_thermal_map(self.sim_time,
+                world.thermal_list = make_random_thermal_map(world.sim_time,
                                                             lat, lon,
                                                             world.thermal_power,
                                                             world.thermal_density,
@@ -430,7 +429,7 @@ class PythonInterface:
     from UI_config_glider import CreateCGWindow
 
     # Load KK7  UI
-    from UI_load_kk7 import loadHotspots , retrieveCSVFiles, create_CSV_Window, draw_CSV_Window, closeWindow
+    from UI_load_kk7 import loadHotspots , retrieveCSVFiles, create_CSV_Window, draw_CSV_Window, close_KK7_Window
 
     # ------- after this debug
 

@@ -47,7 +47,8 @@ PLUGIN_ENABLED = prefs.get('PLUGIN_ENABLED', True)
 # are thermals visible as clouds, start false
 THERMAL_COLUMN_VISIBLE = prefs.get('THERMAL_COLUMN_VISIBLE', True) 
 
-
+#Sim time
+sim_time=0
 
 # Holders for Stats Window display
 #-------------------------------------

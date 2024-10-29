@@ -12,9 +12,6 @@ import world
 import thermal
 import xp
 
-# comment out before testing with PlotThermals!!
-LIB_VERSION = "Version ----------------------------   thermal_model V3.0"
-print(LIB_VERSION)
 
 def calc_dist_square(p1x, p1y, p2x, p2y):
     ''' Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2 '''

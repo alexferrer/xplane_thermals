@@ -21,11 +21,12 @@ import math
 import xp
 from XPPython3.xp_typing import *
 
+from XPPython3 import xp_imgui # type: ignore
+import imgui  # type: ignore
+
 #########################################################
 
 # ------------------  T H E R M A L   S I M U L A T O R  ----------------------------
-LIB_VERSION = "Version ----------------------------   PI_ThermalSim V2.0"
-print(LIB_VERSION)
 
 activatePlugin = 0
 toggleThermal = 1
@@ -49,6 +50,13 @@ def xplane_terrain_is_water(lat, lon):
 
 
 class PythonInterface:
+    my_window = None
+    current = 1  # default value
+    WINDOW_OPEN = True
+
+
+
+
     def XPluginStart(self):
         self.Name = "ThermalSim2"
         self.Sig = "AlexFerrer.Python.ThermalSim2"
@@ -170,6 +178,10 @@ class PythonInterface:
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
         # the actual callback, runs once every x period as defined
 
+        if not self.WINDOW_OPEN :
+           self.closeWindow("from flightloop")
+           self.WINDOW_OPEN = True
+
         #If the plugin is disabled, skip the callback
         if world.PLUGIN_ENABLED == False:
             return 1    
@@ -180,7 +192,7 @@ class PythonInterface:
             print("P ", end='')
             return 1
         self.sim_time = runtime
-
+      
         # instantiate the actual callbacks.
         if world.DEBUG > 5 : print("FlightLoop: Update xplane drefs : position,wind,sun")
         lat = xp.getDataf(self.PlaneLat)
@@ -386,11 +398,12 @@ class PythonInterface:
  
         if (inItemRef == csvThermal):
             if (self.KK7MenuItem == 0):
-                self.CreateKK7Window(100, 550, 550, 330)
+                #self.CreateKK7Window(100, 550, 550, 330)
+                self.create_CSV_Window()
                 self.KK7MenuItem = 1
-            else:
-                if(not xp.isWidgetVisible(self.KK7Widget)):
-                    xp.showWidget(self.KK7Widget)
+            #else:
+            #    if(not xp.isWidgetVisible(self.KK7Widget)):
+            #        xp.showWidget(self.KK7Widget)
 
         if (inItemRef == configGlider):
             if (self.CGMenuItem == 0):
@@ -423,8 +436,8 @@ class PythonInterface:
     from UI_config_glider import CreateCGWindow
 
     # Load KK7  UI
-    from UI_load_kk7 import KK7Handler
-    from UI_load_kk7 import CreateKK7Window
+    from UI_load_kk7 import loadHotspots , retrieveCSVFiles, create_CSV_Window, draw_CSV_Window, closeWindow
+    #from UI_load_kk7 import CreateKK7Window
 
     # ------- after this debug
 
@@ -477,3 +490,82 @@ class PythonInterface:
         xp.drawString(color, left + 5, top - 170, "["+world.message+"]", 0, xp.Font_Basic)
         xp.drawString(GREEN, left + 5, top - 180, "["+world.message1+"]", 0, xp.Font_Basic)
         xp.drawString(color, left + 5, top - 190, "["+world.message2+"]", 0, xp.Font_Basic)
+
+'''
+#---------------------- imgui stuff ----------------------------
+    def loadHotspots(self,filename):
+        #open file and load the hotspots
+        with open(filename, "r") as f:
+            for line in f:
+                if line.startswith("Hotspot file :"):
+                    print("Hotspot file: ", line)
+                else:
+                    lat, lon, _, _ = line.split(",")
+                    #self.hotspots.append( (float(lat), float(lon)) )
+                    print(f"Hotspot at coordinates: x={lat}, z={lon}")
+        print("Hotspots loaded from file: ", filename)
+
+    def retrieveCSVFiles(self):
+        hotspot_files = []
+        result,dir_files,tot_files = xp.getDirectoryContents(xp.getSystemPath())
+        for file in dir_files:
+            if file.endswith(".csv"):
+                hotspot_files.append(file)    
+        return hotspot_files
+
+    def create_CSV_Window(self):
+        self.WINDOW_OPEN = True
+        title = 'my_title'
+  
+        # Determine where you want the window placed. Note these
+        # windows are placed relative the global screen (composite
+        # of all your monitors) rather than the single 'main' screen.
+        l, t, r, b = xp.getScreenBoundsGlobal()
+        width =  400
+        height = 200
+        left_offset = 110
+        top_offset = 110
+  
+        # Create the imgui Window, and save it.
+        self.my_window = xp_imgui.Window(    left=l + left_offset,
+                                        top=t - top_offset,
+                                        right=l + left_offset + width,
+                                        bottom=t - (top_offset + height),
+                                        visible=1,
+                                        draw=self.draw_CSV_Window,
+                                        refCon=self.my_window
+                                    )
+        self.my_window.setTitle(title)
+        return
+  
+    def draw_CSV_Window(self, windowID, refCon):
+        # LABEL
+        imgui.text("Select a hotspot file to load from disk")
+  
+        # COMBO
+        self.hotspot_files = self.retrieveCSVFiles()
+        clicked, self.current = imgui.combo("", self.current, self.hotspot_files)
+        if clicked:
+            print("clicked", self.current, self.hotspot_files[self.current])
+
+        # BUTTON
+        imgui.same_line()  # This will position the button to the right of the combo box
+        if imgui.button("Load File"):
+            self.loadHotspots(self.hotspot_files[self.current])
+            print("Button Pressed")
+            imgui.open_popup("File Loaded")
+
+        if imgui.begin_popup("File Loaded"):
+            imgui.text("Loaded "+self.hotspot_files[self.current]+"sucessfuly")
+            if imgui.button("OK"):
+                imgui.close_current_popup()
+                self.WINDOW_OPEN = False
+            imgui.end_popup()            
+        return
+
+    def closeWindow(self,messsage):
+        print("closeWindow:",messsage)
+        self.my_window.delete()
+        print(f"closing window ")
+    
+'''        

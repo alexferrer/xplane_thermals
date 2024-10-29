@@ -173,3 +173,129 @@ def CreateKK7Window(self, x, y, w, h):
     # --------------------------
     self.KK7HandlerCB = self.KK7Handler
     xp.addWidgetCallback(self.KK7Widget, self.KK7HandlerCB)
+
+def DrawWindowCallback(self, inWindowID, inRefcon):
+    # First we get the location of the window passed in to us.
+    (left, top, right, bottom) = xp.getWindowGeometry(inWindowID)
+    """
+    We now use an XPLMGraphics routine to draw a translucent dark
+    rectangle that is our window's shape.
+    """
+    xp.drawTranslucentDarkBox(left, top, right, bottom)
+    color = 1.0, 1.0, 1.0
+    RED = 1.0, 0.0, 0.0
+    GREEN = 0.0, 1.0, 0.0
+    """
+    Finally we draw the text into the window, also using XPLMGraphics
+    routines.  The NULL indicates no word wrapping.
+    """
+    if world.thermal_radius > world.distance_from_center:
+        xp.drawString(GREEN, left + 90, top - 20, "IN THERMAL", 0, xp.Font_Basic)
+
+        xp.drawString(color, left + 5, top - 125, "T Lift :"+ str(round(world.tot_lift_force, 2)) +"m/s", 0, xp.Font_Basic)
+        xp.drawString(GREEN, left + 99, top - 125, "% "+ str(round(world.cal_lift_force, 2)) +"m/s", 0, xp.Font_Basic)
+
+        xp.drawString(color, left + 5, top - 145,  "T Roll :"+ str(round(world.tot_roll_force, 2) )+"N", 0, xp.Font_Basic)
+        xp.drawString(color, left + 99, top - 145, "% "+ str(round(world.applied_roll_force, 2) )+"N", 0, xp.Font_Basic)
+
+
+        xp.drawString(GREEN, left + 5, top -160, "Applied: "+ str(round(world.applied_lift_force, 2)) +"N", 0, xp.Font_Basic)
+    else:
+        xp.drawString(RED, left + 90, top - 20, "OFF THERMAL", 0, xp.Font_Basic)
+
+    dfc = str(round(world.distance_from_center, 2))
+    xp.drawString(color, left + 80, top - 35,  "Distance   : "+ dfc +"m", 0, xp.Font_Basic)
+    xp.drawString(color, left + 80, top - 50,  "T Radius   : "+ str(round(world.thermal_radius,2) )+"m", 0, xp.Font_Basic)
+    xp.drawString(color, left + 80, top - 65,  "T Strength : "+ str(round(world.thermal_strength,2)) +" m/s", 0, xp.Font_Basic)
+    xp.drawString(color, left + 80, top - 90,  "Lfactor: "+ str(round(world.lift_factor, 2)) +"X", 0, xp.Font_Basic)
+    xp.drawString(color, left + 80, top - 105, "Rfactor: "+ str(round(world.roll_factor, 2)) +"X", 0, xp.Font_Basic)
+    
+
+
+    xp.drawString(color, left + 5, top - 170, "["+world.message+"]", 0, xp.Font_Basic)
+    xp.drawString(GREEN, left + 5, top - 180, "["+world.message1+"]", 0, xp.Font_Basic)
+    xp.drawString(color, left + 5, top - 190, "["+world.message2+"]", 0, xp.Font_Basic)
+
+
+
+
+from XPPython3 import xp_imgui # type: ignore
+import imgui  # type: ignore
+
+
+
+#---------------------- imgui stuff ----------------------------
+def loadHotspots(self,filename):
+    #open file and load the hotspots
+    with open(filename, "r") as f:
+        for line in f:
+            if line.startswith("Hotspot file :"):
+                print("Hotspot file: ", line)
+            else:
+                lat, lon, _, _ = line.split(",")
+                #self.hotspots.append( (float(lat), float(lon)) )
+                print(f"Hotspot at coordinates: x={lat}, z={lon}")
+    print("Hotspots loaded from file: ", filename)
+
+def retrieveCSVFiles(self):
+    hotspot_files = []
+    result,dir_files,tot_files = xp.getDirectoryContents(xp.getSystemPath())
+    for file in dir_files:
+        if file.endswith(".csv"):
+            hotspot_files.append(file)    
+    return hotspot_files
+
+def create_CSV_Window(self):
+    self.WINDOW_OPEN = True
+    title = 'my_title'
+
+    # Determine where you want the window placed. Note these
+    # windows are placed relative the global screen (composite
+    # of all your monitors) rather than the single 'main' screen.
+    l, t, r, b = xp.getScreenBoundsGlobal()
+    width =  400
+    height = 200
+    left_offset = 110
+    top_offset = 110
+
+    # Create the imgui Window, and save it.
+    self.my_window = xp_imgui.Window(    left=l + left_offset,
+                                    top=t - top_offset,
+                                    right=l + left_offset + width,
+                                    bottom=t - (top_offset + height),
+                                    visible=1,
+                                    draw=self.draw_CSV_Window,
+                                    refCon=self.my_window
+                                )
+    self.my_window.setTitle(title)
+    return
+
+def draw_CSV_Window(self, windowID, refCon):
+    # LABEL
+    imgui.text("Select a hotspot file to load from disk")
+
+    # COMBO
+    self.hotspot_files = self.retrieveCSVFiles()
+    clicked, self.current = imgui.combo("", self.current, self.hotspot_files)
+    if clicked:
+        print("clicked", self.current, self.hotspot_files[self.current])
+
+    # BUTTON
+    imgui.same_line()  # This will position the button to the right of the combo box
+    if imgui.button("Load File"):
+        self.loadHotspots(self.hotspot_files[self.current])
+        print("Button Pressed")
+        imgui.open_popup("File Loaded")
+
+    if imgui.begin_popup("File Loaded"):
+        imgui.text("Loaded "+self.hotspot_files[self.current]+"sucessfuly")
+        if imgui.button("OK"):
+            imgui.close_current_popup()
+            self.WINDOW_OPEN = False
+        imgui.end_popup()            
+    return
+
+def closeWindow(self,messsage):
+    print("closeWindow:",messsage)
+    self.my_window.delete()
+    print(f"closing window ")

@@ -3,8 +3,6 @@ import thermal
 from thermal_model import calc_dist, calc_drift
 import xp # type: ignore
 
-LIB_VERSION = "Version ----------------------------   draw_thermals.py v2.0"
-print(LIB_VERSION)
 
 THERMAL_COLUMN_sm = 'Resources/plugins/PythonPlugins/t_ring_50.obj'
 THERMAL_COLUMN_m  = 'Resources/plugins/PythonPlugins/t_ring_200.obj'

@@ -390,14 +390,9 @@ class PythonInterface:
                     xp.showWidget(self.TCWidget)
  
         if (inItemRef == csvThermal):
-            if (self.KK7MenuItem == 0):
-                #self.CreateKK7Window(100, 550, 550, 330)
-                self.create_CSV_Window()
-                self.KK7MenuItem = 1
-            #else:
-            #    if(not xp.isWidgetVisible(self.KK7Widget)):
-            #        xp.showWidget(self.KK7Widget)
-
+            if world.DEBUG > 1 : print("csvThermal: Menu kk7Thermal  kk7menuitem->") 
+            self.create_CSV_Window()
+ 
         if (inItemRef == configGlider):
             if (self.CGMenuItem == 0):
                 self.CreateCGWindow(100, 550, 550, 400)

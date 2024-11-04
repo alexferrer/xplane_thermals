@@ -26,7 +26,7 @@ def retrieveCSVFiles(self):
 def create_CSV_Window(self):
     world.KK7_WINDOW_OPEN = True
     title = 'Load KK7/CSV Hotspots'
-
+    if world.DEBUG > 1 : print("Creating KK7 Window") 
     # Determine where you want the window placed. Note these
     # windows are placed relative the global screen (composite
     # of all your monitors) rather than the single 'main' screen.

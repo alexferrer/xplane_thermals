@@ -19,7 +19,7 @@ def TCHandler(self, inMessage, inWidget, inParam1, inParam2):
             #world.cloud_streets = xp.getWidgetProperty(self.enableCheck, xp.Property_ButtonState, None)
             #print("enable cloud streets", world.cloud_streets)
             # lat,lon,stregth,count
-            world.thermal_list = make_random_thermal_map(self.sim_time,
+            world.thermal_list = make_random_thermal_map(world.sim_time,
                                                             lat, lon,
                                                             world.thermal_power,
                                                             world.thermal_density,

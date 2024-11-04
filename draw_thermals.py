@@ -98,14 +98,14 @@ def eraseThermalsCloudsOnScreen():
     csize = len(world.cloud_instance_list)
     for x in range(csize):
        i = world.cloud_instance_list[x]
-       if world.DEBUG > 3: print("Deleting:", i)
+       if world.DEBUG > 2: print("Deleting:", i)
        xp.destroyInstance(i)
 
     world.cloud_instance_list = []
 
 def eraseThermalsRingsOnScreen():
     tsize = len(world.thermal_rings_instance_list)
-    print("Delete old thermal instances #", tsize)
+    if world.DEBUG > 2: print("Delete old thermal rings instances #", tsize)
     for x in range(tsize):
        i = world.thermal_rings_instance_list[x]
        xp.destroyInstance(i)
@@ -116,7 +116,7 @@ def eraseThermalsRingsOnScreen():
 def drawThermalsOnScreen(lat, lon):
     # if visibility is off, only draw clouds at cloudbase (no visible columns)
 
-    if world.DEBUG > 5: print(" eraseThermalsRingsOnScreen, draw_clouds, reset update")
+    if world.DEBUG > 3: print(" eraseThermalsRingsOnScreen, draw_clouds, reset update")
 
     eraseThermalsRingsOnScreen()
     eraseThermalsCloudsOnScreen()

@@ -13,6 +13,17 @@ import thermal
 import xp
 
 
+probe = xp.createProbe()
+
+def xplane_terrain_is_water(lat, lon):
+    x, y, z = xp.worldToLocal(lat, lon, 0)
+    info = xp.probeTerrainXYZ(probe, x, y, z)
+
+    if info.is_wet:
+        if world.DEBUG > 3 : print("------------- we are over water")
+        return True
+    return False
+
 def calc_dist_square(p1x, p1y, p2x, p2y):
     ''' Calculates square distance between (p1x,p1y) and (p2x,p2y) in meter^2 '''
     return (p2x - p1x)**2 + (p2y - p1y)**2
@@ -201,8 +212,8 @@ def make_random_thermal_map(time, _lat, _lon, _strength, _count, _radius):
         lon = _lon + (_y-100) * world.thermal_distance * .00001
 
         # No thermals start over water..
-        if world.terrain_is_water(lat, lon):
-            #print("we are over water ?....")
+        if xplane_terrain_is_water(lat, lon):
+            if world.DEBUG > 4 :print("No thermal, we are over water.")
             continue
 
         # create the thermal
@@ -252,3 +263,4 @@ def make_thermal_map_kk7(_filename,_time, _strength, _radius):
     world.thermal_map_start_time = _time
     print("# of generated thermals", len(thermals))    
     return thermals
+

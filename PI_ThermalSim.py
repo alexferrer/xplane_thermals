@@ -36,19 +36,6 @@ aboutThermal = 4
 configGlider = 5
 statsWindow = 6
 
-def xplane_terrain_is_water(lat, lon):
-    # https://xppython3.readthedocs.io/en/stable/development/changesfromp2.html?highlight=xplmprobeterrainxyz
-    #info = []
-    x, y, z = xp.worldToLocal(lat, lon, 0)
-    info = xp.probeTerrainXYZ(world.probe, x, y, z)
-    #print("xplmWorlprobe info = ",dir(info))
-
-    if info.is_wet:
-        if world.DEBUG > 3 : print("------------- we are over water")
-        return True
-    return False
-
-
 class PythonInterface:
     def XPluginStart(self):
         self.Name = "ThermalSim2"
@@ -113,10 +100,6 @@ class PythonInterface:
             'sim/graphics/scenery/sun_pitch_degrees')
         # temperature_sealevel_c
         # dewpoi_sealevel_c
-
-        # terrain probe to test for height and water
-        world.probe = xp.createProbe()
-        world.terrain_is_water = xplane_terrain_is_water
 
         # variables to inject energy to the plane
 

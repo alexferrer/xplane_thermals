@@ -208,13 +208,6 @@ pitch_test_pulse =  0
 wing_size = 25  # 10  times 2.5 to improve thefeel of roll effect as test
 tail_size = 5  # distance of the tail from the center of gravity
 
-def dummy_terrain_is_water(lat, lon):
-    ''' Function that gets a value indicating whether the terrain at the geo location is water'''
-    return False
-
-
-terrain_is_water = dummy_terrain_is_water
-
 # stuff for drawing of thermals
 cloud_instance_list = []  # a list of all draw object instances
 thermal_rings_instance_list = []    

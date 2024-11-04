@@ -45,7 +45,7 @@ class PythonInterface:
         global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl
 
         # hot key for thermal visibility control 
-        self.HotKey = xp.registerHotKey(xp.VK_F1, xp.DownFlag, "Says 'Hello World 1'", self.MyHotKeyCallback, 0)
+        #self.HotKey = xp.registerHotKey(xp.VK_F1, xp.DownFlag, "Says 'Hello World 1'", self.MyHotKeyCallback, 0)
 
         # ----- menu stuff --------------------------
         # init menu control params
@@ -65,11 +65,13 @@ class PythonInterface:
         
         # No idea how to enable disable plugin.. maybe let it sit iddle ?
         xp.appendMenuItem(self.myMenu, "Disable Plugin ", activatePlugin, 1)
+        xp.appendMenuItem(self.myMenu, "Thermal Rings Off", toggleThermal, 1)
         xp.appendMenuItem(self.myMenu, "Generate Random Thermals", randomThermal, 1)
         xp.appendMenuItem(self.myMenu, "Load KK7 Thermals", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         xp.appendMenuItem(self.myMenu, "Activate Stats Window", statsWindow, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
+        xp.appendMenuSeparator(self.myMenu)
         # -------------------------------------------------
 
         world.THERMAL_COLUMN_VISIBLE = True
@@ -143,13 +145,13 @@ class PythonInterface:
     def XPluginReceiveMessage(self, inFromWho, inMessage, inParam):
         pass
 
-    def MyHotKeyCallback(self, inRefcon):
+    #def MyHotKeyCallback(self, inRefcon):
         # This is our hot key handler.  Note that we don't know what key stroke
         # was pressed!  We can identify our hot key by the 'refcon' value though.
         # This is because our hot key could have been remapped by the user and we
         # wouldn't know it.
-        world.world_update = True
-        world.THERMAL_COLUMN_VISIBLE = not world.THERMAL_COLUMN_VISIBLE
+        #world.world_update = True
+        #world.THERMAL_COLUMN_VISIBLE = not world.THERMAL_COLUMN_VISIBLE
 
     def FlightLoopCallback(self, elapsedMe, elapsedSim, counter, refcon):
         # the actual callback, runs once every x period as defined
@@ -390,6 +392,25 @@ class PythonInterface:
             else:
                 if(not xp.isWidgetVisible(self.AboutWidget)):
                     xp.showWidget(self.AboutWidget)
+
+        # activate / deactivate  plugin
+        if (inItemRef == toggleThermal):
+            if  world.THERMAL_COLUMN_VISIBLE :
+                xp.setMenuItemName(menuID=self.myMenu, index=toggleThermal, name='Thermal Rings On')
+                print("Thermal Rings On")
+                world.THERMAL_COLUMN_VISIBLE = False
+                world.world_update = True
+            else:
+                xp.setMenuItemName(menuID=self.myMenu, index=toggleThermal, name='Thermal Rings Off')
+                print("Thermal Rings Off")
+                world.THERMAL_COLUMN_VISIBLE = True
+                world.world_update = True
+                world.save_init_values()
+
+
+
+
+
 
     ''' Menu windows defined on their own files for clarity. 
     '''

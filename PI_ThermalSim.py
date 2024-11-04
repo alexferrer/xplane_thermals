@@ -9,18 +9,12 @@ Thermal simulator  Ver .04
 
 import world
 # thermal modeling tools
-from thermal_model import calc_thermalx
-from thermal_model import make_random_thermal_map
-
+from thermal_model import make_random_thermal_map , calc_thermalx, destroyProbe
 from draw_thermals import drawThermalsOnScreen, eraseThermalsCloudsOnScreen, eraseThermalsRingsOnScreen, load_image_objects
-
-import random
 from random import randrange
 import math
-
 import xp
 from XPPython3.xp_typing import *
-
 from XPPython3 import xp_imgui # type: ignore
 import imgui  # type: ignore
 
@@ -28,13 +22,13 @@ import imgui  # type: ignore
 
 # ------------------  T H E R M A L   S I M U L A T O R  ----------------------------
 
-activatePlugin = 0
-toggleThermal = 1
-randomThermal = 2
-csvThermal = 3
-aboutThermal = 4
-configGlider = 5
-statsWindow = 6
+toggleThermal  = 0
+randomThermal  = 2
+csvThermal     = 3
+configGlider   = 4
+statsWindow    = 5
+aboutThermal   = 6
+activatePlugin = 8
 
 class PythonInterface:
 
@@ -54,8 +48,10 @@ class PythonInterface:
         self.Sig = "AlexFerrer.Python.ThermalSim2"
         self.Desc = "A plugin that simulates thermals (beta)"
 
-        # hot key for thermal visibility control 
-        #self.HotKey = xp.registerHotKey(xp.VK_F1, xp.DownFlag, "Says 'Hello World 1'", self.MyHotKeyCallback, 0)
+        # Define an XPlane command 
+        # It may be called from a menu item, a key stroke, or a joystick button
+        self.commandRef = xp.createCommand('alexferrer/xplane_thermals/show_thermal_rings', 'Toggle thermal rings')
+        xp.registerCommandHandler(self.commandRef, self.CommandHandler)
 
         # ----- menu stuff --------------------------
         # Define the main menu items
@@ -65,19 +61,17 @@ class PythonInterface:
         self.myMenu = xp.createMenu("Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         
         # No idea how to enable disable plugin.. maybe let it sit iddle ?
-        xp.appendMenuItem(self.myMenu, "Disable Plugin ", activatePlugin, 1)
-        xp.appendMenuItem(self.myMenu, "Thermal Rings Off", toggleThermal, 1)
+        xp.appendMenuItemWithCommand(self.myMenu,name="Toggle Rings", commandRef=self.commandRef)
+        #xp.appendMenuItem(self.myMenu, "Thermal Rings Off", toggleThermal, 1)
+        xp.appendMenuSeparator(self.myMenu)
         xp.appendMenuItem(self.myMenu, "Generate Random Thermals", randomThermal, 1)
         xp.appendMenuItem(self.myMenu, "Load KK7 Thermals", csvThermal, 1)
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         xp.appendMenuItem(self.myMenu, "Activate Stats Window", statsWindow, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
         xp.appendMenuSeparator(self.myMenu)
+        xp.appendMenuItem(self.myMenu, "Disable Plugin ", activatePlugin, 1)
         
-        # Define an XPlane command 
-        # It may be called from a menu item, a key stroke, or a joystick button
-        self.commmandRef = xp.createCommand('alexferrer/xplane_thermals/show_thermal_rings', 'on/off thermal rings')
-        xp.registerCommandHandler(self.commmandRef, self.CommandHandler)
 
         
         
@@ -139,12 +133,9 @@ class PythonInterface:
     def XPluginStop(self):    # Unregister the callbacks
         if world.DEBUG > 3 : print("XPPluginStop")
         world.save_init_values()
-
         xp.unregisterFlightLoopCallback(self.FlightLoopCallback, 0)
- 
         xp.destroyMenu(self.myMenu)
-        # for probe suff
-        xp.destroyProbe(world.probe)
+        destroyProbe()
 
     def XPluginEnable(self):
            return 1
@@ -361,6 +352,7 @@ class PythonInterface:
                 world.PLUGIN_ENABLED = True
                 world.save_init_values()
 
+
         # Open stats window
         if (inItemRef == statsWindow):
             self.WindowId = xp.createWindowEx(50, 600, 300, 400, 1,
@@ -374,7 +366,7 @@ class PythonInterface:
                                 xp.WindowLayerFloatingWindows,
                                 None)
 
-        #--------------------------------
+
         if (inItemRef == randomThermal):
             if (self.TCMenuItem == 0):
                 self.CreateTCWindow(100, 600, 600, 400)
@@ -382,11 +374,13 @@ class PythonInterface:
             else:
                 if(not xp.isWidgetVisible(self.TCWidget)):
                     xp.showWidget(self.TCWidget)
- 
+
+
         if (inItemRef == csvThermal):
             if world.DEBUG > 1 : print("csvThermal: Menu kk7Thermal  kk7menuitem->") 
             self.create_CSV_Window()
- 
+
+
         if (inItemRef == configGlider):
             if (self.CGMenuItem == 0):
                 self.CreateCGWindow(100, 550, 550, 400)
@@ -395,6 +389,7 @@ class PythonInterface:
                 if(not xp.isWidgetVisible(self.CGWidget)):
                     xp.showWidget(self.CGWidget)
 
+
         if (inItemRef == aboutThermal):
             if (self.AboutMenuItem == 0):
                 self.CreateAboutWindow(100, 550, 460, 380)
@@ -402,24 +397,6 @@ class PythonInterface:
             else:
                 if(not xp.isWidgetVisible(self.AboutWidget)):
                     xp.showWidget(self.AboutWidget)
-
-        # activate / deactivate  plugin
-        if (inItemRef == toggleThermal):
-            if  world.THERMAL_COLUMN_VISIBLE :
-                xp.setMenuItemName(menuID=self.myMenu, index=toggleThermal, name='Thermal Rings On')
-                print("Thermal Rings On")
-                world.THERMAL_COLUMN_VISIBLE = False
-                world.world_update = True
-            else:
-                xp.setMenuItemName(menuID=self.myMenu, index=toggleThermal, name='Thermal Rings Off')
-                print("Thermal Rings Off")
-                world.THERMAL_COLUMN_VISIBLE = True
-                world.world_update = True
-                world.save_init_values()
-
-
-
-
 
 
     ''' Menu windows defined on their own files for clarity. 
@@ -493,6 +470,8 @@ class PythonInterface:
 
 
     def CommandHandler(self, commandRef, phase, refCon):
+        print(f"Commandref: {commandRef}")
+        print(f"RefCon: {refCon}")
         print(f"Command got phase: {phase}")
         if phase == xp.CommandBegin:
             world.THERMAL_COLUMN_VISIBLE = not world.THERMAL_COLUMN_VISIBLE

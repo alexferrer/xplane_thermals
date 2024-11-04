@@ -15,6 +15,10 @@ import xp
 
 probe = xp.createProbe()
 
+def destroyProbe():
+    xp.destroyProbe(probe)
+
+
 def xplane_terrain_is_water(lat, lon):
     x, y, z = xp.worldToLocal(lat, lon, 0)
     info = xp.probeTerrainXYZ(probe, x, y, z)

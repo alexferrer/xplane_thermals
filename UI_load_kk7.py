@@ -6,11 +6,13 @@ import imgui  # type: ignore
 
 def loadHotspots(self,filename):
     #open file and load the hotspots
-    world.thermal_list = make_thermal_map_kk7(   
+    world.thermal_list = make_thermal_map_kk7(
+                    filename,   
                     world.sim_time,                  
                     world.thermal_power, 
                     world.thermal_size)
-            
+
+    if world.DEBUG > 3 : print("request Update the world map thermals= ", len(world.thermal_list) )       
     world.world_update = True
     print("Hotspots loaded from file: ", filename)
 
@@ -66,9 +68,9 @@ def draw_CSV_Window(self, windowID, refCon):
 
     if imgui.begin_popup("File Loaded Popup"):
         imgui.text("Loaded "+self.hotspot_files[world.KK7_current]+" sucessfuly")
-        if imgui.button("Popup OK"):
+        if imgui.button("OK"):
             imgui.close_current_popup()
-            world.KK7_WINDOW_OPEN = False
+            #world.KK7_WINDOW_OPEN = False
         imgui.end_popup()            
     return
 

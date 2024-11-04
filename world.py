@@ -74,8 +74,6 @@ images_loaded = False
 update_loop = 0 
 sun_factor = 0
 
-kk7_hotspot_file_name = 'kk7_hotspots.csv'
-
 # Conversion constants
 nm2meter = 1852  # nautical miles to meters
 latlon2meter = 111200  # crude conversion value for lat/lon to meters

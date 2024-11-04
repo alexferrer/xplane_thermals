@@ -32,7 +32,7 @@ def draw_thermal_column(lat, lon, radius):  # min_alt,max_alt
     ''' Draw thermal images ( Rings ) along the raising thermal, accounting
         for wind drift along the climb. end at almost the thermal top
     '''
-    if world.DEBUG > 4 : print("B ", end='') 
+    if world.DEBUG > 3 : print("B ", end='') 
 
     base = 1
     _dew, _dud, _dns = xp.worldToLocal(
@@ -84,7 +84,7 @@ def draw_clouds(lat, lon):
     ''' return a list of thermal location tuples, if the distance not exceeds max display
     Just the thermals at cloudbase
     '''
-    if world.DEBUG > 4: print("draw_clouds") 
+    if world.DEBUG > 3: print("draw_clouds") 
     p1x,alt, p1y = xp.worldToLocal(lat, lon,0)
 
     for athermal in world.thermal_list:
@@ -105,9 +105,10 @@ def eraseThermalsCloudsOnScreen():
 
 def eraseThermalsRingsOnScreen():
     tsize = len(world.thermal_rings_instance_list)
-    if world.DEBUG > 2: print("Delete old thermal rings instances #", tsize)
+    if world.DEBUG > 2: print("eraseThermalsRings instances #", tsize)
     for x in range(tsize):
        i = world.thermal_rings_instance_list[x]
+       if world.DEBUG > 3: print("   destroy instance #,I",x, i)
        xp.destroyInstance(i)
 
     world.thermal_rings_instance_list = []
@@ -116,7 +117,7 @@ def eraseThermalsRingsOnScreen():
 def drawThermalsOnScreen(lat, lon):
     # if visibility is off, only draw clouds at cloudbase (no visible columns)
 
-    if world.DEBUG > 3: print(" eraseThermalsRingsOnScreen, draw_clouds, reset update")
+    if world.DEBUG > 2: print(" eraseThermalsRingsOnScreen, draw_clouds, reset update")
 
     eraseThermalsRingsOnScreen()
     eraseThermalsCloudsOnScreen()

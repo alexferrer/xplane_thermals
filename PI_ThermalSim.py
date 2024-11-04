@@ -9,7 +9,7 @@ Thermal simulator  Ver .04
 
 import world
 # thermal modeling tools
-from thermal_model import calc_thermalx, make_thermal_map_kk7
+from thermal_model import calc_thermalx
 from thermal_model import make_random_thermal_map
 
 from draw_thermals import drawThermalsOnScreen, eraseThermalsCloudsOnScreen, eraseThermalsRingsOnScreen, load_image_objects
@@ -235,13 +235,12 @@ class PythonInterface:
                                                             world.thermal_power,
                                                             world.thermal_density,
                                                             world.thermal_size)
-
                 if world.DEBUG > 4 : print("request Update the world map") 
                 world.world_update = True
 
             # if anything has changed updte the screen drawings
             if world.world_update:
-                if world.DEBUG > 4: print("drawing thermals on screen")
+                if world.DEBUG > 2: print("main-> calling drawThermalsOnScreen")
                 drawThermalsOnScreen(xp.getDataf(self.PlaneLat),
                                     xp.getDataf(self.PlaneLon)
                                     )

@@ -37,26 +37,27 @@ configGlider = 5
 statsWindow = 6
 
 class PythonInterface:
-    def XPluginStart(self):
-        self.Name = "ThermalSim2"
-        self.Sig = "AlexFerrer.Python.ThermalSim2"
-        self.Desc = "A plugin that simulates thermals (beta)"
 
-        global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl
-
-        # hot key for thermal visibility control 
-        self.HotKey = xp.registerHotKey(xp.VK_F1, xp.DownFlag, "Says 'Hello World 1'", self.MyHotKeyCallback, 0)
-
-        # ----- menu stuff --------------------------
+    def __init__(self):
         # init menu control params
         self.KK7MenuItem = 0
         self.CGMenuItem = 0
         self.StatsWindowItem = 0
         self.AboutMenuItem = 0
         self.TCMenuItem = 0
-
+        global gOutputFile, gPlaneLat, gPlaneLon, gPlaneEl
         global myMenu
 
+
+    def XPluginStart(self):
+        self.Name = "ThermalSim2"
+        self.Sig = "AlexFerrer.Python.ThermalSim2"
+        self.Desc = "A plugin that simulates thermals (beta)"
+
+        # hot key for thermal visibility control 
+        self.HotKey = xp.registerHotKey(xp.VK_F1, xp.DownFlag, "Says 'Hello World 1'", self.MyHotKeyCallback, 0)
+
+        # ----- menu stuff --------------------------
         # Define the main menu items
         mySubMenuItem = xp.appendMenuItem(
             xp.findPluginsMenu(), "Thermal Simulator", 0, 1)
@@ -70,7 +71,16 @@ class PythonInterface:
         xp.appendMenuItem(self.myMenu, "Configure Glider", configGlider, 1)
         xp.appendMenuItem(self.myMenu, "Activate Stats Window", statsWindow, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
+        
+        # Define an XPlane command 
+        # It may be called from a menu item, a key stroke, or a joystick button
+        self.commmandRef = xp.createCommand('alexferrer/xplane_thermals/show_thermal_rings', 'on/off thermal rings')
+        xp.registerCommandHandler(self.commmandRef, self.CommandHandler)
+
+        
+        
         # -------------------------------------------------
+
 
         world.THERMAL_COLUMN_VISIBLE = True
 
@@ -460,3 +470,16 @@ class PythonInterface:
         xp.drawString(GREEN, left + 5, top - 180, "["+world.message1+"]", 0, xp.Font_Basic)
         xp.drawString(color, left + 5, top - 190, "["+world.message2+"]", 0, xp.Font_Basic)
 
+
+    def CommandHandler(self, commandRef, phase, refCon):
+        print(f"Command got phase: {phase}")
+        if phase == xp.CommandBegin:
+            world.THERMAL_COLUMN_VISIBLE = not world.THERMAL_COLUMN_VISIBLE
+            world.world_update = True
+            print(" Toggle thermal column visibility ",world.THERMAL_COLUMN_VISIBLE)
+
+        elif phase == xp.CommandContinue:
+            print("Command Continue")
+        elif phase == xp.CommandEnd:
+            print("Command End")
+        return 1

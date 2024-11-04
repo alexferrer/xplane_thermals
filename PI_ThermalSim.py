@@ -61,7 +61,7 @@ class PythonInterface:
         self.myMenu = xp.createMenu("Thermals", xp.findPluginsMenu(), mySubMenuItem, self.MyMenuHandlerCB, 0)
         
         # No idea how to enable disable plugin.. maybe let it sit iddle ?
-        xp.appendMenuItemWithCommand(self.myMenu,name="Toggle Rings", commandRef=self.commandRef)
+        xp.appendMenuItemWithCommand(self.myMenu,name="Toggle Thermal Rings", commandRef=self.commandRef)
         #xp.appendMenuItem(self.myMenu, "Thermal Rings Off", toggleThermal, 1)
         xp.appendMenuSeparator(self.myMenu)
         xp.appendMenuItem(self.myMenu, "Generate Random Thermals", randomThermal, 1)
@@ -70,7 +70,14 @@ class PythonInterface:
         xp.appendMenuItem(self.myMenu, "Activate Stats Window", statsWindow, 1)
         xp.appendMenuItem(self.myMenu, "About", aboutThermal, 1)
         xp.appendMenuSeparator(self.myMenu)
-        xp.appendMenuItem(self.myMenu, "Disable Plugin ", activatePlugin, 1)
+        
+        if world.PLUGIN_ENABLED :
+            plugin_menu_label = "Disable Plugin"
+            print("Plugin is enabled")
+        else:
+            plugin_menu_label = "Enable Plugin"
+            print("Plugin is disabled")
+        xp.appendMenuItem(self.myMenu, plugin_menu_label, activatePlugin, 1)
         
 
         
@@ -470,16 +477,16 @@ class PythonInterface:
 
 
     def CommandHandler(self, commandRef, phase, refCon):
-        print(f"Commandref: {commandRef}")
-        print(f"RefCon: {refCon}")
-        print(f"Command got phase: {phase}")
+        if world.DEBUG > 3 : print(f"Commandref: {commandRef}")
+        if world.DEBUG > 3 : print(f"RefCon: {refCon}")
+        if world.DEBUG > 3 : print(f"Command got phase: {phase}")
         if phase == xp.CommandBegin:
             world.THERMAL_COLUMN_VISIBLE = not world.THERMAL_COLUMN_VISIBLE
             world.world_update = True
-            print(" Toggle thermal column visibility ",world.THERMAL_COLUMN_VISIBLE)
+            if world.DEBUG > 3 : print(" Toggle thermal column visibility ",world.THERMAL_COLUMN_VISIBLE)
 
         elif phase == xp.CommandContinue:
-            print("Command Continue")
+            if world.DEBUG > 3 : print("Command Continue")
         elif phase == xp.CommandEnd:
-            print("Command End")
+            if world.DEBUG > 3 : print("Command End")
         return 1

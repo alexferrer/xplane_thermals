@@ -2,12 +2,12 @@ xplane_thermals - (Updated for Python 3)
 ===============
 
 Author: Alex Ferrer
-License: GPL 2014 / Updated Oct 2024
+License: GPL 2014 / Updated Nov 2024
 
 
 X-Plane plugin to generate more realistic thermals 
 
-This updated plugin only works with the new Python3 plugin and XPlane 11.5 and above!
+This updated plugin only works with the new Python3 plugin and XPlane 12 and above!
 
 Basic concept:
 Create a fixed or random list of thermals with lat,lon,thermal diameter, thermal strength.
@@ -37,12 +37,12 @@ UPDATE
 -----
 - Youtube videos showing the pluggin in action https://www.youtube.com/playlist?list=PLCOXBmOQk9UA55rzYTZvHnyQ_FopH_U9x
 - Real clouds!!!
-- Select thermal column visibility from generate thermal menu (broken)
+- Select thermal column visibility from generate thermal menu 
+- Enable / Disable plugin for when you are not flying gliders
+- Persistant menu preferences saved on exit or disable
 - https://forums.x-plane.org/index.php?/forums/topic/225976-xppython3-v312-now-available/
 - https://xppython3.readthedocs.io/en/stable/
-
-
-- Loading CSV hotspots from https://thermal.kk7.ch/ added. Download your fav. thermal hotspots and put it in your X-plane root directory. --->>>  Rename the file to: kk7_hotspots.csv
+- Load CSV hotspots from https://thermal.kk7.ch/ added. Download your fav. thermal hotspots and put it in your X-plane root directory. 
 
 
 TODOs
@@ -76,8 +76,8 @@ V.04 Changes:
 Real clouds at cloudbase on top of thermals! (Thx to forums.x-plane.org @troopie for pointing me on the right direction!)
 
 Menu options to :
-Set the debug level 1 to 6 dumps info to XPPython3Log.txt
-Configure the glider lift/roll response against a static lift while on the config menu
+Set the debug level 1 to 6 dumps info to XPPython3Log.txt (for devs & debug only) 
+Configure the glider lift/roll/pitch response when on thermals and a 1 m/s calibrate mode for easier setup of your glider 
 
 
 

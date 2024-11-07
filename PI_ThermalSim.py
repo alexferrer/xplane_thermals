@@ -267,7 +267,7 @@ class PythonInterface:
         METERS_PER_SECOND_TO_NEWTON = 10 # 1m/s = 1000N
         if world.CALIBRATE_MODE:
            #fake lift value  = 1 m/s
-           lift_val = 1
+           lift_val = world.calibrate_factor_ms
 
            lift =  lift_val* METERS_PER_SECOND_TO_NEWTON *  world.lift_factor + xp.getDataf(self.lift_Dref)
            xp.setDataf(self.lift_Dref, lift)
@@ -362,6 +362,9 @@ class PythonInterface:
 
         # Open stats window
         if (inItemRef == statsWindow):
+            self.create_Stats_Window()
+
+            '''
             self.WindowId = xp.createWindowEx(50, 600, 300, 400, 1,
                                 self.DrawWindowCallback,
                                 None,
@@ -372,7 +375,7 @@ class PythonInterface:
                                 xp.WindowDecorationRoundRectangle,
                                 xp.WindowLayerFloatingWindows,
                                 None)
-
+            '''
 
         if (inItemRef == randomThermal):
             if (self.TCMenuItem == 0):
@@ -389,13 +392,16 @@ class PythonInterface:
 
 
         if (inItemRef == configGlider):
+            if world.DEBUG > 2 : print("CGMenu : activate window ") 
+            self.create_CG_Window()
+            '''
             if (self.CGMenuItem == 0):
                 self.CreateCGWindow(100, 550, 550, 400)
                 self.CGMenuItem = 1
             else:
                 if(not xp.isWidgetVisible(self.CGWidget)):
                     xp.showWidget(self.CGWidget)
-
+            '''
 
         if (inItemRef == aboutThermal):
             if (self.AboutMenuItem == 0):
@@ -416,38 +422,40 @@ class PythonInterface:
     from UI_about import CreateAboutWindow
     from UI_about import AboutHandler
 
-    # Config Glider UI
-    from UI_config_glider import CGHandler
-    from UI_config_glider import CreateCGWindow
+    
+    from UI_stats import create_Stats_Window, draw_Stats_Window
+
+    from UI_config_glider import create_CG_Window, draw_CG_Window
+
 
     # Load KK7  UI
     from UI_load_kk7 import loadHotspots , retrieveCSVFiles, create_CSV_Window, draw_CSV_Window, close_KK7_Window
 
+
     # ------- after this debug
 
     """
-    MyDrawingWindowCallback
+    #MyDrawingWindowCallback
 
-    This callback does the work of drawing our window once per sim cycle each time
-    it is needed.  It dynamically changes the text depending on the saved mouse
-    status.  Note that we don't have to tell X-Plane to redraw us when our text
-    changes; we are redrawn by the sim continuously.
-    """
+    #This callback does the work of drawing our window once per sim cycle each time
+    #it is needed.  It dynamically changes the text depending on the saved mouse
+    #status.  Note that we don't have to tell X-Plane to redraw us when our text
+    #changes; we are redrawn by the sim continuously.
+    
     def DrawWindowCallback(self, inWindowID, inRefcon):
         # First we get the location of the window passed in to us.
         (left, top, right, bottom) = xp.getWindowGeometry(inWindowID)
-        """
-        We now use an XPLMGraphics routine to draw a translucent dark
+        
+        ## We now use an XPLMGraphics routine to draw a translucent dark
         rectangle that is our window's shape.
-        """
+        
         xp.drawTranslucentDarkBox(left, top, right, bottom)
         color = 1.0, 1.0, 1.0
         RED = 1.0, 0.0, 0.0
         GREEN = 0.0, 1.0, 0.0
-        """
-        Finally we draw the text into the window, also using XPLMGraphics
-        routines.  The NULL indicates no word wrapping.
-        """
+
+        #Finally we draw the text into the window, also using XPLMGraphics
+        #routines.  The NULL indicates no word wrapping.
         if world.thermal_radius > world.distance_from_center:
            xp.drawString(GREEN, left + 90, top - 20, "IN THERMAL", 0, xp.Font_Basic)
 
@@ -474,8 +482,9 @@ class PythonInterface:
         xp.drawString(color, left + 5, top - 170, "["+world.message+"]", 0, xp.Font_Basic)
         xp.drawString(GREEN, left + 5, top - 180, "["+world.message1+"]", 0, xp.Font_Basic)
         xp.drawString(color, left + 5, top - 190, "["+world.message2+"]", 0, xp.Font_Basic)
+        """
 
-
+    # Handle a registred commandRef call (F1 key)
     def CommandHandler(self, commandRef, phase, refCon):
         if world.DEBUG > 3 : print(f"Commandref: {commandRef}")
         if world.DEBUG > 3 : print(f"RefCon: {refCon}")

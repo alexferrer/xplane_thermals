@@ -218,13 +218,23 @@ thermal_rings_instance_list = []
 
 
 #GUI stuff 
+# KK7 CSV load menu
 KK7_WINDOW_OPEN = True
 KK7_WINDOW = None
-KK7_current = 1  # default value
+#KK7_current = 1  # default value
 
-
+# Thermal Config Window
 CG_WINDOW_OPEN = True
 CG_WINDOW = None
 
+# Stats Window
 STATS_WINDOW_OPEN = True
 STATS_WINDOW = None
+
+# Thermal Config Window
+TC_WINDOW_OPEN = True
+TC_WINDOW = None
+
+# About Window
+ABOUT_WINDOW_OPEN = True
+ABOUT_WINDOW = None

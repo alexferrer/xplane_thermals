@@ -45,6 +45,29 @@ UPDATE
 - Load CSV hotspots from https://thermal.kk7.ch/ added. Download your fav. thermal hotspots and put it in your X-plane root directory. 
 
 
+
+Enable/Disable Plugin Option
+
+The Gliding Simulator plugin includes an Enable/Disable option in the menu. This feature allows you to activate the plugin when flying gliders to experience realistic thermal effects. When flying other types of aircraft, you can disable the plugin to prevent thermal effects from impacting your flight. This gives you flexibility to use the plugin only when it enhances your specific flight experience.
+
+Persistent Configuration Options
+
+The Gliding Simulator plugin offers Persistent Configuration Options, allowing you to save settings like Enable/Disable, Thermals On/Off, and various glider configuration options. These preferences are stored in an .ini file, so your settings are automatically loaded each time you start the plugin. This ensures a seamless experience without needing to reconfigure the plugin for each session.
+
+
+Glider Config Menu Option
+
+The Glider Config menu option lets you customize the forces applied to the glider during thermal encounters. You can adjust parameters like lift, thrust, and pitch in response to various thermal strengths, enabling a more realistic and tailored gliding experience. This fine-tuning helps simulate different thermal intensities and conditions for an immersive flight.
+
+Load Thermals from CSV Files
+
+The Load Thermals from CSV Files menu option enables you to import thermal hotspot data from CSV files, creating custom thermal environments in your simulator. You can download pre-made thermal hotspot files from sources like the thermal.kk7 website, or create your own CSV files with specific locations and conditions. This feature provides flexibility to tailor thermals to your flying area and preferences.
+
+Thermal Rings On/Off Menu Option
+
+The Thermal Rings On/Off menu option allows you to toggle the visibility of thermal column rings. These rings, which appear along the rising thermal, help beginner pilots locate and track thermals more easily. For a more realistic experience, you can turn off the thermal rings, providing a challenge for more experienced glider pilots.
+
+
 TODOs
 -----
 
@@ -78,8 +101,6 @@ Real clouds at cloudbase on top of thermals! (Thx to forums.x-plane.org @troopie
 Menu options to :
 Set the debug level 1 to 6 dumps info to XPPython3Log.txt (for devs & debug only) 
 Configure the glider lift/roll/pitch response when on thermals and a 1 m/s calibrate mode for easier setup of your glider 
-
-
 
 
 

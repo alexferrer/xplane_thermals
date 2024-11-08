@@ -33,7 +33,7 @@ def draw_CG_Window(self, windowID, refCon):
         return
     
     imgui.text("Trim the glider for flight at best glide speed. ( flight model Ctrl-m )")
-    imgui.text("Adjust the lift & thrust factors until vario shows 1m/s Vs.")
+    imgui.text("Adjust the lift & thrust factors until vario shows your selected Vs.")
     imgui.text("")
 
     # Scrollbars

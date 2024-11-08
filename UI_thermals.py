@@ -34,7 +34,7 @@ def draw_TC_Window(self, windowID, refCon):
 
     # Thermal Tops
     imgui.text("Thermals Tops (Meters)")
-    changed, world.thermal_tops = imgui.slider_int("##ThermalTops", world.thermal_tops , 1, 10000)
+    changed, world.thermal_tops = imgui.slider_int("##ThermalTops", world.thermal_tops , 1, 8000)
     if changed:
         print("Thermal Tops", world.thermal_tops)
 

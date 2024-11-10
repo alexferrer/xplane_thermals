@@ -367,10 +367,6 @@ class PythonInterface:
             if (self.TCMenuItem == 0):
                 self.create_TC_Window()
                 self.TCMenuItem = 1
-            else:
-                if(not xp.isWidgetVisible(self.TCWidget)):
-                    xp.showWidget(self.TCWidget)
-
 
         if (inItemRef == csvThermal):
             if world.DEBUG > 1 : print("csvThermal: Menu kk7Thermal  kk7menuitem->") 

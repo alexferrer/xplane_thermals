@@ -364,10 +364,9 @@ class PythonInterface:
             self.create_Stats_Window()
 
         if (inItemRef == randomThermal):
-            if (self.TCMenuItem == 0):
-                self.create_TC_Window()
-                self.TCMenuItem = 1
-
+            if world.DEBUG > 2 : print("CGMenu : activate window ") 
+            self.create_TC_Window()
+   
         if (inItemRef == csvThermal):
             if world.DEBUG > 1 : print("csvThermal: Menu kk7Thermal  kk7menuitem->") 
             self.create_CSV_Window()

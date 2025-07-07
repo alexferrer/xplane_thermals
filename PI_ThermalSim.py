@@ -85,7 +85,7 @@ class PythonInterface:
         # -------------------------------------------------
 
 
-        world.THERMAL_COLUMN_VISIBLE = True
+        world.THERMAL_COLUMN_VISIBLE = False
 
         """ Data refs we want to record."""
         # airplane current flight info
